@@ -12,7 +12,62 @@ class StoreAdmin extends ModelAdmin{
 
 	public static $collection_controller_class = 'StoreAdmin_CollectionController';
 	public static $record_controller_class = 'StoreAdmin_RecordController';
+
+	public function init() {
+		parent::init();
+
+		Requirements::css('ecommerce/css/admin/admin.css');
+		Requirements::javascript('ecommerce/javascript/admin/admin.js');
+	}
+
 }
+
+
+class StoreAdmin_Request extends Controller {
+	function init(){
+		parent::init();
+		if (!Permission::check("ADMIN")) {
+			Security::permissionFailure ($this, "Please log in to access Store Admin");
+		}		
+	}
+	
+	function products(){
+		$controller = new StoreAdmin_ContentController();
+		return $controller->renderWith("StoreAdmin_products");
+	}	
+}
+
+class StoreAdmin_ContentController extends Controller {
+	//no actions allowed on this controller
+	static $allowed_actions = array("index");	
+	function init(){
+		parent::init();
+		if (!Permission::check("ADMIN")) {
+			Security::permissionFailure ($this, "Please log in to access Ecommerce Admin");
+		}		
+	}
+	function index(){
+		return "";
+	}
+
+	function Link(){
+		return Director::urlParam("Controller");
+	}
+	
+	function URLSegment(){
+		return $this->Link();
+	}
+	
+	function Products(){
+		return DataObject::get("Product");
+	}
+	
+}
+
+
+
+
+
 
 //remove side forms
 class StoreAdmin_CollectionController extends ModelAdmin_CollectionController {
