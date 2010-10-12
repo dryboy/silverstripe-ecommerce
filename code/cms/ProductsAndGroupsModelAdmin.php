@@ -89,7 +89,8 @@ class ProductsAndGroupsModelAdmin_RecordController extends ModelAdmin_RecordCont
 		$form->unsetActionByName("action_publish");
 		//$form->unsetActionByName("action_doSave"); - USEFUL TO KEEP
 		$actions = $form->Actions();
-		$actions->push(new FormAction("doGoto", "go to page"));
+		if($this->currentRecord instanceof SiteTree)
+			$actions->push(new FormAction("doGoto", "go to page"));
 		$form->setActions($actions);
 		return $form;
 	}

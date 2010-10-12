@@ -145,11 +145,13 @@ class CheckoutPage_Controller extends Page_Controller {
 
 		Requirements::javascript(THIRDPARTY_DIR . '/jquery/jquery.js');
 		Requirements::javascript('ecommerce/javascript/CheckoutPage.js');
+		/*
+		//why is this stuff blocked??
 		Requirements::block(THIRDPARTY_DIR . '/behaviour.js');
 		Requirements::block(THIRDPARTY_DIR . '/prototype.js');
 		Requirements::block(THIRDPARTY_DIR . '/prototype_improvements.js');
 		Requirements::block(SAPPHIRE_DIR . '/javascript/Validator.js');
-
+*/
 		Requirements::themedCSS('CheckoutPage');
 
 		$this->initVirtualMethods();
@@ -204,7 +206,7 @@ class CheckoutPage_Controller extends Page_Controller {
 	 * @return Order
 	 */
 	function Order() {
-		if($orderID = Director::urlParam('Action')) {
+		if($orderID = Director::urlParam('Action') && is_numeric(Director::urlParam('Action'))) {
 			$order = DataObject::get_by_id('Order', $orderID);
 			if($order && $order->MemberID == Member::currentUserID()) {
 				return $order;

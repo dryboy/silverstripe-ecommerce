@@ -46,6 +46,10 @@ class EcomQuantityField extends ViewableData{
 		$this->template = $template;
 	}
 	
+	function Item(){
+		return $this->item;
+	}
+	
 	function Field() {
 		$size = 3; //make these customisable
 		$maxlength = 3;

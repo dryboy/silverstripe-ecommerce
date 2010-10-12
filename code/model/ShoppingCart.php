@@ -105,13 +105,13 @@ class ShoppingCart extends Controller {
 			}else {
 				$order = new Order();
 				$order->SessionID = session_id();
-				$order->MemberID = Member::currentUserID(); // Set the Member relation to this order
+				//$order->MemberID = Member::currentUserID(); // Set the Member relation to this order
 				$order->write();
 				Session::set(self::$cartid_session_name,$order->ID);			
 			}
 			self::$order = $order; //temp caching
 		}
-		$order->MemberID = Member::currentUserID(); // Set the Member relation to this order
+		//$order->MemberID = Member::currentUserID(); // Set the Member relation to this order
 		$order->write(); // Write the order
 		return $order;
 	}
@@ -248,12 +248,6 @@ class ShoppingCart extends Controller {
 
 	static function uses_different_shipping_address(){
 		return self::current_order()->UseShippingAddress;		
-	}
-
-
-	// Database saving function
-	static function save_current_order() {
-		return Order::save_current_order();
 	}
 	
 	static function json_code() {

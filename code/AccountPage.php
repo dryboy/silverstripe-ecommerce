@@ -152,7 +152,9 @@ class AccountPage_Controller extends Page_Controller {
 	 * @return ShopAccountForm
 	 */
 	function MemberForm() {
-		return new ShopAccountForm($this, 'MemberForm');
+		$form = new ShopAccountForm($this, 'MemberForm');
+		$this->extend('updateMemberForm',&$form);
+		return $form;
 	}
 
 	/**

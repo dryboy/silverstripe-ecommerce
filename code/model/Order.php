@@ -602,14 +602,18 @@ class Order extends DataObject {
 	 * @param $excluded string|array Class(es) of modifier(s) to ignore in the calculation.
 	 * @todo figure out what the return type is? double? float?
 	 */
-	function ModifiersSubTotal($excluded = null) {
+	function ModifiersSubTotal($excluded = null, $onlyprevious = false) {
 		$total = 0;
 
 		if($modifiers = $this->Modifiers()) {
 			foreach($modifiers as $modifier) {
 				if(is_array($excluded) && in_array($modifier->class, $excluded)) {
+					if($onlyprevious)
+						break;
 					continue;
 				} elseif($excluded && ($modifier->class == $excluded)) {
+					if($onlyprevious)
+						break;
 					continue;
 				}
 
