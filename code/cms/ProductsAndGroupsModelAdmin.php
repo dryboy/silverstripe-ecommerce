@@ -117,9 +117,11 @@ class ProductsAndGroupsModelAdmin_RecordController extends ModelAdmin_RecordCont
 	}
 
 
-	function doDelete() {
-		user_error("this function has not been implemented yet", E_USER_NOTICE);
-		//might be prudent not to allow deletions as products should not be deleted, but rather be made "not for sale"
+	function doDelete($data, $form, $request) {
+		if($this->currentRecord instanceof SiteTree)
+			user_error("this function has not been implemented yet", E_USER_NOTICE); //might be prudent not to allow deletions as products should not be deleted, but rather be made "not for sale"
+		else
+			parent::doDelete($data, $form, $request);
 	}
 
 }
