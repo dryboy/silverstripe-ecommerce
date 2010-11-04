@@ -469,8 +469,6 @@ class Order extends DataObject {
  			return $this->itemsFromDatabase($filter);
  		}
  		elseif($items = ShoppingCart::get_items()){
-			SS_Backtrace::backtrace();
- 			die("session items");
  			return $this->createItems($items);
  		} 		
 	}
