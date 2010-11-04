@@ -13,6 +13,8 @@ class ShoppingCart extends Controller {
 	
 	static $cartid_session_name = 'shoppingcartid';
 
+	static $URLSegment = 'shoppingcart';
+	
 	static $allowed_actions = array (
 		'additem',
 		'removeitem',
@@ -46,8 +48,6 @@ class ShoppingCart extends Controller {
 		self::current_order();
 		self::$order->initModifiers();
 	}
-
-	static $URLSegment = 'shoppingcart';
 	
 	//controller links
 	static function add_item_link($id, $variationid = null, $parameters = array()) {
@@ -85,11 +85,17 @@ class ShoppingCart extends Controller {
 	
 	/**
 	 * Creates the appropriate string parameters for links from array
+	 * 
+	 * Produces string such as: MyParam%3D11%26OtherParam%3D1
+	 *     ...which decodes to: MyParam=11&OtherParam=1
+	 *     
+	 * you will need to decode the url with javascript before using it.
+	 * 
 	 */
 	protected static function paramsToGetString($array){
 		if($array & count($array > 0)){
 			array_walk($array , create_function('&$v,$k', '$v = $k."=".$v ;'));
-			return "?".htmlentities(implode("&",$array), ENT_QUOTES); //TODO: urlescape values??
+			return "?".urlencode(implode("&",$array));
 		}
 		return "";
 	}
@@ -319,11 +325,23 @@ class ShoppingCart extends Controller {
 	/**
 	 * Ajax method to set an item quantity
 	 */
-	function setquantityitem() {
-		$quantity = $request->param('quantity');
-		if ($quantity && $quantity > 0) {
-			if ($item = ShoppingCart::get_item($this->urlFilter()))
-				ShoppingCart::set_quantity_item($item, $quantity);
+	function setquantityitem($request) {
+		$quantity = $request->getVar('quantity');
+		if (is_numeric($quantity)) {
+			$item = ShoppingCart::get_item($this->urlFilter());
+			if($quantity > 0){
+				if(!$item){
+					$item = $this->getNewOrderItem();
+					self::add_new_item($item);
+				}
+				if($item){
+					ShoppingCart::set_quantity_item($item, $quantity);
+					if($this->isAjax()) return "success";
+				}
+			}elseif($item){
+				ShoppingCart::remove_all_item($item);
+				if($this->isAjax()) return "success";
+			}
 		}
 	}
 	

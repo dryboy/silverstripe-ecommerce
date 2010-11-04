@@ -75,7 +75,7 @@ class EcomQuantityField extends ViewableData{
 		if($quantitylink = ShoppingCart::set_quantity_item_link($this->item->getProductIDForSerialization(), null,$this->parameters)){
 			$attributes = array(
 				'type' => 'hidden',
-				'class' => 'ajaxQuantityField',
+				'class' => 'ajaxQuantityField_qtylink',
 				'name' => $this->item->MainID() . '_Quantity_SetQuantityLink',
 				'value' => $quantitylink
 			);
