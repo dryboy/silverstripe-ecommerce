@@ -46,8 +46,6 @@ class ProductBulkLoader extends CsvBulkLoader{
 		$objects->merge($results->Updated());
 		foreach($objects as $object){
 			
-			$object->ClassName = "Product";
-			
 			if(!$object->ParentID){
 				 //set parent page
 				
@@ -77,7 +75,7 @@ class ProductBulkLoader extends CsvBulkLoader{
 		
 		$filename = strtolower(Convert::raw2sql($val));
 		if($filename && $image = DataObject::get_one('Image',"LOWER(Filename) LIKE '%$filename%'")){ //ignore case
-			$image->ClassName = 'Product_Image'; //must be this type of image
+			$image->ClassName = 'Product_Image'; //must be this type of image to use ecommerce functions
 			$image->write();
 			return $image;
 		}
