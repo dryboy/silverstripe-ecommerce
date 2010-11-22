@@ -143,11 +143,7 @@ class CheckoutPage_Controller extends Page_Controller {
 
 		Requirements::javascript(THIRDPARTY_DIR . '/jquery/jquery.js');
 		Requirements::javascript('ecommerce/javascript/CheckoutPage.js');
-		Requirements::block(THIRDPARTY_DIR . '/behaviour.js');
-		Requirements::block(THIRDPARTY_DIR . '/prototype.js');
-		Requirements::block(THIRDPARTY_DIR . '/prototype_improvements.js');
-		Requirements::block(SAPPHIRE_DIR . '/javascript/Validator.js');
-
+		Requirements::javascript('ecommerce/javascript/ecommerce.js');
 		Requirements::themedCSS('CheckoutPage');
 
 		$this->initVirtualMethods();
@@ -231,7 +227,7 @@ class CheckoutPage_Controller extends Page_Controller {
 	 */
 	function OrderForm() {
 		$form = new OrderForm($this, 'OrderForm');
-		$this->data()->extend('updateOrderForm',&$form);
+		$this->data()->extend('updateOrderForm',$form);
 		//load session data
 		if($data = Session::get("FormInfo.{$form->FormName()}.data")){
 			$form->loadDataFrom($data);
@@ -242,13 +238,13 @@ class CheckoutPage_Controller extends Page_Controller {
 
 	function OrderFormWithoutShippingAddress() {
 		$form = new OrderFormWithoutShippingAddress($this, 'OrderFormWithoutShippingAddress');
-		$this->data()->extend('OrderFormWithoutShippingAddress',&$form);
+		$this->data()->extend('OrderFormWithoutShippingAddress',$form);
 		return $form;
 	}
 
 	function OrderFormWithShippingAddress() {
 		$form = new OrderFormWithShippingAddress($this, 'OrderFormWithShippingAddress');
-		$this->data()->extend('OrderFormWithShippingAddress',&$form);
+		$this->data()->extend('OrderFormWithShippingAddress',$form);
 		return $form;
 	}
 

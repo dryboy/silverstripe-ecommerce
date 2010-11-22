@@ -38,4 +38,6 @@
 
 #Sidebar{
 	float:left;
+	background-color: #ccc;
+	padding: 17px;
 }

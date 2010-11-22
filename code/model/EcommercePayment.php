@@ -11,7 +11,7 @@ class EcommercePayment extends DataObjectDecorator {
 
 		return array(
 			'has_one' => array(
-				'Order' => 'Order'
+				'Order' => 'Order' //redundant...should be using PaidObject
 			),
 			'searchable_fields' => array(
 				'OrderID' => array('title' => 'Order ID'),
@@ -28,22 +28,36 @@ class EcommercePayment extends DataObjectDecorator {
 	function canDelete($member = null) {
 		return false;
 	}
+
 	/*
-	function updateSummaryFields(&$fields){
-		$fields['Created'] = 'Date';
-		$fields['OrderID'] = 'OrderID';
-		$fields['IP'] = 'Amount';
-		$fields['Total'] = 'Total';
+	function updateCMSFields(&$fields){
+		//DOES NOT WORK RIGHT NOW AS supported_methods is PROTECTED
+		//$options = $this->owner::$supported_methods;
+		/*
+		NEEDS A BIT MORE THOUGHT...
+		$classes = ClassInfo::subclassesFor("Payment");
+		unset($classes["Payment"]);
+		if($classes && !$this->owner->ID) {
+			$fields->addFieldToTab("Root.Main", new DropdownField("ClassName", "Type", $classes), "Status");
+	}
+		else {
+			$fields->addFieldToTab("Root.Main", new ReadonlyField("ClassNameConfirmation", "Type", $this->ClassName), "Status");
+		}
+		return $fields;
 	}
 	*/
 
-	function onBeforeWrite() {
-		if($this->owner->Status == 'Success' && $this->owner->Order()) {
-			$order = $this->owner->Order();
-			$order->Status = 'Paid';
-			$order->write();
+
+	//TODO: this function could get called multiple times, resulting in unwanted logs , changes etc.
+	function onAfterWrite() {
+		if($this->owner->Status == 'Success' && $order = $this->owner->Order()) {
+
+			if(!$order->ReceiptSent){
 			$order->sendReceipt();
+				$order->updatePaymentStatus();
 		}
+
+	}
 	}
 
 	function redirectToOrder() {
@@ -93,6 +107,10 @@ class EcommercePayment extends DataObjectDecorator {
 				DB::alteration_message("Potential error in Payment fields update to 2.4, please review data", "deleted");
 			}
 		}
+	}
+
+	function Status() {
+   		return _t('Payment.'.$this->owner->Status,$this->owner->Status);
 	}
 
 

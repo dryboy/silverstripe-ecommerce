@@ -1,7 +1,6 @@
 <% include ProductMenu %>
 
 <div id="ProductGroup">
-	<% if Parent %><div id="Breadcrumbs" class="typography"><p>$Breadcrumbs</p></div><% end_if %>
 	<h1 class="pageTitle">$Title</h1>
 	
 	<% if Content %>
@@ -14,7 +13,6 @@
 		<div id="Products" class="category">
 			<div class="resultsBar typography">
 				<% if SortLinks %><span class="sortOptions">Sort by <% control SortLinks %><a href="$Link" class="sortlink $Current">$Name</a> <% end_control %></span><% end_if %>
-				<span class="resultsShowing">Showing <span class="firstProductIndex">1</span> to <span class="lastProductIndex">$Products.Count</span> of <span class="productsTotal">$Products.TotalCount</span> products</span>
 			</div>
 			<div class="clear"><!-- --></div>
 			<ul class="productList">

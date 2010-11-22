@@ -33,6 +33,8 @@ class Order extends DataObject {
 		'ShippingCountry' => 'Text',
 		'ShippingPhone' => 'Varchar(30)',
 		'CustomerOrderNote' => 'Text',
+
+		'ReceiptSent' => 'Boolean',
 		'Printed' => 'Boolean'
 	);
 
@@ -56,11 +58,12 @@ class Order extends DataObject {
 	public static $default_sort = "\"Created\" DESC";
 
 	public static $casting = array(
-		'SubTotal' => 'Currency',
-		'Total' => 'Currency',
-		'TotalPaid' => 'Currency',
-		'Shipping' => 'Currency',
-		'TotalOutstanding' => 'Currency'
+		'FullBillingAddress' => 'Text',
+		'FullShippingAddress' => 'Text',
+		'Total' => 'EcommerceCurrency',
+		'TotalPaid' => 'EcommerceCurrency',
+		'Shipping' => 'EcommerceCurrency',
+		'TotalOutstanding' => 'EcommerceCurrency'
 	);
 
 	/**
@@ -70,6 +73,11 @@ class Order extends DataObject {
 	 * @var array
 	 */
 	static $paid_status = array('Paid', 'Processing', 'Sent', 'Complete');
+
+	/**
+	 * 
+	 */
+	static $hidden_status = array('Cart','AdminCancelled','MemberCancelled','Query');
 
 	/**
 	 * This is the from address that the receipt
@@ -85,7 +93,7 @@ class Order extends DataObject {
 	 *
 	 * @var string
 	 */
-	protected static $receipt_subject;
+	protected static $receipt_subject = "Shop Sale Information #%d";
 
 	/**
 	 * Flag to determine whether the user can cancel
@@ -199,12 +207,12 @@ class Order extends DataObject {
 	);
 
 	protected static $non_shipping_db_fields = array("Status", "Printed");
-		protected static function set_non_shipping_db_fields($v) {self::$non_shipping_db_fields = $v;}
-		protected static function get_non_shipping_db_fields() {return self::$non_shipping_db_fields;}
+		static function set_non_shipping_db_fields($v) {self::$non_shipping_db_fields = $v;}
+		static function get_non_shipping_db_fields() {return self::$non_shipping_db_fields;}
 
 	protected static $maximum_ignorable_sales_payments_difference = 0.01;
-		protected static function set_maximum_ignorable_sales_payments_difference($v) {self::$maximum_ignorable_sales_payments_difference = $v;}
-		protected static function get_maximum_ignorable_sales_payments_difference() {return self::$maximum_ignorable_sales_payments_difference;}
+		static function set_maximum_ignorable_sales_payments_difference($v) {self::$maximum_ignorable_sales_payments_difference = $v;}
+		static function get_maximum_ignorable_sales_payments_difference() {return self::$maximum_ignorable_sales_payments_difference;}
 
 	protected static function get_shipping_fields() {
 		$arrayNew = array();
@@ -235,23 +243,26 @@ class Order extends DataObject {
 
 	function getCMSFields(){
 		$fields = parent::getCMSFields();
+
+		$fields->insertBefore(new LiteralField('Title',"<h2>Order #$this->ID - ".$this->dbObject('Created')->Nice()." - ".$this->Member()->getName()."</h2>"),'Root');
+
 		$fieldsAndTabsToBeRemoved = self::get_shipping_fields();
 		$fieldsAndTabsToBeRemoved[] = 'Printed';
 		$fieldsAndTabsToBeRemoved[] = 'MemberID';
 		$fieldsAndTabsToBeRemoved[] = 'Attributes';
+		$fieldsAndTabsToBeRemoved[] = 'SessionID';
 		foreach($fieldsAndTabsToBeRemoved as $field) {
 			$fields->removeByName($field);
 		}
 
-		$htmlSummary = $this->renderWith("OrderInformation_Print_Details");
-		$fields->addFieldToTab('Root.Main', new LiteralField('MainDetails', $htmlSummary));
+		$htmlSummary = $this->renderWith("Order");
+
+		$printlabel = (!$this->Printed) ? "Print Invoice" : "Print Invoice Again"; //TODO: i18n
 		$fields->addFieldsToTab('Root.Main', array(
-			new HeaderField("PrintedOutsHeader", "Print Order"),
-			new CheckboxField("Printed"),
-			new LiteralField("PrintIndex",'<p class="print"><a href="OrderReport_Popup/index/'.$this->ID.'" onclick="javascript: window.open(this.href, \'print_order\', \'toolbar=0,scrollbars=1,location=1,statusbar=0,menubar=0,resizable=1,width=800,height=600,left = 50,top = 50\'); return false;">internal print out</a></p>'),
-			new LiteralField("PrintInvoice",'<p class="print"><a href="OrderReport_Popup/invoice/'.$this->ID.'" onclick="javascript: window.open(this.href, \'print_order\', \'toolbar=0,scrollbars=1,location=1,statusbar=0,menubar=0,resizable=1,width=800,height=600,left = 50,top = 50\'); return false;">print invoice</a></p>'),
-			new LiteralField("PrintPackingSlip",'<p class="print"><a href="OrderReport_Popup/packingslip/'.$this->ID.'" onclick="javascript: window.open(this.href, \'print_order\', \'toolbar=0,scrollbars=1,location=1,statusbar=0,menubar=0,resizable=1,width=800,height=600,left = 50,top = 50\'); return false;">print packing slip</a></p>')
+			new LiteralField("PrintInvoice",'<p class="print"><a href="OrderReport_Popup/index/'.$this->ID.'?print=1" onclick="javascript: window.open(this.href, \'print_order\', \'toolbar=0,scrollbars=1,location=1,statusbar=0,menubar=0,resizable=1,width=800,height=600,left = 50,top = 50\'); return false;">'.$printlabel.'</a></p>')
 		));
+
+		$fields->addFieldToTab('Root.Main', new LiteralField('MainDetails', $htmlSummary));
 		$orderItemsTable = new TableListField(
 			"OrderItems", //$name
 			"OrderItem", //$sourceClass =
@@ -286,7 +297,7 @@ class Order extends DataObject {
 		));
 		*/
 		$fields->addFieldsToTab('Root.Customer', array(
-			new LiteralField("MemberLink", '<a href="admin/security/EditForm/field/Members/item/1/edit" class="popuplink editlink"><img alt="Edit" src="cms/images/edit.gif"></a>'),
+			//new LiteralField("MemberLink", '<a href="admin/security/EditForm/field/Members/item/1/edit" class="popuplink editlink"><img alt="Edit" src="cms/images/edit.gif"></a>'),
 			new LiteralField("MemberSummary", $this->MemberSummary())
 		));
 		if($this->UseShippingAddress) {
@@ -298,14 +309,11 @@ class Order extends DataObject {
 		else {
 			$fields->addFieldsToTab('Root.Shipping', array(
 				new HeaderField('DeliveryName', 'No (alternative) shipping address to be used'),
-				new LiteralField("ShippingSummary", $this->ShippingAddressSummary())
+				new LiteralField("ShippingSummary", $this->dbObject('FullShippingAddress'))
 			));
 		}
-		/*
-		$fields->addFieldsToTab('Root.Print', array(
-			new LiteralField("OrderInformationWithNote", $this->renderWith('OrderInformation_Print_Details'))
-		));
-		*/
+
+		$this->extend('updateCMSFields',$fields);
 		return $fields;
 	}
 
@@ -314,11 +322,6 @@ class Order extends DataObject {
 			return $m->renderWith("Order_Member");
 		}
 	}
-
-	function ShippingAddressSummary() {
-		return $this->renderWith("Order_ShippingAddress");
-	}
-
 
 	/**
 	 * Set the fields to be used for {@link ComplexTableField}
@@ -354,8 +357,13 @@ class Order extends DataObject {
 	 *
 	 * @param array $modifiers An array of {@link OrderModifier} subclass names
 	 */
-	public static function set_modifiers($modifiers) {
+	public static function set_modifiers($modifiers, $replace = false) {
+		if($replace) {
 		self::$modifiers = $modifiers;
+	}
+		else {
+			self::$modifiers =  array_merge(self::$modifiers,$modifiers);
+		}
 	}
 
 	/**
@@ -398,6 +406,12 @@ class Order extends DataObject {
 		self::$can_cancel_after_sending = $value;
 	}
 
+	protected static $set_can_cancel_on_status = array();
+
+	static function set_can_cancel_on_status($array) {
+		//to do: check that the stati provided in array actually exist
+		self::$set_can_cancel_on_status = $array;
+	}
 
 	/**
 	 * Return a set of forms to add modifiers
@@ -690,6 +704,8 @@ class Order extends DataObject {
 		return false;
 	}
 
+
+	//why do we need this function??
 	/**
 	 * Returns the {@link Payment} records linked
 	 * to this order.
@@ -698,9 +714,9 @@ class Order extends DataObject {
 	 *
 	 * @return DataObjectSet
 	 */
-	function Payments() {
+	/*function Payments() {
 		return DataObject::get('Payment', "\"OrderID\" = '$this->ID'", '"LastEdited" DESC');
-	}
+	}*/
 
 	/**
 	 * Return the currency of this order.
@@ -714,6 +730,60 @@ class Order extends DataObject {
 		}
 	}
 
+	function getFullBillingAddress($separator = "",$insertnewlines = true){
+		//TODO: move this somewhere it can be customised
+		$touse = array(
+			'Name',
+			'Company',
+			'Address',
+			'AddressLine2',
+			'City',
+			'Country',
+			'Email',
+			'Phone',
+			'HomePhone',
+			'MobilePhone'
+		);
+
+		$fields = array();
+		$member = $this->Member();
+		foreach($touse as $field){
+			if($member && $member->$field)
+				$fields[] = $member->$field;
+		}
+
+		$separator = ($insertnewlines) ? $separator."\n" : $separator;
+
+		return implode($separator,$fields);
+	}
+	function getFullShippingAddress($separator = "",$insertnewlines = true){
+
+		if(!$this->UseShippingAddress)
+			return $this->getFullBillingAddress($separator,$insertnewlines);
+		//TODO: move this list somewhere it can be customised
+		$touse = array(
+			'ShippingName',
+			'ShippingAddress',
+			'ShippingAddress2',
+			'ShippingCity',
+			'ShippingPostalCode',
+			'ShippingState',
+			'ShippingCountry',
+			'ShippingPhone'
+		);
+
+		$fields = array();
+
+		foreach($touse as $field){
+			if($this->$field)
+				$fields[] = $this->$field;
+		}
+
+		$separator = ($insertnewlines) ? $separator."\n" : $separator;
+
+		return implode($separator,$fields);
+	}
+
 	// Order Template Management
 
 	function TableSubTotalID() {
@@ -722,6 +792,10 @@ class Order extends DataObject {
 
 	function TableTotalID() {
 		return 'Table_Order_Total';
+	}
+
+	function OrderForm_OrderForm_AmountID() {
+		return 'OrderForm_OrderForm_Amount';
 	}
 
 	function CartSubTotalID() {
@@ -737,6 +811,7 @@ class Order extends DataObject {
 		$total = DBField::create('Currency', $this->Total())->Nice() . ' ' . Payment::site_currency();
 		$js[] = array('id' => $this->TableSubTotalID(), 'parameter' => 'innerHTML', 'value' => $subTotal);
 		$js[] = array('id' => $this->TableTotalID(), 'parameter' => 'innerHTML', 'value' => $total);
+		$js[] = array('id' => $this->OrderForm_OrderForm_AmountID(), 'parameter' => 'innerHTML', 'value' => $total);
 		$js[] = array('id' => $this->CartSubTotalID(), 'parameter' => 'innerHTML', 'value' => $subTotal);
 		$js[] = array('id' => $this->CartTotalID(), 'parameter' => 'innerHTML', 'value' => $total);
 	}
@@ -746,8 +821,14 @@ class Order extends DataObject {
 	 */
 	function updatePaymentStatus(){
 		if($this->Total() > 0 && $this->TotalOutstanding() <= 0){
+			//TODO: only run this if it is setting to Paid, and not cancelled or similar
 			$this->Status = 'Paid';
 			$this->write();
+
+			$logEntry = new OrderStatusLog();
+			$logEntry->OrderID = $this->ID;
+			$logEntry->Status = 'Paid';
+			$logEntry->write();
 		}
 	}
 	
@@ -807,6 +888,8 @@ class Order extends DataObject {
 	 */
 	function sendReceipt() {
 		$this->sendEmail('Order_ReceiptEmail');
+		$this->ReceiptSent = true;
+		$this->write();
 	}
 
 	/**
@@ -816,6 +899,7 @@ class Order extends DataObject {
 	 * @param $copyToAdmin - true by default, whether it should send a copy to the admin
 	 */
 	protected function sendEmail($emailClass, $copyToAdmin = true) {
+
  		$from = self::$receipt_email ? self::$receipt_email : Email::getAdminEmail();
  		$to = $this->Member()->Email;
 		$subject = self::$receipt_subject ? self::$receipt_subject : "Shop Sale Information #%d";
@@ -1108,7 +1192,7 @@ class Order_CancelForm extends Form {
 		);
 
 		$actions = new FieldSet(
-			new FormAction('doCancel', 'Cancel Order')
+			new FormAction('doCancel', 'Cancel this order')
 		);
 
 		parent::__construct($controller, $name, $fields, $actions);
@@ -1131,7 +1215,16 @@ class Order_CancelForm extends Form {
 		$order->Status = 'MemberCancelled';
 		$order->write();
 
+		//TODO: notify people via email??
+		
+		if($link = AccountPage::find_link()){
+			
+			//TODO: set session message "order successfully cancelled".
+			
+			Director::redirect($link);
+		}else{
 		Director::redirectBack();
+		}
 		return;
 	}
 

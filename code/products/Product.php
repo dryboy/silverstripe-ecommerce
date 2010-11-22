@@ -67,7 +67,7 @@ class Product extends Page {
 
 	static $number_sold_calculation_type = "SUM"; //SUM or COUNT
 
-	static $global_allow_purcahse = true;
+	static $global_allow_purchase = true;
 
 	function getCMSFields() {
 		//prevent calling updateCMSFields extend function too early
@@ -113,8 +113,8 @@ class Product extends Page {
 	/**
 	 * Enables developers to completely turning off the ability to purcahse products.
 	 */
-	static function set_global_allow_purcahse($allow = false){
-		self::$global_allow_purcahse = $allow;
+	static function set_global_allow_purchase($allow = false){
+		self::$global_allow_purchase = $allow;
 	}
 
 	/**
@@ -122,7 +122,7 @@ class Product extends Page {
 	 */
 	static function recalculate_numbersold(){
 		$ps = singleton('Product');
-		$q = $ps->buildSQL("\"Product\".\"AllowPurchase\" IS TRUE");
+		$q = $ps->buildSQL("\"Product\".\"AllowPurchase\" = 1");
 		$select = $q->select;
 
 		$select['NewNumberSold'] = self::$number_sold_calculation_type."(\"OrderItem\".\"Quantity\") AS \"NewNumberSold\"";
@@ -196,7 +196,7 @@ class Product extends Page {
 	 * @return Order
 	 */
 	function getCart() {
-		if(!self::$global_allow_purcahse) return false;
+		if(!self::$global_allow_purchase) return false;
 		HTTP::set_cache_age(0);
 		return ShoppingCart::current_order();
 	}
@@ -220,7 +220,7 @@ class Product extends Page {
 	 * @return boolean
 	 */
 	function canPurchase($member = null) {
-		if(!self::$global_allow_purcahse) return false;
+		if(!self::$global_allow_purchase) return false;
 		if(!$this->dbObject('AllowPurchase')->getValue()) return false;
 		$allowpurchase = false;
 		
@@ -260,11 +260,11 @@ class Product extends Page {
 	 */
 	function Item() {
 		$filter = null;
-		$this->extend('updateItemFilter',&$filter);
+		$this->extend('updateItemFilter',$filter);
 		$item = ShoppingCart::get_item_by_id($this->ID,null,$filter); //TODO: needs filter
 		if(!$item)
 			$item = new Product_OrderItem($this,0); //return dummy item so that we can still make use of Item 	
-		$this->extend('updateDummyItem',&$item);
+		$this->extend('updateDummyItem',$item);
 		return $item; 
 	}
 
@@ -463,13 +463,13 @@ class Product_OrderItem extends OrderItem {
 
 	function UnitPrice() {
 		$unitprice = $this->Product()->Price; 
-		$this->extend('updateUnitPrice',&$unitprice);
+		$this->extend('updateUnitPrice',$unitprice);
 		return $unitprice;
 	}
 
 	function TableTitle() {
 		$tabletitle = $this->Product()->Title;
-		$this->extend('updateTableTitle',&$tabletitle);
+		$this->extend('updateTableTitle',$tabletitle);
 		return $tabletitle;
 	}
 
@@ -495,7 +495,7 @@ class Product_OrderItem extends OrderItem {
 
 	function linkParameters(){
 		$array = array();
-		$this->extend('updateLinkParameters',&$array);
+		$this->extend('updateLinkParameters',$array);
 		return $array;
 	}
 
@@ -518,7 +518,7 @@ class Product_OrderItem extends OrderItem {
 				<b>Product Version : </b>$productVersion
 			</p>
 HTML;
-		$this->extend('updateDebug',&$html);
+		$this->extend('updateDebug',$html);
 		return $html;
 	}
 

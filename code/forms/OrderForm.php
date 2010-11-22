@@ -107,7 +107,7 @@ class OrderForm extends Form {
 		$requiredFields = new CustomRequiredFields($requiredFields);
 		$this->extend('updateValidator',$requiredFields);
 
-		$this->extend('updateFields',&$fields);
+		$this->extend('updateFields',$fields);
 
 		// 6) Form construction
 		parent::__construct($controller, $name, $fields, $actions, $requiredFields);
@@ -198,7 +198,6 @@ class OrderForm extends Form {
 		if(!($payment && $payment instanceof Payment)) {
 			user_error(get_class($payment) . ' is not a valid Payment object!', E_USER_ERROR);
 		}
-		
 		$this->saveDataToSession($data); //save for later if necessary
 		
 		//check for cart items
@@ -213,7 +212,6 @@ class OrderForm extends Form {
 		
 		// Create new Order from shopping cart, discard cart contents in session
 		$order = ShoppingCart::current_order();
-		
 		if($order->Total() != $oldtotal) {
 			$form->sessionMessage(_t('OrderForm.PriceUpdated','The order price has been updated'), 'warning');
 			Director::redirectBack();
@@ -244,16 +242,19 @@ class OrderForm extends Form {
 
 		// Write new record {@link Order} to database
 		$form->saveInto($order);
-		
 		Order::save_current_order(); //sets status to 'Unpaid' //is it even necessary to have it's own function? ..just legacy code.
 		$order->MemberID = $member->ID;
 		$order->write();
 		
+
 		$this->clearSessionData(); //clears the stored session form data that might have been needed if validation failed
 		
 		// Save payment data from form and process payment
 		$form->saveInto($payment);
 		$payment->OrderID = $order->ID;
+		$payment->PaidForID = $order->ID;
+		$payment->PaidForClass = $order->class;
+		
 		$payment->Amount->Amount = $order->Total();
 		$payment->write();
 		

@@ -43,6 +43,25 @@ class ShoppingCart extends Controller {
 		self::$paramfilters = array_merge(self::$paramfilters,$array);
 	}
 
+	static function country_setting_index() {
+		return "ShoppingCartCountry";
+	}
+
+	static function set_country($country) {
+		$countrySettingIndex = self::country_setting_index();
+		Session::set($countrySettingIndex, $country);
+	}
+
+	static function get_country() {
+		$countrySettingIndex = self::country_setting_index();
+		return Session::get($countrySettingIndex);
+	}
+
+	static function remove_country() {
+		$countrySettingIndex = self::country_setting_index();
+		Session::clear($countrySettingIndex);
+	}
+
 	function init() {
 		parent::init();
 		self::current_order();
@@ -52,23 +71,23 @@ class ShoppingCart extends Controller {
 	
 	//controller links
 	static function add_item_link($id, $variationid = null, $parameters = array()) {
-		return self::$URLSegment.'/additem/'.$id.self::variationLink($variationid).self::paramsToGetString($parameters);
+		return self::$URLSegment.'/additem/'.$id.self::variation_link($variationid).self::params_to_get_string($parameters);
 	}
 
 	static function remove_item_link($id, $variationid = null, $parameters = array()) {
-		return self::$URLSegment.'/removeitem/'.$id.self::variationLink($variationid).self::paramsToGetString($parameters);
+		return self::$URLSegment.'/removeitem/'.$id.self::variation_link($variationid).self::params_to_get_string($parameters);
 	}
 
 	static function remove_all_item_link($id, $variationid = null, $parameters = array()) {
-		return self::$URLSegment.'/removeallitem/'.$id.self::variationLink($variationid).self::paramsToGetString($parameters);
+		return self::$URLSegment.'/removeallitem/'.$id.self::variation_link($variationid).self::params_to_get_string($parameters);
 	}
 
 	static function set_quantity_item_link($id, $variationid = null, $parameters = array()) {
-		return self::$URLSegment.'/setquantityitem/'.$id.self::variationLink($variationid).self::paramsToGetString($parameters);
+		return self::$URLSegment.'/setquantityitem/'.$id.self::variation_link($variationid).self::params_to_get_string($parameters);
 	}
 
 	static function remove_modifier_link($id, $variationid = null) {
-		return self::$URLSegment.'/removemodifier/'.$id.self::variationLink($variationid);
+		return self::$URLSegment.'/removemodifier/'.$id.self::variation_link($variationid);
 	}
 	
 	//TODO: this has no purpose currently
@@ -77,7 +96,7 @@ class ShoppingCart extends Controller {
 	}
 
 	/** helper function for appending variation id */
-	protected static function variationLink($variationid) {
+	protected static function variation_link($variationid) {
 		if (is_numeric($variationid)) {
 			return "/$variationid";
 		}
@@ -93,7 +112,7 @@ class ShoppingCart extends Controller {
 	 * you will need to decode the url with javascript before using it.
 	 * 
 	 */
-	protected static function paramsToGetString($array){
+	protected static function params_to_get_string($array){
 		if($array & count($array > 0)){
 			array_walk($array , create_function('&$v,$k', '$v = $k."=".$v ;'));
 			return "?".implode("&",$array);
@@ -191,7 +210,7 @@ class ShoppingCart extends Controller {
 	 * Return the items currently in the shopping cart.
 	 * @return array
 	 */
-	static function get_items($filter) {
+	static function get_items($filter = null) {
 		return self::current_order()->Items($filter);
 	}
 	
@@ -199,7 +218,7 @@ class ShoppingCart extends Controller {
 	 * Get OrderItem according to product id, and coorresponding parameter filter.
 	 */
 	static function get_item_by_id($id, $variationid = null,$filter = null) {
-		$filter = self::paramFilter($filter);
+		$filter = self::get_param_filter($filter);
 		if(is_numeric($variationid)){
 			$filter .= ($filter && $filter != "") ? " AND " : "";
 			$filter .= "\"ProductVariationID\" = $variationid";
@@ -214,7 +233,10 @@ class ShoppingCart extends Controller {
 	 */
 	static function get_item($filter) {
 		$order = self::current_order();
-		return  DataObject::get_one('OrderItem', "\"OrderID\" = $order->ID AND $filter");
+		if($filter) {
+			$filterString = " AND ($filter)";
+	}
+		return  DataObject::get_one('OrderItem', "\"OrderID\" = $order->ID $filterString");
 	}
 
 	// Modifiers management
@@ -261,6 +283,12 @@ class ShoppingCart extends Controller {
 		return self::current_order()->UseShippingAddress;		
 	}
 
+	static function set_uses_different_shipping_address($use = true){
+		$order = self::current_order(); 
+		$order->UseShippingAddress = $use;
+		$order->write();
+	}
+
 	// Database saving function
 	static function save_current_order() {
 		return Order::save_current_order();
@@ -279,7 +307,6 @@ class ShoppingCart extends Controller {
 			foreach ($modifiers as $modifier)
 				$modifier->updateForAjax($js);
 		}
-
 		$currentOrder->updateForAjax($js);
 		return Convert::array2json($js);
 	}
@@ -290,14 +317,15 @@ class ShoppingCart extends Controller {
 	 * Either increments the count or creates a new item.
 	 */
 	function additem($request) {
-		
 		if ($itemId = $request->param('ID')) {
 			if($item = ShoppingCart::get_item($this->urlFilter())) {
 				ShoppingCart::add_item($item);
-			} else {
-				if($orderitem = $this->getNewOrderItem())
+			}
+			else {
+				if($orderitem = $this->getNewOrderItem()) {
 					ShoppingCart::add_new_item($orderitem);
 			}
+		}
 		}
 		if (!$this->isAjax())
 			Director::redirectBack();
@@ -351,14 +379,20 @@ class ShoppingCart extends Controller {
 					$item = $this->getNewOrderItem();
 					self::add_new_item($item);
 				}
-				if($item){
+				else{
 					ShoppingCart::set_quantity_item($item, $quantity);
-					if($this->isAjax()) return "success";
 				}
 			}elseif($item){
 				ShoppingCart::remove_all_item($item);
-				if($this->isAjax()) return "success";
 			}
+			//TODO isAjax() doesnt seem to be addressed
+			#if($this->isAjax()){
+				$this->response->addHeader('Content-Type', 'application/json');
+				return self::json_code();
+			#}
+			#else{
+				//??? what else
+			#}
 		}
 	}
 	
@@ -377,7 +411,7 @@ class ShoppingCart extends Controller {
 				$orderitem = new ProductVariation_OrderItem($variation,1);
 			}
 		} elseif(is_numeric($request->param('ID')) && $itemId = $request->param('ID')) {
-			$product = DataObject::get_by_id('Product', $itemId);
+			$product = Versioned::get_one_by_stage('Product','Live', '"Product_Live"."ID" = '.$itemId); //only use live products
 			if ($product && $product->canPurchase()) {
 				$orderitem = new Product_OrderItem($product,1);
 			}
@@ -400,9 +434,10 @@ class ShoppingCart extends Controller {
 	 * 	 Returns default filter if none provided,
 	 *	 otherwise it updates default filter with passed parameters
 	 */
-	static function paramFilter($params = array()){
+	static function get_param_filter($params = array()){
 		
 		if(!self::$paramfilters) return ""; //no use for this if there are not parameters defined
+		$bt = defined('DB::USE_ANSI_SQL') ? "\"" : "`";
 		$temparray = self::$paramfilters;
 		$outputarray = array();
 		
@@ -430,16 +465,19 @@ class ShoppingCart extends Controller {
 			$selection[] = "\"ProductVariationID\" = ".$request->param('OtherID');
 		}
 		
-		$filter = self::paramFilter($request->getVars());
+		$filter = self::get_param_filter($request->getVars());
 		if( $filter ){
 			$result = implode(" AND ",array_merge($selection,array($filter)));	
-		} else {
+		}
+		else {
 			$result = implode(" AND ",$selection);
 		}		
 		return $result;
 	}
 	
 	
+
+
 	/**
 	 * Removes specified modifier, if allowed
 	 */

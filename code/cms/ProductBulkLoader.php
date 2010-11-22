@@ -151,4 +151,3 @@ class ProductBulkLoader extends CsvBulkLoader{
 	
 }
 
-?>
