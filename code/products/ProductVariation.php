@@ -7,12 +7,16 @@
 class ProductVariation extends DataObject {
 
 	static $db = array(
-		'Title' => 'Text',
+		'InternalItemID' => 'Varchar(30)',
 		'Price' => 'Currency'
 	);
 
 	static $has_one = array(
 		'Product' => 'Product'
+	);
+	
+	static $many_many = array(
+		'AttributeValues' => 'ProductAttributeValue'
 	);
 
 	static $casting = array(
@@ -29,18 +33,57 @@ class ProductVariation extends DataObject {
 	);
 	
 	static $summary_fields = array(
-		'Title' => 'Title',
+		'InternalItemID' => 'Product Code',
+		//'Title' => 'Title',
 		'Price' => 'Price'
 	);
-
+	
 	function getCMSFields() {
 		$fields = array();
-		$fields[] = new TextField('Title');
+		$fields[] = new TextField('InternalItemID','Product Code');
+		//$fields[] = new TextField('Title');
 		$fields[] = new TextField('Price');
+		
+		//add attributes dropdowns
+		if($this->Product()->VariationAttributes()->exists() && $attributes = $this->Product()->VariationAttributes()){
+			foreach($attributes as $attribute){
+				if($field = $attribute->getDropDownField()){
+					
+					if($value = $this->AttributeValues()->find('TypeID',$attribute->ID))
+						$field->setValue($value->ID);
+					
+					$fields[] = $field;
+				}
+				//TODO: allow setting custom value, rather than visiting the products section
+			}
+		}
 		
 		$set = new FieldSet($fields);
 		$this->extend('updateCMSFields', $set);
 		return $set;
+	}
+	
+	function onBeforeWrite(){
+		parent::onBeforeWrite();
+		
+		//TODO: perhaps move this to onAfterWrite, for the case when the variation has just been created, and thus has no ID to relate
+		//..but that might cause recursion
+		if(isset($_POST['ProductAttributes']) && is_array($_POST['ProductAttributes'])){
+			$this->AttributeValues()->setByIDList(array_values($_POST['ProductAttributes']));
+		}
+
+	}
+	
+	function getTitle(){
+		$values = $this->AttributeValues();
+		if($values->exists()){
+			$labelvalues = array();
+			foreach($values as $value){
+				$labelvalues[] = $value->Type()->Label.':'.$value->Value;
+			}
+			return implode(', ',$labelvalues);
+		}
+		return $this->InternalItemID;		
 	}
 	
 	/*
@@ -53,10 +96,10 @@ class ProductVariation extends DataObject {
 	function canPurchase($member = null) {
 		$allowpurchase = false;
 		if($product = $this->Product())
-			$allowpurchase = $this->Price && $product->AllowPurchase;
+			$allowpurchase = ($this->Price > 0) && $product->AllowPurchase;
 			
 		$extended = $this->extendedCan('canPurchase', $member);
-		if($extended !== null) return $extended;
+		if($allowpurchase && $extended !== null) $allowpurchase = $extended;
 		
 		return $allowpurchase; 
 	}
