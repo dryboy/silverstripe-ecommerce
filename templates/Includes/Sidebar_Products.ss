@@ -6,12 +6,11 @@
 		</h3>
 		<ul id="ProductMenu">
 		<% control GroupsMenu %>
-					<% if Children %>
-						<li class="$LinkingMode"><a href="$Link" title="<% sprintf(_t("ProductGroup.GOTOPAGE","Go to the %s page"),$Title.XML) %>" class="$LinkingMode levela"><span><em>$MenuTitle.XML</em></span></a>
-					<% else %>
-					<li><a href="$Link" title="<% sprintf(_t("ProductGroup.GOTOPAGE","Go to the %s page"),$Title.XML) %>" class="$LinkingMode levela"><span><em>$MenuTitle.XML</em></span></a>
+			<% if Children %>
+			<li class="$LinkingMode"><a href="$Link" title="<% sprintf(_t("ProductGroup.GOTOPAGE","Go to the %s page"),$Title.XML) %>" class="$LinkingMode levela"><span><em>$MenuTitle.XML</em></span></a>
+			<% else %>
+			<li><a href="$Link" title="<% sprintf(_t("ProductGroup.GOTOPAGE","Go to the %s page"),$Title.XML) %>" class="$LinkingMode levela"><span><em>$MenuTitle.XML</em></span></a>
 			<% end_if %>
-
 				<% if LinkOrSection = section %>
 					<% if ChildGroups %>
 					<ul class="sub">

@@ -20,7 +20,8 @@ class Buyable extends DataObjectDecorator {
 	protected static $array_of_buyables = array();
 		static function set_array_of_buyables(array $a) {self::$array_of_buyables = $a;}
 		static function get_array_of_buyables() {return(array)self::$array_of_buyables;}
-		static function add_class($className) {Object::add_extension($className, "Buyable");self::$array_of_buyables[] = $className;}
+		static function add_class($className) {Object::add_extension($className, "Buyable");self::$array_of_buyables[$className] = $className;}
+		static function is_buyable($className) {return in_array($className, self::$array_of_buyables);}
 
 	/**
 	 * static variable that "remembers" if the shop is closed.
@@ -37,13 +38,6 @@ class Buyable extends DataObjectDecorator {
 		static function get_order_item_class_name_post_fix() {return(string)self::$order_item_class_name_post_fix;}
 		static function set_order_item_class_name_post_fix(string $s) {self::$order_item_class_name_post_fix = $s;}
 
-	/**
-	 *@return Order
-	 **/
-	public function getCart() {
-		HTTP::set_cache_age(0);
-		return ShoppingCart::current_order();
-	}
 
 	/**
 	 * Return the currency being used on the site.
@@ -105,63 +99,58 @@ class Buyable extends DataObjectDecorator {
 	}
 
 	/**
-	 * Returns if the product is already in the shopping cart.
+	 * Returns true if the buyable is already in the shopping cart with a quantity over zero.
 	 * Note : This function is usable in the Product context because a
 	 * Product_OrderItem only has a Product object in attribute
 	 *
 	 * @return boolean
 	 */
 	function IsInCart() {
-		return ($this->owner->OrderItem() && $this->OrderItem()->Quantity > 0) ? true : false;
-	}
-
-	function Item() {
-		user_error("This method has been replaced by OrderItem to create clarity between buyable and order item.", E_USER_NOTICE);
-		return $this->OrderItem();
+		return ($this->owner->OrderItem() && $this->owner->OrderItem()->Quantity > 0) ? true : false;
 	}
 
 	/**
+	 * returns the order item associated with the buyable.
+	 * ALWAYS returns one, even if there is none in the cart.
+	 * Does not write to database.
 	 *@return OrderItem (no kidding)
 	 **/
 	function OrderItem() {
 		$filter = "";
 		$className = $this->owner->ClassName;
-		$orderItemClassName = $this->classNameForOrderItem();
 		$this->owner->extend('updateItemFilter',$filter);
-		$item = ShoppingCart::get_order_item_by_buyableid($this->owner->ID, $orderItemClassName, $filter);
-		if(!$item) {
-			$item = new $orderItemClassName();
-			$item->addBuyableToOrderItem($this->owner,0);
-		}
+		$item = ShoppingCart::singleton()->findOrMakeItem($this, $filter);
 		$this->owner->extend('updateDummyItem',$item);
 		return $item; //return dummy item so that we can still make use of Item
 	}
 
 	//passing on shopping cart links ...is this necessary?? ...why not just pass the cart?
 	function AddLink() {
-		return ShoppingCart::add_item_link($this->owner->ID, $this->classNameForOrderItem(), $this->linkParameters());
+		return ShoppingCart_Controller::add_item_link($this->owner->ID, $this->owner->ClassName, $this->linkParameters());
 	}
 	function IncrementLink() {
+		//we can do this, because by default add link adds one
 		return $this->AddLink();
 	}
 	function DecrementLink() {
+		//we can do this, because by default remove link removes on
 		return $this->RemoveLink();
 	}
 
 	function RemoveLink() {
-		return ShoppingCart::remove_item_link($this->owner->ID, $this->classNameForOrderItem(), $this->linkParameters());
+		return ShoppingCart_Controller::remove_item_link($this->owner->ID, $this->owner->ClassName, $this->linkParameters());
 	}
 
 	function RemoveAllLink() {
-		return ShoppingCart::remove_all_item_link($this->owner->ID, $this->classNameForOrderItem(), $this->linkParameters());
+		return ShoppingCart_Controller::remove_all_item_link($this->owner->ID, $this->owner->ClassName, $this->linkParameters());
 	}
 
 	function SetQuantityItemLink() {
-		return ShoppingCart::set_quantity_item_link($this->owner->ID, $this->classNameForOrderItem(), $this->linkParameters());
+		return ShoppingCart_Controller::set_quantity_item_link($this->owner->ID, $this->owner->ClassName, $this->linkParameters());
 	}
 
 	function SetSpecificQuantityItemLink($quantity) {
-		return ShoppingCart::set_quantity_item_link($this->owner->ID, $this->classNameForOrderItem(), array_merge($this->linkParameters(), array("quantity" => $quantity)));
+		return ShoppingCart_Controller::set_quantity_item_link($this->owner->ID, $this->owner->ClassName, array_merge($this->linkParameters(), array("quantity" => $quantity)));
 	}
 
 	/**
@@ -175,12 +164,13 @@ class Buyable extends DataObjectDecorator {
 
 
 	/**
+	 * you can overwrite this function in your buyable items (such as Product)
 	 *@return String
 	 **/
 	public function classNameForOrderItem() {
-		$A = $this->owner->ClassName;
-		$B = Buyable::get_order_item_class_name_post_fix();
-		return $A.$B;
+		$buyableClassName = $this->owner->ClassName;
+		$orderItemPostFix = Buyable::get_order_item_class_name_post_fix();
+		return $buyableClassName.$orderItemPostFix;
 	}
 
 

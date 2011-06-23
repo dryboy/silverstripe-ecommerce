@@ -36,3 +36,7 @@
 	<% end_if %>
 </div>
 <% end_control %><% end_if %>
+
+
+
+<% include ShoppingCartRequirements %>

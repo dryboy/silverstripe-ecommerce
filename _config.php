@@ -9,20 +9,20 @@
 
 
 Director::addRules(50, array(
-	ShoppingCart::get_url_segment(). '/$Action/$ID/$OtherID' => 'ShoppingCart',
+	ShoppingCart_Controller::get_url_segment(). '/$Action/$ID/$OtherID' => 'ShoppingCart_Controller',
 	'ecommerce-load-default-records/$Action' => 'EcommerceDefaultRecords',
 	'ecommerce-migrate/$Action' => 'EcommerceMigration'
 ));
 
 Object::add_extension('Member', 'EcommerceRole');
-if(!class_exists('Payment')) user_error("You need to also install the Payment module to use the eCommerce module", E_USER_ERROR);
-DataObject::add_extension('Payment', 'EcommercePayment');
+Object::add_extension('Payment', 'EcommercePayment');
 Object::add_extension('SiteConfig', 'SiteConfigEcommerceExtras');
 Object::add_extension("SiteTree", "EcommerceSiteTreeExtension");
 Object::add_extension("Controller", "EcommerceSiteTreeExtension_Controller");
 Object::add_extension("DevelopmentAdmin", "EcommerceDevelopmentAdminDecorator");
 DevelopmentAdmin::$allowed_actions[] = 'ecommerce';
 
+//This is the only valid way to add the buyable extension to a DataObject
 Buyable::add_class("Product");
 
 // copy the lines below to your mysite/_config.php file and set as required.
@@ -30,7 +30,6 @@ Buyable::add_class("Product");
 //The configuration below is not required, but allows you to customise your ecommerce application - check for the defalt value first.
 // * * * DEFINITELY MUST SET
 //Order::set_modifiers(array("MyModifierOne", "MyModifierTwo"));
-
 
 // * * * HIGHLY RECOMMENDED SETTINGS NON-ECOMMERCE
 //Payment::set_site_currency('NZD');
@@ -50,7 +49,6 @@ Buyable::add_class("Product");
 
 // * * * SHOPPING CART AND ORDER
 //EcomQuantityField::set_hide_plus_and_minus(true);
-//OrderAddress::set_use_separate_shipping_address(true)
 //Order::set_table_overview_fields(array('Total' => 'Total','Status.Name'));//
 //Order::set_maximum_ignorable_sales_payments_difference(0.001);//sometimes there are small discrepancies in total (for various reasons)- here you can set the max allowed differences
 //Order::set_order_id_start_number(1234567);//sets a start number for order ID, so that they do not start at one.
@@ -58,13 +56,16 @@ Buyable::add_class("Product");
 // * * * CHECKOUT
 //ExpiryDateField::set_short_months(true); //uses short months (e.g. Jan instead of january) for credit card expiry date.
 
-// * * * MEMBER
-//EcommerceCountry::set_auto_add_countries(true);
+// * * * MEMBER AND ADDRESS
+//OrderAddress::set_use_separate_shipping_address(true);
+//OrderAddress::set_field_class_and_id_prefix("ABC");
+//EcommerceRegion::set_use_shipping_address_for_main_region_and_country(true);
+//EcommerceCountry::set_save_countries_in_database(false);
+//EcommerceCountry::set_allowed_country_codes(array("NZ", "UK', "AU"));
 //EcommerceRole::set_customer_group_name("Customers");
 //EcommerceRole::set_admin_group_name("Shop Administrators");
-//EcommerceRole::set_fixed_country_code("NZ"); //country is fixed
-//EcommerceRole::set_allowed_country_codes(array("NZ" => "NZ", "UK," => "UK")); //country is fixed
-//EcommerceRole::set_login_invite_alternative_text('<a href="http://www.mysite.com/Security/login/?BackURL=">If you are a member then please log in.</a>);
+//EcommerceRole::set_automatic_membership(false);
+//EcommerceRole::set_automatically_update_member_details(false);
 
 // * * * MODIFIERS
 //FlatTaxModifier::set_tax("0.15", "GST", $exclusive = false);
@@ -74,7 +75,7 @@ Buyable::add_class("Product");
 
 // * * * SPECIAL CASES
 //OrderItem::disable_quantity_js();
-//ShoppingCart::set_response_class("EcommerceResponse");
+//ShoppingCart_Controller::set_response_class("EcommerceResponse");
 
 // * * * PRODUCTS
 //ProductsAndGroupsModelAdmin::set_managed_models(array(("Product", "ProductGroup");
@@ -105,11 +106,7 @@ Buyable::add_class("Product");
 
 
 
-// __________________________________ END PAYMENT MODULE CONFIG __________________________________
+// __________________________________ START PAYMENT MODULE CONFIG __________________________________
 //Payment::set_site_currency("NZD");
-/*
-Payment::set_supported_methods(array(
-	'PayPalPayment' => 'Paypal Payment'
-));
-*/
+//Payment::set_supported_methods(array('PayPalPayment' => 'Paypal Payment'));
 // __________________________________ END PAYMENT MODULE CONFIG __________________________________

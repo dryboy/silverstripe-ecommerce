@@ -197,8 +197,8 @@ class Product_Controller extends Page_Controller {
 
 	function init() {
 		parent::init();
-		//ShoppingCart::add_requirements();
-		Requirements::themedCSS('Product');
+		//ShoppingCart::add_requirements(); // NOT NEEDED
+		//Requirements::themedCSS('Product'); // VIA Product.ss
 	}
 
 }
@@ -291,7 +291,7 @@ class Product_OrderItem extends OrderItem {
 	 **/
 	function hasSameContent($orderItem) {
 		$parentIsTheSame = parent::hasSameContent($orderItem);
-		return $parentIsTheSame && $orderItem instanceof Product_OrderItem;
+		return $parentIsTheSame && $orderItem instanceOf Product_OrderItem;
 	}
 
 	/**

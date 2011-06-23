@@ -9,10 +9,14 @@
 	<% include Order_Payments %>
 
 	<% include Order_OutstandingTotal %>
-	
+
 	<% include Order_CustomerNote %>
 
 	<% include Order_OrderStatusLogs %>
 
 
 </div>
+
+
+<% require themedCSS(Order) %>
+<% require themedCSS(Order_print, print) %>

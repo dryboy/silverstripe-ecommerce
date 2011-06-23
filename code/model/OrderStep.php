@@ -1,8 +1,14 @@
 <?php
 
 /**
- * @description: Defines the Order Status Options
- * There must always be an OrderStep Created
+ * @description:
+ * Defines the Order Status Options.  Basically OrderSteps guide the Order from inception to archiving.
+ * Each project can have its own unique order steps - to match the requirements of the shop at hand.
+ * The Order Step has a number of functions:
+ * a. move the order along
+ * b. describe what can be done to the order (edit, view, delete, etc...) by whom
+ * c. describe the status of the order
+ * d. email the customer about the progress
  *
  * @authors: Silverstripe, Jeremy, Nicolaas
  *
@@ -31,19 +37,23 @@ class OrderStep extends DataObject {
 		"Sort" => "Int"
 		//by-pass
 	);
+
 	public static $indexes = array(
 		"Code" => true,
 		"Sort" => true
 	);
+
 	public static $has_many = array(
 		"Orders" => "Order"
 	);
+
 	public static $field_labels = array(
 		"Sort" => "Sorting Index",
 		"CustomerCanEdit" => "Customer can edit",
 		"CustomerCanPay" => "Customer can pay",
 		"CustomerCanCancel" => "Customer can cancel"
 	);
+
 	public static $summary_fields = array(
 		"Name" => "Name",
 		"CustomerCanEditNice" => "CustomerCanEdit",
@@ -63,7 +73,6 @@ class OrderStep extends DataObject {
 		"ShowAsCompletedOrderNice" => "Varchar",
 		"HideStepFromCustomer" => "Varchar"
 	);
-
 
 	public static $searchable_fields = array(
 		'Name' => array(
@@ -181,7 +190,9 @@ class OrderStep extends DataObject {
 	}
 
 	/**
-	 *
+	 * Allows the opportunity for the Order Step to add any fields to Order::getCMSFields
+	 *@param FieldSet $fields
+	 *@param Order $order
 	 *@return FieldSet
 	 **/
 	function addOrderStepFields(&$fields, $order) {
@@ -214,8 +225,9 @@ class OrderStep extends DataObject {
   	*initStep:
   	* makes sure the step is ready to run.... (e.g. check if the order is ready to be emailed as receipt).
 	* should be able to run this function many times to check if the step is ready
+	*@see Order::doNextStatus
   	*@param Order object
-  	*@return Boolean - true if run correctly
+  	*@return Boolean - true if the current step is ready to be run...
   	**/
 	public function initStep($order) {
 		user_error("Please implement this in a subclass of OrderStep", E_USER_WARNING);
@@ -224,8 +236,9 @@ class OrderStep extends DataObject {
 
 	/**
   	*doStep:
-	* should only be able to run this function one (init stops you from running it twice - in theory....)
+	* should only be able to run this function once (init stops you from running it twice - in theory....)
   	*runs the actual step
+	*@see Order::doNextStatus
   	*@param Order object
   	*@return Boolean - true if run correctly
   	**/
@@ -236,9 +249,10 @@ class OrderStep extends DataObject {
 
 	/**
   	*nextStep:
-  	*runs the actual step
+  	*returns the next step (checks if everything is in place for the next step to run...)
+	*@see Order::doNextStatus
   	*@param Order object
-  	*@return DataObject (next step OrderStep object)
+  	*@return DataObject | Null (next step OrderStep object)
   	**/
 	public function nextStep($order) {
 		$nextOrderStepObject = DataObject::get_one("OrderStep", "\"Sort\" > ".$this->Sort);
@@ -253,20 +267,6 @@ class OrderStep extends DataObject {
 /**************************************************
 * Boolean checks
 **************************************************/
-
-	/**
-	 *
-	 *@return Boolean
-	 **/
-	public function canDelete($member = null) {
-		if($order = DataObject::get_one("Order", "\"StatusID\" = ".$this->ID)) {
-			return false;
-		}
-		if($this->isDefaultStatusOption()) {
-			return false;
-		}
-		return true;
-	}
 
 	/**
 	 *
@@ -331,8 +331,22 @@ class OrderStep extends DataObject {
 	}
 
 /**************************************************
-* Silverstripe Standard DO Methods
+* Silverstripe Standard Data Object Methods
 **************************************************/
+
+	/**
+	 *
+	 *@return Boolean
+	 **/
+	public function canDelete($member = null) {
+		if($order = DataObject::get_one("Order", "\"StatusID\" = ".$this->ID)) {
+			return false;
+		}
+		if($this->isDefaultStatusOption()) {
+			return false;
+		}
+		return true;
+	}
 
 
 	function onBeforeWrite() {
@@ -366,6 +380,15 @@ class OrderStep extends DataObject {
 	}
 }
 
+/**
+ * This is the first Order Step.
+ *
+ *
+ *
+ *
+ **/
+
+
 class OrderStep_Created extends OrderStep {
 
 	public static $defaults = array(
@@ -378,46 +401,20 @@ class OrderStep_Created extends OrderStep {
 		"ShowAsUncompletedOrder" => 1
 	);
 
+	/**
+	 * Can always run step.
+	 *@param DataObject - $order Order
+	 *@return Boolean
+	 **/
 	public function initStep($order) {
-		return true;
-	}
-
-	public function doStep($order) {
 		return true;
 	}
 
 	/**
-	 *
-	 *@return DataObject  (nextStep DataObject
+	 * Add the member to the order, in case the member is not an admin.
+	 *@param DataObject - $order Order
+	 *@return Boolean
 	 **/
-	public function nextStep($order) {
-		$nextOrderStepObject = parent::nextStep($order);
-		if($order->TotalItems()) {
-			if($order->MemberID) {
-				return $nextOrderStepObject;
-			}
-		}
-		return null;
-	}
-
-}
-
-class OrderStep_Submitted extends OrderStep {
-
-	static $defaults = array(
-		"CustomerCanEdit" => 0,
-		"CustomerCanPay" => 1,
-		"CustomerCanCancel" => 0,
-		"Name" => "Submit",
-		"Code" => "SUBMITTED",
-		"Sort" => 20,
-		"ShowAsInProcessOrder" => 1
-	);
-
-	public function initStep($order) {
-		return (bool) $order->TotalItems();
-	}
-
 	public function doStep($order) {
 		if(!$order->MemberID) {
 			$m = Member::currentUser();
@@ -428,13 +425,85 @@ class OrderStep_Submitted extends OrderStep {
 				}
 			}
 		}
-		return $order->MemberID;
+		return true;
 	}
 
+	/**
+	 * We can run the next step, once any items have been added.
+	 *@param DataObject - $order Order
+	 *@return DataObject | Null (nextStep DataObject)
+	 **/
 	public function nextStep($order) {
-		$nextOrderStepObject = parent::nextStep($order);
-		if($order->MemberID) {
-			return $nextOrderStepObject;
+		if($order->TotalItems()) {
+			return parent::nextStep($order);
+		}
+		return null;
+	}
+
+}
+
+class OrderStep_Submitted extends OrderStep {
+
+	static $db = array(
+		"SaveOrderAsHTML" => "Boolean",
+		"SaveOrderAsSerializedObject" => "Boolean",
+		"SaveOrderAsJSON" => "Boolean"
+	);
+
+	static $defaults = array(
+		"CustomerCanEdit" => 0,
+		"CustomerCanPay" => 1,
+		"CustomerCanCancel" => 0,
+		"Name" => "Submit",
+		"Code" => "SUBMITTED",
+		"Sort" => 20,
+		"ShowAsInProcessOrder" => 1,
+		"SaveOrderAsHTML" => 1,
+		"SaveOrderAsSerializedObject" => 0,
+		"SaveOrderAsJSON" => 0
+	);
+
+
+	public function getCMSFields() {
+		$fields = parent::getCMSFields();
+		$fields->addFieldToTab("Root.Main", new HeaderField("HOWTOSAVESUBMITTEDORDER", _t("OrderStep.HOWTOSAVESUBMITTEDORDER", "How would you like to make a backup of your order at the moment it is submitted?"), 1), "SaveOrderAsHTML");
+		return $fields;
+	}
+
+	/**
+	 * Can run this step once any items have been submitted.
+	 *@param DataObject - $order Order
+	 *@return Boolean
+	 **/
+	public function initStep($order) {
+		return (bool) $order->TotalItems();
+	}
+
+	/**
+	 * Add a member to the order - in case he / she is not a shop admin.
+	 *@param DataObject - $order Order
+	 *@return Boolean
+	 **/
+	public function doStep($order) {
+		if(!$order->IsSubmitted()) {
+			$obj = new $className();
+			$obj->OrderID = $order->ID;
+			$obj->Title = $this->Name;
+			if($this->SaveOrderAsHTML)             {$obj->OrderAsHTML = $order->ConvertToHTML();}
+			if($this->SaveOrderAsSerializedObject) {$obj->OrderAsString = $order->ConvertToString();}
+			if($this->SaveOrderAsJSON)             {$obj->OrderAsJSON = $order->ConvertToJSON();}
+			$order->write();
+		}
+	}
+
+	/**
+	 * go to next step if order has been submitted.
+	 *@param DataObject - $order Order
+	 *@return DataObject | Null  (next step OrderStep)
+	 **/
+	public function nextStep($order) {
+		if($order->IsSubmitted()) {
+			return parent::nextStep($order);
 		}
 		return null;
 	}
@@ -460,10 +529,26 @@ class OrderStep_SentInvoice extends OrderStep {
 		"SendInvoiceToCustomer" => 1
 	);
 
-	public function initStep($order) {
-		return true;
+	public function getCMSFields() {
+		$fields = parent::getCMSFields();
+		$fields->addFieldToTab("Root.Main", new HeaderField("ACTUALLYSENDINVOICE", _t("OrderStep.ACTUALLYSENDINVOICE", "Actually send the invoice?"), 1), "SendInvoiceToCustomer");
+		return $fields;
 	}
 
+	/**
+	 * can run step once order has been submitted.
+	 *@param DataObject $order Order
+	 *@return Boolean
+	 **/
+	public function initStep($order) {
+		return $order->IsSubmitted();
+	}
+
+	/**
+	 * send invoice to customer
+	 *@param DataObject $order Order
+	 *@return Boolean
+	 **/
 	public function doStep($order) {
 		if($this->SendInvoiceToCustomer){
 			if(!$this->hasBeenSent($order)) {
@@ -473,16 +558,14 @@ class OrderStep_SentInvoice extends OrderStep {
 		return true;
 	}
 
-	public function getCMSFields() {
-		$fields = parent::getCMSFields();
-		$fields->addFieldToTab("Root.Main", new HeaderField("ACTUALLYSENDINVOICE", _t("OrderStep.ACTUALLYSENDINVOICE", "Actually send the invoice?"), 1), "SendInvoiceToCustomer");
-		return $fields;
-	}
-
+	/**
+	 * can do next step once the invoice has been sent or in case the invoice does not need to be sent.
+	 *@param DataObject $order Order
+	 *@return DataObject | Null  (next step OrderStep object)
+	 **/
 	public function nextStep($order) {
-		$nextOrderStepObject = parent::nextStep($order);
 		if(!$this->SendInvoiceToCustomer || $this->hasBeenSent($order)) {
-			return $nextOrderStepObject;
+			return  parent::nextStep($order);
 		}
 		return null;
 	}
@@ -509,10 +592,14 @@ class OrderStep_Paid extends OrderStep {
 		return true;
 	}
 
+	/**
+	 * can go to next step if order has been paid
+	 *@param DataObject $order Order
+	 *@return DataObject | Null  (next step OrderStep object)
+	 **/
 	public function nextStep($order) {
-		$nextOrderStepObject = parent::nextStep($order);
 		if($order->IsPaid()) {
-			return $nextOrderStepObject;
+			return parent::nextStep($order);
 		}
 		return null;
 	}
@@ -540,10 +627,14 @@ class OrderStep_Confirmed extends OrderStep {
 		return true;
 	}
 
+	/**
+	 * can go to next step if order payment has been confirmed...
+	 *@param DataObject $order Order
+	 *@return DataObject | Null - DataObject = OrderStep
+	 **/
 	public function nextStep($order) {
-		$nextOrderStepObject = parent::nextStep($order);
 		if(DataObject::get_one("OrderStatusLog_PaymentCheck", "\"OrderID\" = ".$order->ID." AND \"PaymentConfirmed\" = 1")) {
-			return $nextOrderStepObject;
+			return parent::nextStep($order);
 		}
 		return null;
 	}
@@ -578,35 +669,38 @@ class OrderStep_SentReceipt extends OrderStep {
 		"SendReceiptToCustomer" => 1
 	);
 
-	public function initStep($order) {
-		return true;
-	}
-
-
-	public function doStep($order) {
-		if($this->SendReceiptToCustomer){
-			if(!$this->hasBeenSent($order)) {
-				//$purchaseCompleteMessage = DataObject::get_one('CheckoutPage')->PurchaseComplete;
-				return $order->sendReceipt($this->CustomerMessage);
-			}
-		}
-		return true;
-	}
-
-	public function nextStep($order) {
-		$nextOrderStepObject = parent::nextStep($order);
-		if(!$this->SendReceiptToCustomer || $this->hasBeenSent($order)) {
-			return $nextOrderStepObject;
-		}
-		return null;
-	}
-
 
 	public function getCMSFields() {
 		$fields = parent::getCMSFields();
 		$fields->addFieldToTab("Root.Main", new HeaderField("ACTUALLYSENDRECEIPT", _t("OrderStep.ACTUALLYSENDRECEIPT", "Actually send the receipt?"), 1), "SendReceiptToCustomer");
 		return $fields;
 	}
+
+	public function initStep($order) {
+		return true;
+	}
+
+	public function doStep($order) {
+		if($this->SendReceiptToCustomer){
+			if(!$this->hasBeenSent($order)) {
+				return $order->sendReceipt($this->CustomerMessage);
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * can continue if receipt has been sent or if there is no need to send a receipt.
+	 *@param DataObject $order Order
+	 *@return DataObject | Null - DataObject = next OrderStep
+	 **/
+	public function nextStep($order) {
+		if(!$this->SendReceiptToCustomer || $this->hasBeenSent($order)) {
+			return parent::nextStep($order);
+		}
+		return null;
+	}
+
 
 }
 
@@ -631,10 +725,14 @@ class OrderStep_Sent extends OrderStep {
 		return true;
 	}
 
+	/**
+	 *
+	 *@param DataObject $order Order
+	 *@return DataObject | Null - DataObject = OrderStep
+	 **/
 	public function nextStep($order) {
-		$nextOrderStepObject = parent::nextStep($order);
 		if(DataObject::get_one("OrderStatusLog_DispatchPhysicalOrder", "\"OrderID\" = ".$order->ID)) {
-			return $nextOrderStepObject;
+			return parent::nextStep($order);
 		}
 		return null;
 	}
@@ -670,7 +768,13 @@ class OrderStep_Archived extends OrderStep {
 		return true;
 	}
 
+	/**
+	 *
+	 *@param DataObject $order Order
+	 *@return DataObject | Null - DataObject = OrderStep
+	 **/
 	public function nextStep($order) {
+		//IMPORTANT
 		return null;
 	}
 

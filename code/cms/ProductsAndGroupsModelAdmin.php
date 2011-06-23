@@ -43,7 +43,7 @@ class ProductsAndGroupsModelAdmin extends ModelAdmin {
 
 	function init() {
 		parent::init();
-		Requirements::javascript("ecommerce/javascript/EcomModelAdminExtensions.js");
+		Requirements::javascript("ecommerce/javascript/EcomModelAdminExtensions.js"); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
 	}
 
 	/**

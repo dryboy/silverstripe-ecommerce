@@ -40,19 +40,19 @@ class EcommerceSiteTreeExtension extends DataObjectDecorator {
 		return 0;
 	}
 
+	public function contentcontrollerInit() {
+		Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js");
+	}
+
 }
 
 class EcommerceSiteTreeExtension_Controller extends Extension {
-
-	function addAjaxCart() {
-		ShoppingCart::add_requirements();
-	}
 
 	/**
 	 *@return string
 	 **/
 	function SimpleCartLinkAjax() {
-		return ShoppingCart::get_url_segment()."/showcart/";
+		return ShoppingCart_Controller::get_url_segment()."/showcart/";
 	}
 
 	/**
@@ -82,6 +82,19 @@ class EcommerceSiteTreeExtension_Controller extends Extension {
 	 **/
 	public function CheckoutLink() {
 		return CheckoutPage::find_link();
+	}
+	/**
+	 *@return String (URLSegment)
+	 **/
+	public function CartPage() {
+		return CartPage::find_link();
+	}
+
+	/**
+	 *@return String (URLSegment)
+	 **/
+	public function OrderConfirmationPage() {
+		return OrderConfirmationPage::find_link();
 	}
 
 }

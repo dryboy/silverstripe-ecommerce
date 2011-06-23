@@ -1,6 +1,8 @@
 <div id="AccountPageMessage" class="message">$Message</div>
-<% if CurrentOrder %>
-	<% control CurrentOrder %><% include Order %><% end_control %>
+<% if RetrievedOrder %>
+	<% control Order %>
+		<% include Order %>
+	<% end_control %>
 		<div id="SendCopyOfReceipt"><p><a href="{$Link}sendreceipt/$CurrentOrder.ID/"><% sprintf(_t("Account.SENDCOPYRECEIPT","send a copy of receipt to %s"),$CurrentOrder.Member.Email) %></a></p></div>
 		<div id="PaymentForm" class="typography">$PaymentForm</div>
 		<div id="CancelForm" class="typography">$CancelForm</div>

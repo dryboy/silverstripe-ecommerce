@@ -13,17 +13,20 @@
 
 class EcommerceRole extends DataObjectDecorator {
 
-
+	/**
+	 *
+	 *@var Boolean - $automatic_membership = automatically add new customer as a member.
+	 **/
 	protected static $automatic_membership = true;
 		static function set_automatic_membership($b){self::$automatic_membership = $b;}
 		static function get_automatic_membership(){return self::$automatic_membership;}
-
-	
-	//TODO: this was needed to get code worknig again
-	function get_allowed_country_codes(){
-		return array();
-	}
-
+	/**
+	 *
+	 *@var Boolean - $automatically_update_member_details = automatically update member details for a logged-in user.
+	 **/
+	protected static $automatically_update_member_details = false;
+		static function set_automatically_update_member_details($b){self::$automatically_update_member_details = $b;}
+		static function get_automatically_update_member_details(){return self::$automatically_update_member_details;}
 
 	function extraStatics() {
 		return array(
@@ -74,12 +77,6 @@ class EcommerceRole extends DataObjectDecorator {
 		static function set_admin_permission_code(string $s) {self::$admin_permission_code = $s;}
 		static function get_admin_permission_code() {return self::$admin_permission_code;}
 
-
-	static function get_fixed_country_code(){
-		return null;
-	}
-
-
 	protected static function add_members_to_customer_group() {
 		$gp = DataObject::get_one("Group", "\"Title\" = '".self::get_customer_group_name()."'");
 		if($gp) {
@@ -114,106 +111,6 @@ class EcommerceRole extends DataObjectDecorator {
 	}
 
 	/**
-	 * Create a new member with given data for a new member,
-	 * or merge the data into the logged in member.
-	 *
-	 * IMPORTANT: Before creating a new Member record, we first
-	 * check that the request email address doesn't already exist.
-	 *
-	 * @param array $data Form request data to update the member with
-	 * @return boolean|object Member object or boolean FALSE
-	 */
-	public static function createOrMerge($data) {
-		user_error("depreciated, please use EcommerceRole::ecommerce_create_or_merge", E_USER_NOTICE);
-		return self::ecommerce_create_or_merge($data);
-	}
-
-	/**
-	 * OPTIONS:
-	 * ** NO PROBLEM:
-	 * 1. user not logged in: create a new member
-	 * 2. user logged in: some information might be different (and is updated)
-	 * ** PROBLEM
-	 * 3. user not logged in, but (s)he enters an email of an existing user... - as part of our goals under Ecommerce, we want a user to be able to do this...
-	 * 4. user logged in and changes email to another email belonging to another registered user
-	 * 5. user places order "without creating an account" and then on a subsequent visit tries to create an account
-	 * 6. the user tries to setup an account on another part of the site and then discovers that (s)he already has an account ("silently" created while placing on order).
-	 *
-	 * NOTE: ecommerce_create_or_merge return false if logged  in user is changing their email address to that of another user
-	 * it return true if the user is not logged in, but the email address is listed as a user, and it
-	 * return the member object if (a) the user is logged in and email address matches or (b) we can create a new user with the email address supplied.
-	 * The rational behind the return values is that FALSE: real problem: TRUE: not really a problem but we want to make sure not to return the member,
-	 * as no changes should be made to the member (since the user is not logged in).
-	 * Is it a problem that a not-logged-in user can place an order under the "name" of a logged-in user?
-	 * Not really, as doing so does not give them access to the account.  However, it might be worthwhile to note that they have done so without logging in .
-	 *
-	 * NOTE: Because we are using a ConfirmedPasswordField, the password will be an array of two fields
-	 *
-	 * @return DataObject|FALSE |TRUE = see explanation above
-	 *
-	 **/
-	public static function ecommerce_create_or_merge($data, $testOnly = false) {
-		//
-		// SEE issue 142
-		$uniqueField = Member::get_unique_identifier_field();
-
-		//The check below covers both Scenario 3 and 4....
-		if(isset($data[$uniqueField])) {
-			$uniqueFieldData = Convert::raw2xml($data[$uniqueField]);
-			$existingUniqueMember = DataObject::get_one('Member', "\"$uniqueField\" = '{$uniqueFieldData}'");
-			if($existingUniqueMember && $existingUniqueMember->exists()) {
-				if(Member::currentUserID() != $existingUniqueMember->ID) {
-					if(Member::currentUserID()) {
-						return false;
-					}
-					else {
-						//NOTE: we do not return the existing member, because the user is not logged in and therefore the user can not be changed.
-						//in some cases this may result in out-of-date data.
-						return true;
-					}
-				}
-			}
-		}
-		if(!$member = Member::currentUser()) {
-			$member = new Member();
-		}
-		return $member;
-	}
-
-
-
-	/**
-	 *
-	 * @return FieldSet
-	 */
-	function getEcommerceFields() {
-		$fields = new FieldSet(
-			new HeaderField(_t('EcommerceRole.PERSONALINFORMATION','Personal Information'), 3),
-			new TextField('FirstName', _t('EcommerceRole.FIRSTNAME','First Name')),
-			new TextField('Surname', _t('EcommerceRole.SURNAME','Surname')),
-			new EmailField('Email', _t('EcommerceRole.EMAIL','Email'))
-		);
-		$this->owner->extend('augmentEcommerceFields', $fields);
-		return $fields;
-	}
-
-	/**
-	 * Return which member fields should be required on {@link OrderForm}
-	 * and {@link ShopAccountForm}.
-	 *
-	 * @return array
-	 */
-	function getEcommerceRequiredFields() {
-		$fields = array(
-			'FirstName',
-			'Surname',
-			'Email'
-		);
-		$this->owner->extend('augmentEcommerceRequiredFields', $fields);
-		return $fields;
-	}
-
-	/**
 	 * get CMS fields describing the member in the CMS when viewing the order.
 	 *
 	 * @return Field / ComponentSet
@@ -233,12 +130,39 @@ class EcommerceRole extends DataObjectDecorator {
 		return $fields;
 	}
 
+
+
 	/**
-	 *@return String (Country Name) e.g. Switzerland
-	 **/
-	public function CountryTitle() {
-		return self::find_country_title($this->owner->Country);
+	 *
+	 * @return FieldSet
+	 */
+	function getEcommerceFields() {
+		$fields = new FieldSet(
+			//new HeaderField(_t('EcommerceRole.PERSONALINFORMATION','Personal Information'), 3),
+			//new TextField('FirstName', _t('EcommerceRole.FIRSTNAME','First Name')),
+			//new TextField('Surname', _t('EcommerceRole.SURNAME','Surname')),
+			//new EmailField('Email', _t('EcommerceRole.EMAIL','Email'))
+		);
+		$this->owner->extend('augmentEcommerceFields', $fields);
+		return $fields;
 	}
+
+	/**
+	 * Return which member fields should be required on {@link OrderForm}
+	 * and {@link ShopAccountForm}.
+	 *
+	 * @return array
+	 */
+	function getEcommerceRequiredFields() {
+		$fields = array(
+			//'FirstName',
+			//'Surname',
+			//'Email'
+		);
+		$this->owner->extend('augmentEcommerceRequiredFields', $fields);
+		return $fields;
+	}
+
 
 	//this method needs to be tested!
 	public function onAfterWrite() {
@@ -288,7 +212,6 @@ class EcommerceRole extends DataObjectDecorator {
 
 	function populateDefaults() {
 		parent::populateDefaults();
-		$this->Country = EcommerceCountry::get_country();
 	}
 
 }

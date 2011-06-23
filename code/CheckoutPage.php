@@ -25,6 +25,7 @@
  * @see OrderModifier
  * @see CheckoutPage_Controller->ModifierForms()
  *
+ * TO DO: get rid of all the messages...
  *
  * @authors: Silverstripe, Jeremy, Nicolaas
  *
@@ -33,7 +34,7 @@
  *
  **/
 
-class CheckoutPage extends Page {
+class CheckoutPage extends CartPage {
 
 	public static $db = array (
 		'PurchaseComplete' => 'HTMLText',
@@ -89,15 +90,6 @@ class CheckoutPage extends Page {
 		return $page->Link();
 	}
 
-	/**
-	 * Return a link to view the order on this page.
-	 * @return String (URLSegment)
-	 * @param int|string $orderID ID of the order
-	 */
-	public static function get_order_link($orderID) {
-		return self :: find_link() . 'showorder/' . $orderID . '/';
-	}
-
 	function canCreate($member = null) {
 		return !DataObject :: get_one("SiteTree", "\"ClassName\" = 'CheckoutPage'");
 	}
@@ -135,34 +127,14 @@ class CheckoutPage extends Page {
 		return $fields;
 	}
 
-	/**
-	 *@return String (HTML snippet of Menu Title WITH number of products in cart)
-	 **/
-	function EcommerceMenuTitle() {
-		$count = 0;
-		$order = ShoppingCart :: current_order();
-		if ($order) {
-			$count = $order->TotalItems();
-		}
-		$v = $this->MenuTitle;
-		if ($count) {
-			$v .= " <span class=\"numberOfItemsInCart\">(" . $count . ")</span>";
-		}
-		return $v;
-	}
 
 }
-class CheckoutPage_Controller extends Page_Controller {
+class CheckoutPage_Controller extends CartPage_Controller {
 
 	/**
 	 *@var $actionLinks DataObjectSet (Link, Title)
 	 **/
 	protected $actionLinks = null;
-
-	/**
-	 *@var $currentOrder Order (DataObject)
-	 **/
-	protected $currentOrder = null;
 
 	/**
 	 *@var $currentStep Integer
@@ -181,10 +153,9 @@ class CheckoutPage_Controller extends Page_Controller {
 		if (!class_exists('Payment')) {
 			trigger_error('The payment module must be installed for the ecommerce module to function.', E_USER_WARNING);
 		}
-		$this->currentOrder = ShoppingCart :: current_order();
-		//ShoppingCart::add_requirements();
-		Requirements :: javascript('ecommerce/javascript/EcomPayment.js');
-		Requirements :: themedCSS('CheckoutPage');
+		$this->currentOrder = ShoppingCart::current_order();
+		Requirements::javascript('ecommerce/javascript/EcomPayment.js');
+		//Requirements::themedCSS('CheckoutPage'); // VIA CheckoutPage.ss
 	}
 
 	function processmodifierform($request) {
@@ -200,26 +171,6 @@ class CheckoutPage_Controller extends Page_Controller {
 		}
 	}
 
-	/**
-	 * Loads either the current order from the shopping cart or
-	 * by the specified Order ID in the URL.
-	 *
-	 */
-	function loadorder($request) {
-		if ($orderID = intval($request->param('ID'))) {
-			$this->currentOrder = ShoppingCart :: singleton()->loadOrder($orderID);
-			Director :: redirect($this->Link());
-		}
-		return array ();
-	}
-
-	/**
-	 * Start a new order
-	 */
-	function startneworder() {
-		ShoppingCart :: singleton()->clear();
-		Director :: redirectBack();
-	}
 
 	/**
 	 * Show only one step in the order process (e.g. only show OrderItems)
@@ -250,6 +201,7 @@ class CheckoutPage_Controller extends Page_Controller {
 		}
 	}
 
+
 	/**
 	 * Returns a form allowing a user to enter their
 	 * details to checkout their order.
@@ -264,13 +216,6 @@ class CheckoutPage_Controller extends Page_Controller {
 			$form->loadDataFrom($data);
 		}
 		return $form;
-	}
-
-	/**
-	 *@return Order (DataObject)
-	 **/
-	function Order() {
-		return $this->currentOrder;
 	}
 
 	/**

@@ -1,7 +1,10 @@
 <?php
 /**
  * @description:  Data class that records events for an order like "Payment Checked", "Cheque Cleaered", "Goods dispatched", etc...
+ * They describe the status and history of the Order
+ * Order Status Logs are different from the OrderSteps which guide the Order through the ordering process.
  *
+ * You can choose the relevant Order Logs, the only one that is required is the: OrderStatusLog_Submitted
  *
  * @authors: Silverstripe, Jeremy, Nicolaas
  *
@@ -33,6 +36,7 @@ class OrderStatusLog extends DataObject {
 		'EmailSentNice' => 'Varchar',
 		'InternalUseOnlyNice' => 'Varchar'
 	);
+
 	public static $summary_fields = array(
 		"Created" => "Date",
 		"Type" => "Type",
@@ -49,9 +53,22 @@ class OrderStatusLog extends DataObject {
 	function EmailSentNice() {if($this->EmailSent) { return _t("OrderStatusLog.YES", "Yes");} return _t("OrderStatusLog.No", "No");}
 	function InternalUseOnlyNice() {if($this->InternalUseOnly) { return _t("OrderStatusLog.YES", "Yes");} return _t("OrderStatusLog.No", "No");}
 
-	protected static $available_log_classes_array = array();
+	/**
+	 * $available_log_classes_array tells us what order log classes are to be used.
+	 * OrderStatusLog_Submitted should always be used!
+	 *@var Array - $available_log_classes_array
+	 **/
+	protected static $available_log_classes_array = array("OrderStatusLog_PaymentCheck");
 		static function set_available_log_classes_array(array $a) {self::$available_log_classes_array = $a;}
 		static function get_available_log_classes_array() {return self::$available_log_classes_array;}
+
+	/**
+	 * the order status log class used to record that the order has been submitted.
+	 *@var String - $order_status_log_class_used_for_submitting_order
+	 **/
+	protected static $order_status_log_class_used_for_submitting_order = "OrderStatusLog_Submitted";
+		static function set_order_status_log_class_used_for_submitting_order($s) {self::$order_status_log_class_used_for_submitting_order = $s;}
+		static function get_order_status_log_class_used_for_submitting_order() {return self::$order_status_log_class_used_for_submitting_order;}
 
 	/**
 	*
@@ -148,9 +165,9 @@ class OrderStatusLog extends DataObject {
 		}
 		if($classes) {
 			foreach($classes as $className) {
-				if(!count($availableLogs) || in_array($className, $availableLogs )) {
-					$obj = singleton($className);
-					if($obj) {
+				$obj = singleton($className);
+				if($obj) {
+					if(in_array($className, $availableLogs )) {
 						$dropdownArray[$className] = $obj->i18n_singular_name();
 					}
 				}
@@ -182,8 +199,12 @@ class OrderStatusLog extends DataObject {
 
 	function onBeforeWrite() {
 		parent::onBeforeWrite();
-		if(!$this->OrderID && 1 == 2) {
-			user_error("There is no order id for Order Status Log", E_USER_WARNING);
+		if(!$this->OrderID) {
+			//backup hack
+			$this->OrderID = ShoppingCart::current_order()->ID;
+			if($this->OrderID) {
+				user_error("There is no order id for Order Status Log", E_USER_WARNING);
+			}
 		}
 		if(!$this->AuthorID && $m = Member::currentUser()) {
 			$this->AuthorID = $m->ID;
@@ -220,10 +241,60 @@ class OrderStatusLog extends DataObject {
 
 }
 
+/**
+ * OrderStatusLog_Submitted is an important class that is created when an order is submitted.
+ * It is created by the order and it signifies to the OrderStep to continue to the next step.
+ * It is so vital, because it
+ **/
+
+class OrderStatusLog_Submitted extends OrderStatusLog {
+
+	public static $db = array(
+		"OrderAsHTML" => "HTMLText",
+		"OrderAsString" => "Text",
+		"OrderAsJSON" => "Text"
+	);
+
+	public static $defaults = array(
+		"InternalUseOnly" => true
+	);
+
+	public static $singular_name = "Submitted Order";
+		function i18n_singular_name() { return _t("OrderStatusLog.SUBMITTEDORDER", "Submitted Order - Fulltext Backup");}
+
+	public static $plural_name = "Submitted Orders";
+		function i18n_plural_name() { return _t("OrderStatusLog.SUBMITTEDORDERS", "Submitted Orders - Fulltext Backup");}
+
+	/**
+	 * This record is not editable
+	 *@return Boolean
+	 **/
+	public function canDelete($member = null) {
+		return false;
+	}
+
+	/**
+	 * This record is not editable
+	 *@return Boolean
+	 **/
+	public function canEdit($member = null) {
+		return false;
+	}
+
+
+	/**
+	* can only be created when the order is submitted
+	*@return Boolean
+	**/
+	public function canCreate($member = null) {
+		return false;
+	}
+}
+
 class OrderStatusLog_Dispatch extends OrderStatusLog {
 
 	public static $defaults = array(
-		"InternalUseOnly" => false
+		"InternalUseOnly" => true
 	);
 
 	public static $singular_name = "Order Log Dispatch Entry";
@@ -232,6 +303,10 @@ class OrderStatusLog_Dispatch extends OrderStatusLog {
 	public static $plural_name = "Order Log Dispatch Entries";
 		function i18n_plural_name() { return _t("OrderStatusLog.ORDERLOGDISPATCHENTRIES", "Order Log Dispatch Entries");}
 
+	/**
+	 * Only shop admin can delete this
+	 *@return Boolean
+	 **/
 	public function canDelete($member = null) {
 		if(!$member) {
 			$member = Member::currentMember();

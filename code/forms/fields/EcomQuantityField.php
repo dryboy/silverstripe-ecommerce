@@ -42,7 +42,7 @@ class EcomQuantityField extends NumericField {
 	protected $template = 'EcomQuantityField';
 
 	function __construct($object, $parameters = null){
-		Requirements::javascript("ecommerce/javascript/EcomQuantityField.js");
+		Requirements::javascript("ecommerce/javascript/EcomQuantityField.js"); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
 		Requirements::customScript("EcomQuantityField.set_hidePlusAndMins(".(EcomQuantityField::get_hide_plus_and_minus() ? 1 : 0).")");
 		if(Object::has_extension($object->class,'Buyable')){
 			$this->orderItem = ShoppingCart::get_order_item_by_buyableid($object->ID,$object->ClassName.Buyable::get_order_item_class_name_post_fix(),$parameters);

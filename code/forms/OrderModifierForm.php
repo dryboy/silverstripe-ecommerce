@@ -63,7 +63,7 @@ class OrderModifierForm extends Form {
 	}
 
 	function redirect($status = "success", $message = ""){
-		return ShoppingCart::return_message($status, $message);
+		//return ShoppingCart::singleton()->addmessage($status, $message);
 	}
 
 }
@@ -88,8 +88,8 @@ class OrderModifierForm_AjaxSubmit extends OrderModifierForm {
 
 	function __construct($optionalController = null, $name, FieldSet $fields, FieldSet $actions,$validator = null){
 		//jQuery.Form is included to make Ajax-based submission available.
-		Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js");
-		Requirements::javascript(THIRDPARTY_DIR."/jquery-form/jquery.form.js");
+		//Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js"); // INCLUDED VIA EcommerceSiteTreeExtension
+		Requirements::javascript(THIRDPARTY_DIR."/jquery-form/jquery.form.js"); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
 		parent::__construct($optionalController, $name, $fields, $actions, $validator);
 	}
 

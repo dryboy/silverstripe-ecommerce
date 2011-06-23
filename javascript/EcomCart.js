@@ -13,9 +13,9 @@
 
 EcomCart = {
 
-	setCountryLinkAppendix: "_SetCountryLink",
-
 	ajaxCountryFieldSelector: "select.ajaxCountryField",
+
+	ajaxRegionFieldSelector: "select.ajaxRegionField",
 
 	classToShowLoading: "loadingCartData",
 
@@ -29,20 +29,19 @@ EcomCart = {
 
 	init: function () {
 		EcomCart.updateForZeroVSOneOrMoreRows();
-		jQuery(EcomCart.ajaxCountryFieldSelector).each(
+	},
+
+	countryAndRegionUpdates: function() {
+		jQuery(EcomCart.ajaxCountryFieldSelector).change(
 			function() {
-				jQuery(this).removeAttr('disabled');
-				jQuery(this).change(
-					function() {
-						var id = '#' + jQuery(this).attr('id') + EcomCart.setCountryLinkAppendix;
-						var setCountryLink = jQuery(id);
-						if(jQuery(setCountryLink).length > 0) {
-							setCountryLink = jQuery(setCountryLink).get(0);
-							var url = jQuery('base').attr('href') + setCountryLink.value + this.value + "/";
-							EcomCart.getChanges(url, null);
-						}
-					}
-				);
+				var url = jQuery('base').attr('href') + "shoppingcart/setcountry/" + this.value + "/";
+				EcomCart.getChanges(url, null);
+			}
+		);
+		jQuery(EcomCart.ajaxRegionFieldSelector).change(
+			function() {
+				var url = jQuery('base').attr('href') + "shoppingcart/setcountry/" + this.value + "/";
+				EcomCart.getChanges(url, null);
 			}
 		);
 	},

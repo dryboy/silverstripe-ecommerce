@@ -7,7 +7,7 @@
  * @authors: Silverstripe, Jeremy, Nicolaas
  *
  * @package: ecommerce
- * @sub-package: member
+ * @sub-package: address
  *
  **/
 
@@ -20,9 +20,9 @@ class BillingAddress extends OrderAddress {
 		'Address2' => 'Text',
 		'City' => 'Text',
 		'PostalCode' => 'Varchar(30)',
-		'State' => 'Varchar(30)',
 		'Country' => 'Varchar(4)',
-		'Phone' => 'Varchar(200)'
+		'Phone' => 'Varchar(200)',
+		'Email' => 'Varchar'
 	);
 
 	/**
@@ -33,15 +33,16 @@ class BillingAddress extends OrderAddress {
 	 * (otherwise we ended up with a "has two" relationship in Order)
 	 **/
 	static $has_one = array(
-		"Order" => "Order"
+		"Order" => "Order",
+		"Region" => "EcommerceRegion"
 	);
 
 	static $indexes = array(
-		// "SearchFields" => "fulltext (Address, Address2, City, PostalCode, State, Phone)"
+		// "SearchFields" => "fulltext (FirstName, Surname, Address, Address2, City, PostalCode, Email)"
 		array(
 			'name' => 'SearchFields',
 			'type' => 'fulltext',
-			'value' => 'Address, Address2, City, PostalCode, State, Phone'
+			'value' => 'FirstName, Surname, Address, Address2, City, PostalCode, Email'
 		)
 	);
 
@@ -54,6 +55,7 @@ class BillingAddress extends OrderAddress {
 			'field' => 'NumericField',
 			'title' => 'Order Number'
 		),
+		"Email" => "PartialMatchFilter",
 		"FirstName" => "PartialMatchFilter",
 		"Surname" => "PartialMatchFilter",
 		"Address" => "PartialMatchFilter",
@@ -64,8 +66,7 @@ class BillingAddress extends OrderAddress {
 	public static $summary_fields = array(
 		"Order.Title",
 		"Surname",
-		"City",
-		"Country"
+		"City"
 	);
 
 	public static $singular_name = "Billing Address";
@@ -79,49 +80,30 @@ class BillingAddress extends OrderAddress {
 	 *@return String
 	 **/
 	function FullCountryName() {
-		return EcommerceRole::find_country_title($this->Country);
+		return EcommerceRegion::get_title($this->Country);
 	}
-
 
 	/**
 	 *@return Fieldset
 	 **/
 	public function getFields() {
 		$fields = parent::getEcommerceFields();
-		// *** BILLING ADDRESS
-		//postal code
-		$postalCodeField = new TextField('PostalCode', _t('OrderAddress.POSTALCODE','Postal Code'));
-		if(OrderAddress::get_postal_code_url()){
-			$postalCodeField->setRightTitle('<a href="'.OrderAddress::get_postal_code_url().'" id="BillingPostalCodeLink" class="postalCodeLink">'.OrderAddress::get_postal_code_label().'</a>');
-		}
-		if(OrderAddress::get_include_state()) {
-			$stateField = new TextField('State', _t('OrderAddress.STATE','State'));
-		}
-		else {
-			//adding statefield here as hidden field to make the code easier below...
-			$stateField = new HiddenField('State', '', "Bliss");
-		}
-		// country
-		$countriesForDropdown = EcommerceCountry::list_of_allowed_countries_for_dropdown();
-		$countryField = new DropdownField('Country',  _t('OrderAddress.COUNTRY','Country'), $countriesForDropdown, EcommerceCountry::get_country());
-		$countryField->addExtraClass('ajaxCountryField');
-		$setCountryLinkID = $countryField->id() . '_SetCountryLink';
-		$countryAJAXLink = new HiddenField($setCountryLinkID, '', ShoppingCart::set_country_link());
-		// compile fields
 		$billingFields = new CompositeField(
 			new HeaderField(_t('OrderAddress.BILLING DETAILS','Billing Details'), 3),
+			new EmailField('Email', _t('OrderAddress.EMAIL','Email')),
+			new TextField('FirstName', _t('OrderAddress.FIRSTNAME','First Name')),
+			new TextField('Surname', _t('OrderAddress.SURNAME','Surname')),
 			new TextField('Address', _t('OrderAddress.ADDRESS','Address')),
 			new TextField('Address2', _t('OrderAddress.ADDRESS2','&nbsp;')),
 			new TextField('City', _t('OrderAddress.CITY','City')),
-			$postalCodeField,
-			$stateField,
-			$countryField,
-			$countryAJAXLink,
+			$this->getPostalCodeField("PostalCode"),
+			$this->getRegionField("RegionID"),
+			$this->getCountryField("Country"),
 			new TextField('Phone', _t('OrderAddress.PHONE','Phone'))
 		);
 		$billingFields->SetID('BillingFields');
 		$fields->push($billingFields);
-		$this->extend('augmentGetEcommerceFields', $fields);
+		$this->owner->extend('augmentEcommerceBillingAddressFields', $fields);
 		return $fields;
 	}
 
@@ -133,21 +115,19 @@ class BillingAddress extends OrderAddress {
 	 */
 	function getRequiredFields() {
 		$requiredFieldsArray = array(
+			'Email',
+			'FirstName',
+			'Surname',
 			'Address',
-			'City',
-			'Country'
+			'City'
 		);
-		$this->extend('augmentGetEcommerceRequiredFields', $requiredFieldsArray);
+		$this->owner->extend('augmentEcommerceBillingAddressRequiredFields', $requiredFieldsArray);
 		return $requiredFieldsArray;
 	}
-
-
 
 	function populateDefaults() {
 		parent::populateDefaults();
 		$this->Country = EcommerceCountry::get_country();
 	}
-
-
 
 }

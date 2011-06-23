@@ -6,8 +6,16 @@
 </div>
 <div id="OrderHolder">
 <% control Order %>
-	<% include Order_Content_Editable %>
+		<% include Order_Content_Editable %>
 <% end_control %>
 </div>
-<% if ContinuePage %><a class="continuelink button" href="$ContinuePage.Link"><% _t('Cart.CONTINUESHOPPING','continue shopping') %></a><% end_if %>
-<% if CheckoutPage %><a class="checkoutlink button" href="$CheckoutPage.Link"><% _t('Cart.CHECKOUTGOTO','proceed to checkout') %></a><% end_if %>
+<% if CanEditOrder %>
+<p id="ContinueLinks">
+	<% if ContinuePage %><a class="continueLink button" href="$ContinuePage.Link"><% _t('Cart.CONTINUESHOPPING','continue shopping') %></a><% end_if %>
+	<% if CheckoutPage %><a class="checkoutLink button" href="$CheckoutPage.Link"><% _t('Cart.CHECKOUTGOTO','proceed to checkout') %></a><% end_if %>
+</p>
+<% end_if %>
+
+
+
+<% require themedCSS(CartPage) %>

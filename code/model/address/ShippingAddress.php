@@ -7,7 +7,7 @@
  * @authors: Silverstripe, Jeremy, Nicolaas
  *
  * @package: ecommerce
- * @sub-package: member
+ * @sub-package: address
  *
  **/
 
@@ -21,7 +21,6 @@ class ShippingAddress extends OrderAddress {
 		'ShippingAddress2' => 'Text',
 		'ShippingCity' => 'Text',
 		'ShippingPostalCode' => 'Varchar(30)',
-		'ShippingState' => 'Varchar(30)',
 		'ShippingCountry' => 'Varchar(4)',
 		'ShippingPhone' => 'Varchar(200)'
 	);
@@ -35,15 +34,16 @@ class ShippingAddress extends OrderAddress {
 	 * (otherwise we ended up with a "has two" relationship in Order)
 	 **/
 	public static $has_one = array(
-		"Order" => "Order"
+		"Order" => "Order",
+		"ShippingRegion" => "EcommerceRegion"
 	);
 
 	static $indexes = array(
-		// "SearchFields" => "fulltext (Address, Address2, City, PostalCode, State, Phone)"
+		// "SearchFields" => "fulltext (Address, Address2, City, PostalCode, Phone)"
 		array(
 			'name' => 'SearchFields',
 			'type' => 'fulltext',
-			'value' => 'ShippingAddress, ShippingAddress2, ShippingCity, ShippingPostalCode, ShippingState, ShippingPhone'
+			'value' => 'ShippingAddress, ShippingAddress2, ShippingCity, ShippingPostalCode, ShippingPhone'
 		)
 	);
 
@@ -65,8 +65,7 @@ class ShippingAddress extends OrderAddress {
 	public static $summary_fields = array(
 		"Order.Title",
 		"ShippingSurname",
-		"ShippingCity",
-		"ShippingCountry",
+		"ShippingCity"
 	);
 
 	public static $singular_name = "Shipping Address";
@@ -77,43 +76,21 @@ class ShippingAddress extends OrderAddress {
 
 
 	/**
-	 *
+	 * returns the full name for the shipping country code saved.
 	 *@return String
 	 **/
 	function ShippingFullCountryName() {
-		return EcommerceRole::find_country_title($this->ShippingCountry);
+		return EcommerceRegion::get_title($this->ShippingCountry);
 	}
 
-
-
 	/**
+	 * Puts together the fields for the Order Form (and other front-end purposes).
 	 *@return Fieldset
 	 **/
 	public function getFields() {
 		$fields = parent::getEcommerceFields();
 		if(OrderAddress::get_use_separate_shipping_address()) {
 			$fields = parent::getEcommerceFields();
-			// *** BILLING ADDRESS
-			//postal code
-			$shippingPostalCodeField = new TextField('ShippingPostalCode', _t('OrderAddress.POSTALCODE','Postal Code'));
-			if(self::get_postal_code_url()){
-				$shippingPostalCodeField->setRightTitle('<a href="'.self::get_postal_code_url().'" id="ShippingPostalCodeLink" class="postalCodeLink">'.self::get_postal_code_label().'</a>');
-			}
-			//state
-			if(OrderAddress::get_include_state()) {
-				$shippingStateField = new TextField('ShippingState', _t('OrderAddress.STATE','State'));
-			}
-			else {
-				//adding statefield here as hidden field to make the code easier below...
-				$shippingStateField = new HiddenField('ShippingState', '', "Bliss");
-			}
-			// country
-			$countriesForDropdown = EcommerceCountry::list_of_allowed_countries_for_dropdown();
-			$shippingCountryField = new DropdownField('ShippingCountry',  _t('OrderAddress.COUNTRY','Country'), $countriesForDropdown, EcommerceCountry::get_country());
-			$shippingCountryField->addExtraClass('ajaxCountryField');
-			if(count($countriesForDropdown) == 1) {
-				$countryField = $shippingCountryField->performReadonlyTransformation();
-			}
 			$shippingFields = new CompositeField(
 				new HeaderField(_t('OrderAddress.SENDGOODSTODIFFERENTADDRESS','Send goods to different address'), 3),
 				new LiteralField('ShippingNote', '<p class="message warning">'._t('OrderAddress.SHIPPINGNOTE','Your goods will be sent to the address below.').'</p>'),
@@ -122,17 +99,17 @@ class ShippingAddress extends OrderAddress {
 				new TextField('ShippingAddress', _t('OrderAddress.ADDRESS','Address')),
 				new TextField('ShippingAddress2', _t('OrderAddress.ADDRESS2','')),
 				new TextField('ShippingCity', _t('OrderAddress.CITY','City')),
-				$shippingPostalCodeField,
-				$shippingStateField,
-				$shippingCountryField
+				$this->getPostalCodeField("ShippingPostalCode"),
+				$this->getRegionField("ShippingRegionID"),
+				$this->getCountryField("ShippingCountry")
 			);
 			$shippingFields->SetID('ShippingFields');
 			$fields->push($shippingFields);
-			$this->extend('augmentGetEcommerceFields', $fields);
 		}
 		else {
 			$fields = new FieldSet();
 		}
+		$this->owner->extend('augmentEcommerceShippingAddressFields', $fields);
 		return $fields;
 	}
 
@@ -144,7 +121,7 @@ class ShippingAddress extends OrderAddress {
 	 */
 	function getEcommerceRequiredFields() {
 		$requiredFieldsArray = array();
-		$this->owner->extend('augmentEcommerceRequiredFields', $requiredFieldsArray);
+		$this->owner->extend('augmentEcommerceShippingAddressRequiredFields', $requiredFieldsArray);
 		return $requiredFieldsArray;
 	}
 
@@ -162,22 +139,6 @@ class ShippingAddress extends OrderAddress {
 		);
 		return $requiredFieldsArray;
 	}
-
-	/**
-	 *
-	 *@return DataObject (OrderAddress)
-	 **/
-	function makeAddressFromMember($member = null, $forceOverRide = false) {
-		if(!$member) {
-			$member = Member::currentUser();
-		}
-		if($member) {
-			if(!$this->Name || $forceOverRide) $this->Name = $member->getTitle();
-			if(!$this->Email || $forceOverRide) $this->Email = $member->Email;
-		}
-		return $this;
-	}
-
 
 	function populateDefaults() {
 		parent::populateDefaults();

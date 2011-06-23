@@ -32,5 +32,9 @@
 		</p>
 	</div>
 <% end_if %>
-
 </div>
+
+
+
+<% require themedCSS(ProductGroup) %>
+

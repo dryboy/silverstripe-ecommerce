@@ -11,7 +11,7 @@
  * @authors: Silverstripe, Jeremy, Nicolaas
  *
  * @package: ecommerce
- * @sub-package: data
+ * @sub-package: setup
  *
  **/
 

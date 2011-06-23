@@ -16,8 +16,8 @@ class OrderForm extends Form {
 
 	function __construct($controller, $name) {
 		$order = ShoppingCart::current_order();
-		//Requirements::themedCSS('OrderForm');
-		Requirements::javascript('ecommerce/javascript/EcomOrderForm.js');
+		Requirements::themedCSS('OrderForm'); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
+		Requirements::javascript('ecommerce/javascript/EcomOrderForm.js'); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
 		$requiredFields = array();
 
 		//  ________________ 1) Member + Address fields
@@ -25,10 +25,15 @@ class OrderForm extends Form {
 		//member fields
 		$addressFields = new FieldSet();
 		$member = $order->CreateOrReturnExistingMember();
+		//strange security situation...
+		if($member->exists()) {
+			if($member->ID != Member::currentUserID()) {
+				$member->logOut();
+			}
+		}
 		$memberFields = $member->getEcommerceFields();
 		$requiredFields = array_merge($requiredFields, $member->getEcommerceRequiredFields());
 		$addressFields->merge($memberFields);
-		//link between Billing And ShippingAddress
 		//billing address field
 		$billingAddress = $order->CreateOrReturnExistingAddress("BillingAddress", "BillingAddress");
 		$billingAddressFields = $billingAddress->getFields();
@@ -45,7 +50,7 @@ class OrderForm extends Form {
 			$requiredFields = array_merge($requiredFields, $shippingAddress->getRequiredFields());
 			//finalise left fields
 			$addressFields->merge($shippingAddressFields);
-			Requirements::javascript('ecommerce/javascript/EcomOrderFormShipping.js');
+			Requirements::javascript('ecommerce/javascript/EcomOrderFormShipping.js'); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
 		}
 		$leftFields = new CompositeField($addressFields);
 		$leftFields->setID('LeftOrder');
@@ -53,24 +58,34 @@ class OrderForm extends Form {
 		//  ________________  2) Log in / vs Create Account fields - RIGHT-HAND-SIDE fields
 		$rightFields = new CompositeField();
 		$rightFields->setID('RightOrder');
-		if(!$member || !$member->ID || $member->Password == '') {
-			$passwordField = new ConfirmedPasswordField('Password', _t('OrderForm.PASSWORD','Password'));
-			//allow people to purchase without creating a password
-			$passwordField->setCanBeEmpty(false);
-			//login invite right on the top
-			$rightFields->push(new HeaderField(_t('OrderForm.MEMBERSHIPDETAILS','Account Details'), 3));
-			if(!$member->Created) {
-				$rightFields->push(new LiteralField('MemberInfo', '<p class="message good">'._t('OrderForm.MEMBERINFO','If you are already a member please')." <a href=\"Security/login?BackURL=" . CheckoutPage::find_link(true) . "/\">"._t('OrderForm.LOGIN','log in').'</a>.</p>'));
+		if(!$member || ($member && (!$member->exists() || !$member->Password))) {
+			//general header
+			if(!$member->exists()) {
+				$rightFields->push(
+					new LiteralField('MemberInfo', '<p class="message good">'._t('OrderForm.MEMBERINFO','If you are already have an account then please')." <a href=\"Security/login?BackURL=" . $controller->Link() . "/\">"._t('OrderForm.LOGIN','log in').'</a>.</p>')
+				);
 			}
-			$rightFields->push(new LiteralField('AccountInfo', '<p>'._t('OrderForm.ACCOUNTINFO',
-				'Please <a href="#Password" class="choosePassword">choose a password</a>, so you can log in and check your order history in the future.').'</p>'));
-			$rightFields->push(new FieldGroup($passwordField));
+			$passwordField = new ConfirmedPasswordField('Password', _t('OrderForm.PASSWORD','Password'));
+			//login invite right on the top
+			if(EcommerceRole::get_automatic_membership()) {
+				$rightFields->push(new HeaderField(_t('OrderForm.MEMBERSHIPDETAILS','Setup your account'), 3));
+				//dont allow people to purchase without creating a password
+				$passwordField->setCanBeEmpty(false);
+
+			}
+			else {
+				$rightFields->push(new HeaderField(_t('OrderForm.MEMBERSHIPDETAILSOPTIONAL','Create an account (optional)'), 3));
+				//allow people to purchase without creating a password
+				$passwordField->setCanBeEmpty(true);
+			}
 			$requiredFields[] = 'Password[_Password]';
 			$requiredFields[] = 'Password[_ConfirmPassword]';
-			Requirements::customScript('jQuery("#ChoosePassword").click();');
+			Requirements::customScript('jQuery("#ChoosePassword").click();'); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
+			$rightFields->push(
+				new LiteralField('AccountInfo','<p>'._t('OrderForm.ACCOUNTINFO','Please <a href="#Password" class="choosePassword">choose a password</a>, so you can log in and check your order history in the future.').'</p>')
+			);
+			$rightFields->push(new FieldGroup($passwordField));
 		}
-
-
 
 		//  ________________  3) Payment fields - BOTTOM FIELDS
 		$bottomFields = new CompositeField();
@@ -129,7 +144,6 @@ class OrderForm extends Form {
 			}
 		}
 		if ($member) {
-			$member->Country = EcommerceCountry::get_country();
 			$this->loadDataFrom($member);
 		}
 		//allow updating via decoration
@@ -174,8 +188,14 @@ class OrderForm extends Form {
 	 */
 	function processOrder($data, $form, $request) {
 		$this->saveDataToSession($data); //save for later if necessary
+		$order = ShoppingCart::current_order();
 		//check for cart items
-		if(!ShoppingCart::has_items()) {
+		if(!$order) {
+			$form->sessionMessage(_t('OrderForm.ORDERNOTFOUND','Your order could not be found.'), 'bad');
+			Director::redirectBack();
+			return false;
+		}
+		if($order && $order->TotalItems() < 1) {
 			// WE DO NOT NEED THE THING BELOW BECAUSE IT IS ALREADY IN THE TEMPLATE AND IT CAN LEAD TO SHOWING ORDER WITH ITEMS AND MESSAGE
 			//$form->sessionMessage(_t('OrderForm.NOITEMSINCART','Please add some items to your cart.'), 'bad');
 			Director::redirectBack();
@@ -198,18 +218,16 @@ class OrderForm extends Form {
 		if(isset($data['Password']) && is_array($data['Password'])) {
 			$data['Password'] = $data['Password']['_Password'];
 		}
-		// Create new OR update logged in {@link Member} record
-		// MAKE SURE TO REVIEW ecommerce_create_or_merge "return" values
-		$member = EcommerceRole::ecommerce_create_or_merge($data, $testOnly = false);
-
-		//ONLY IF THE MEMBER IS ALREADY LOGGED IN OR IT IS A NEW MEMBER....
-		if(is_object($member) && $member instanceof Member) {
-			$form->saveInto($member);
-			// NOTE: write should return the new ID of the object
-			$order->MemberID = $member->write();
-			if(!Member::currentUserID()) {
+		$member = $this->createOrFindMember($data);
+		if(is_object($member)) {
+			if($this->memberShouldBeSaved()) {
+				$form->saveInto($member);
+				$member->write();
+			}
+			if($this->memberShouldBeLoggedIn()) {
 				$member->logIn();
 			}
+			$order->MemberID = $member->ID;
 		}
 		//BILLING ADDRESS
 		if($billingAddress = $order->CreateOrReturnExistingAddress("BillingAddress", "BillingAddress")) {
@@ -240,7 +258,8 @@ class OrderForm extends Form {
 
 		//----------------- CLEAR OLD DATA ------------------------------
 		$this->clearSessionData(); //clears the stored session form data that might have been needed if validation failed
-		ShoppingCart::clear_order_from_shopping_cart();
+		//
+		ShoppingCart::singleton()->clear();
 
 		//----------------- PAYMENT ------------------------------
 		return EcommercePayment::process_payment_form_and_return_next_step($order, $form, $data, $member);
@@ -260,6 +279,90 @@ class OrderForm extends Form {
 		$this->clearMessage();
 		Session::set("FormInfo.{$this->FormName()}.data", null);
 	}
+
+
+	/**
+	*
+	 *@param Array - form data - should include $data[uniqueField....] - e.g. $data["Email"]
+	 * @return DataObject| Null
+	 *
+	 **/
+	protected function createOrFindMember($data) {
+		$currentUserID = Member::currentUserID();
+		$member = null;
+		//simplest case...
+		if($this->uniqueMemberFieldCanBeUsed($data)) {
+			$member = Member::currentUser();
+		}
+		if(!$member) {
+			//is there already someone with that unique field (return member) but CAN NOT BE LOGGED IN!!!!
+			$member = $this->existingMemberWithUniqueField($data);
+			//in case we still dont have a member AND we should create a member for every customer, then we do this below...
+			if(!$member && EcommerceRole::get_automatic_membership()) {
+				$member = new Member();
+			}
+		}
+		return $member;
+	}
+
+	/**
+	 *returns TRUE if member should be logged-in OR
+	 * member is logged and the unique field matches
+	 *@param Array - form data - should include $data[uniqueField....] - e.g. $data["Email"]
+	 *@return Boolean
+	 **/
+	protected function memberShouldBeSaved($data) {
+		if(
+			$this->memberShouldBeLoggedIn($data) ||
+			(Member::currentUserID() && !$this->existingMemberWithUniqueField($data) && EcommerceRole::get_automatically_update_member_details())
+		) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 *returns TRUE if unique field does not exist already AND member is not logged in already AND non-members are automatically created (and logged in).
+	 * i.e. the logged in member tries to take on another identity.
+	 *@param Array - form data - should include $data[uniqueField....] - e.g. $data["Email"]
+	 *@return Boolean
+	 **/
+	protected function memberShouldBeLoggedIn($data) {
+		return EcommerceRole::get_automatic_membership() && !Member::currentUserID() && this->uniqueMemberFieldCanBeUsed($data) ? true : false;
+	}
+
+	/**
+	 *returns FALSE if the unique field already exists in another member
+	 * AND the member being "tested" is already logged in...
+	 * i.e. the logged in member tries to take on another identity.
+	 * returns TRUE if there is no existing member with the unique field OR the member is not logged in.
+	 * If you are not logged BUT the the unique field is used by an existing member then we can still
+	 * use the field - we just CAN NOT log in the member.
+	 *@param Array - form data - should include $data[uniqueField....] - e.g. $data["Email"]
+	 *@return Boolean
+	 **/
+	protected function uniqueMemberFieldCanBeUsed($data) {
+		return !$this->existingMemberWithUniqueField($data) || !Member::currentUserID() ? true : false;
+	}
+
+	/**
+	 *returns existing member if it already exists and it is not the logged-in one.
+	 * and null if this member does not exist (based on the unique field (email))
+	 *@param Array - form data - should include $data[uniqueField....] - e.g. $data["Email"]
+	 *@return DataObject | Null (dataobject = member)
+	 **/
+	protected function existingMemberWithUniqueField($data) {
+		$uniqueField = Member::get_unique_identifier_field();
+		$currentUserID = Member::currentUserID();
+		//The check below covers both Scenario 3 and 4....
+		if(isset($data[$uniqueField])) {
+			$uniqueFieldValue = Convert::raw2xml($data[$uniqueField]);
+			return DataObject::get_one('Member', "\"$uniqueField\" = '{$uniqueFieldValue}' AND \"Member\".\"ID\" <> ".$currentUserID);
+		}
+		return null;
+	}
+
+
 
 }
 
@@ -291,7 +394,7 @@ class OrderForm_Validator extends ShopAccountForm_Validator{
 			}
 		}
 		//Note the exclamation Mark - only applies if it return FALSE.
-		if(!EcommerceRole::ecommerce_create_or_merge($data, $testOnly = true)) {
+		if(!EcommerceRole::unique_field_value_can_be_used($data)) {
 			$uniqueField = Member::get_unique_identifier_field();
 			$this->validationError(
 				$uniqueField,

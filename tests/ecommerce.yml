@@ -74,7 +74,6 @@ Member:
         Country: US
         Email: bob@somewhere.com
         Password: 3456sdfsd34
-        
 OrderStep:
 	step1:
 		Name: Test Step 1

@@ -8,11 +8,12 @@
  * @authors: Silverstripe, Jeremy, Nicolaas
  *
  * @package: ecommerce
- * @sub-package: member
+ * @sub-package: address
  *
  **/
 
 class OrderAddress extends DataObject {
+
 
 	/**
 	 *Do the goods need to he shipped and if so,
@@ -20,19 +21,23 @@ class OrderAddress extends DataObject {
 	 *
 	 *@var Boolean
 	 **/
-
 	protected static $use_separate_shipping_address = false;
 		static function set_use_separate_shipping_address($b){self::$use_separate_shipping_address = $b;}
 		static function get_use_separate_shipping_address(){return self::$use_separate_shipping_address;}
+
+	/**
+	 * In case you have some conflicts in the class / IDs for formfields then you can use this variable
+	 * to add a few characters in front of the classes / IDs
+	 *@var String $s
+	 **/
+	protected static $field_class_and_id_prefix = "";
+		static function set_field_class_and_id_prefix($s){self::$field_class_and_id_prefix = $s;}
+		static function get_field_class_and_id_prefix(){return self::$field_class_and_id_prefix;}
 
 	//e.g. http://www.nzpost.co.nz/Cultures/en-NZ/OnlineTools/PostCodeFinder
 	static function get_postal_code_url() {$sc = DataObject::get_one('SiteConfig'); if($sc) {return $sc->PostalCodeURL;}  }
 
 	static function get_postal_code_label() {$sc = DataObject::get_one('SiteConfig'); if($sc) {return $sc->PostalCodeLabel;}  }
-
-	protected static $include_state = false;
-		static function set_include_state($b) {self::$include_state = $b;}
-		static function get_include_state() {return self::$include_state;}
 
 	public static $singular_name = "Order Address";
 		function i18n_singular_name() { return _t("OrderAddress.ORDERADDRESS", "Order Address");}
@@ -69,67 +74,146 @@ class OrderAddress extends DataObject {
 	}
 
 	/**
+	 *put together a textfield for a postal code field
+	 *@param String $name - name of the field
+	 *@return TextField
+	 **/
+	protected function getPostalCodeField($name) {
+		$field = new TextField($name, _t('OrderAddress.POSTALCODE','Postal Code'));
+		if(self::get_postal_code_url()){
+			$field->setRightTitle('<a href="'.self::get_postal_code_url().'" id="'.self::get_field_class_and_id_prefix().$name.'Link" class="'.self::get_field_class_and_id_prefix().'postalCodeLink">'.self::get_postal_code_label().'</a>');
+		}
+		return $field;
+	}
+
+	/**
+	 *put together a dropdown for the region field
+	 *@param String $name - name of the field
+	 *@return DropdownField
+	 **/
+	protected function getRegionField($name) {
+		if(EcommerceRegion::show()) {
+			$regionsForDropdown = EcommerceRegion::list_of_allowed_entries_for_dropdown();
+			$regionField = new DropdownField($name,EcommerceRegion::$singular_name, $regionsForDropdown);
+		}
+		else {
+			//adding region field here as hidden field to make the code easier below...
+
+		}
+		if(count($regionsForDropdown) < 2) {
+			$regionField = $regionField->performReadonlyTransformation();
+			if(count($regionsForDropdown) < 1) {
+				$regionField = new HiddenField($name, '', 0);
+			}
+		}
+		$regionField->addExtraClass(self::get_field_class_and_id_prefix().'ajaxRegionField');
+		return $regionField;
+	}
+
+	/**
+	 *put together a dropdown for the region field
+	 *@param String $name - name of the field
+	 *@return DropdownField
+	 **/
+	protected function getCountryField($name) {
+		$countriesForDropdown = EcommerceCountry::list_of_allowed_entries_for_dropdown();
+		$countryField = new DropdownField($name, EcommerceCountry::$singular_name, $countriesForDropdown, EcommerceCountry::get_country());
+		if(count($countriesForDropdown) < 2) {
+			$countryField = $countryField->performReadonlyTransformation();
+			if(count($countriesForDropdown) < 1) {
+				$countryField = new HiddenField($name, '', "not available");
+			}
+		}
+		$countryField->addExtraClass(self::get_field_class_and_id_prefix().'ajaxCountryField');
+		return $countryField;
+	}
+
+	/**
+  	 * Saves region - both shipping and billing fields are saved here for convenience sake (only one actually gets saved)
+  	 * @param Integer -  RegionID
+  	 **/
+	public function SetRegion($regionID) {
+		$this->RegionID = $regionID;
+		$this->ShippingRegionID = $regionID;
+		$this->write();
+	}
+
+	/**
+  	 * Saves country - both shipping and billing fields are saved here for convenience sake (only one actually gets saved)
+  	 * @param String - CountryCode - e.g. NZ
+  	 **/
+	public function SetCountry($countryCode) {
+		$this->Country = $countryCode;
+		$this->ShippingCountry = $countryCode;
+		$this->write();
+	}
+
+	/**
 	 * Copies the last address used by the member.
 	 *@return DataObject (OrderAddress / ShippingAddress / BillingAddfress)
 	 **/
-	public function CopyLastAddressFromMember($member = null, $write = true) {
+	public function FillWithLastAddressFromMember($member = null) {
 		if(!$member) {
 			//cant use "Current Member" here, because the order might be created by the Shop Admin...
 			$member = $this->getMemberFromOrder();
 		}
 		if($member) {
-			$oldAddress = $this->LastAddressFromMember($member);
+			$oldAddress = $this->previousAddressFromMember($member);
 			if($oldAddress) {
-				return $this->copyLastAddress($oldAddress, $write);
+				if($this instanceOf BillingAddress) {
+					$prefix = "";
+				}
+				elseif($this instanceOf ShippingAddress) {
+					$prefix = "Shipping";
+				}
+				$fieldNameArray = $this->getFieldNameArray($prefix);
+				foreach($fieldNameArray as $field) {
+					if(!$this->$field && isset($oldAddress->$field)) {
+						$this->$field = $oldAddress->$field;
+					}
+				}
+			}
+			//copy data from  member
+			if(!$prefix) {
+				$this->Email = $member->Email;
+			}
+			$fieldNameArray = array("FirstName" => $prefix."FirstName", "Surname" => $prefix."Surname");
+			foreach($fieldNameArray as $memberField => $fieldName) {
+				//NOTE, we always override the Billing Address (which does not have a prefix)
+				if(!$this->$fieldName || !$prefix) {$this->$fieldName = $member->$memberField();}
 			}
 		}
+		$this->write();
 		return $this;
 	}
 
 	/**
 	 * Finds the last address used by this member
-	 *@return DataObject (OrderAddress / ShippingAddress / BillingAddfress)
+	 *@return DataObject (OrderAddress / ShippingAddress / BillingAddress)
 	 **/
-	public function LastAddressFromMember($member = null) {
-		if(!$member) {
-			$member = Member::currentUser();
-		}
+	protected function previousAddressFromMember($member = null) {
 		if($member) {
-			$orders = DataObject::get("Order", "\"MemberID\" = '".$member->ID."'", "\"Created\" DESC", $join = null, $limit = "1");
+			$fieldName = $this->ClassName."ID";
+			$orders = DataObject::get(
+				"Order",
+				"\"MemberID\" = '".$member->ID."' AND \"$fieldName\" <> ".$this->ID,
+				"\"Created\" DESC ",
+				$join = null,
+				$limit = "1"
+			);
 			if($orders) {
 				$order = $orders->First();
-				if($order) {
-					$address = DataObject::get_one($this->ClassName, "\"OrderID\" = '".$order->ID."'");
-					return $address;
+				if($order  && $order->ID) {
+					return DataObject::get_one($this->ClassName, "\"OrderID\" = '".$order->ID."'");
 				}
 			}
 		}
 	}
 
 	/**
-	 * copies old address to current record
-	 * @param $oldAddress OrderAddress
-	 * @return OrderAddress
+	 * find the member associated with the current Order.
+	 *@return DataObject (Member)
 	 **/
-	protected function copyOldAddress($oldAddress, $write = true) {
-		if($oldAddress) {
-			if($this instanceOf BillingAddress) {
-				$prefix = "";
-			}
-			elseif($this instanceOf ShippingAddress) {
-				$prefix = "Shipping";
-			}
-			$fieldNameArray = $this->getFieldNameArray($prefix);
-			foreach($fieldNameArray as $field) {
-				if(!$this->$field) $this->$field = $oldAddress->$field;
-			}
-			if($write) {
-				$this->write();
-			}
-		}
-		return $this;
-	}
-
 	protected function getMemberFromOrder() {
 		if($this->OrderID) {
 			if($order = $this->Order()) {
@@ -140,48 +224,21 @@ class OrderAddress extends DataObject {
 		}
 	}
 
+
 	/**
-	*
-	* @return OrderAddress with both Shipping and Billing Fields
-	**/
-	public function makeAddressShippingAndBilling() {
-		if($this instanceOf BillingAddress) {
-			$prefix1 = "Shipping";
-			$prefix2 = "";
-		}
-		elseif($this instanceOf ShippingAddress) {
-			$prefix1 = "";
-			$prefix2 = "Shipping";
-		}
-		$fieldNameArray1 = $this->getFieldNameArray($prefix1);
-		$fieldNameArray2 = $this->getFieldNameArray($prefix2);
-		foreach($fieldNameArray1 as $key => $field1) {
-			$field2 = $fieldNameArray2[$key];
-			$this->$field1 = $this->$field2;
-		}
-		return $this;
-	}
-
-
-	public function populateDefaults() {
-		parent::populateDefaults();
-	}
-
-	public function SetCountry($countryCode) {
-		$this->Country = $countryCode;
-		$this->ShippingCountry = $countryCode;
-		$this->write();
-	}
-
+	 *@param String - $prefix = either "" or "Shipping"
+	 *@return array of fields for an Order DataObject
+	 **/
 	protected function getFieldNameArray($prefix = '') {
 		$fieldNameArray = array(
+			"Email",
 			"FirstName",
 			"Surname",
 			"Address",
 			"Address2",
 			"City",
 			"PostalCode",
-			"State",
+			"RegionID",
 			"Country",
 			"Phone"
 		);
@@ -192,5 +249,6 @@ class OrderAddress extends DataObject {
 		}
 		return $fieldNameArray;
 	}
+
 }
 

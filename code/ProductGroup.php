@@ -144,17 +144,29 @@ class ProductGroup extends Page {
 		//FIXME: this was breaking the "get_only_show_products_that_can_purchase" code below
 		//if($allproducts) $products->TotalCount = $allproducts->Count(); //add total count to returned data for 'showing x to y of z products'
 
-		if($products && $products instanceof DataObjectSet) $products->removeDuplicates();
+		if($products && $products instanceOf DataObjectSet) {
+			$products->removeDuplicates();
+		}
 
 		//FIXME: this removing does not cater for pagination...so you end up with half empty, or fully empty pages in some cases.
-		if($products) {
-			if(self::get_only_show_products_that_can_purchase()) {
+		$repaginate = false;
+		if(self::get_only_show_products_that_can_purchase()) {
+			if($products) {
 				foreach($products as $product) {
 					if(!$product->canPurchase()) {
 						$products->remove($product);
+						$repaginate = true;
 					}
 				}
 			}
+		}
+		//untested
+		if($repaginate && $products) {
+			$stage = '';
+			if(Versioned::current_stage() == "Live") {
+				$stage = "_Live";
+			}
+			$products = DataObject::get('Product',"\"Product$stage\".\"ID\" IN (".implode(",", $products->map("ID", "ID")).")",null, null,$limit);
 		}
 		return $products;
 	}
@@ -226,8 +238,8 @@ class ProductGroup_Controller extends Page_Controller {
 
 	function init() {
 		parent::init();
-		//ShoppingCart::add_requirements();
-		Requirements::themedCSS('ProductGroup');
+		//ShoppingCart::add_requirements();// VIA ShoppingCartRequirements
+		//Requirements::themedCSS('ProductGroup'); // VIA ProductGroup.ss
 	}
 
 	/**
