@@ -338,14 +338,14 @@ class OrderModifier extends OrderAttribute {
 	 * @return String
 	  **/
 	public function AddLink() {
-		return ShoppingCart::remove_modifier_link($this->ID,$this->ClassName);
+		return ShoppingCart_Controller::add_modifier_link($this->ID,$this->ClassName);
 	}
 	/**
 	 *
 	 * @return String
 	  **/
 	public function RemoveLink() {
-		return ShoppingCart::remove_modifier_link($this->ID,$this->ClassName);
+		return ShoppingCart_Controller::remove_modifier_link($this->ID,$this->ClassName);
 	}
 
 

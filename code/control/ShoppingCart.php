@@ -81,62 +81,133 @@ class ShoppingCart extends Object{
 
 	/**
 	 * Adds any number of items to the cart.
-	 *@param $buyable - the buyable (generally a product) being added to the cart
-	 *@param $quantity - number of items add.
+	 *@param DataObject $buyable - the buyable (generally a product) being added to the cart
+	 *@param Integer $quantity - number of items add.
 	 *@param $parameters - array of parameters to target a specific order item. eg: group=1, length=5
-	 *@return the new item or null
+	 *@return false | DataObject (OrderItem) 
 	 */
-	public function addBuyable($buyable,$quantity = 1, $parameters = array(),$overwriteQuantity = false){
-		if($quantity <= 1 && $overwriteQuantity){ //special case remove
-			$this->removeBuyable($buyable,'all',$parameters);
-			return;
-		}
-		if($buyable->canPurchase() && $item = $this->findOrMakeItem($buyable,$parameters)){ //find existing order item or make one
-			$quantity = (intval($quantity) >= 1 ) ? $quantity: 1; //ensuring sanity
-			$item->Quantity = ($overwriteQuantity) ? $item->Quantity + $quantity : $quantity;
+	public function addBuyable($buyable, $quantity = 1, $parameters = array()){
+		$item = $this->prepareQuantityChange($mustBeExistingItem = false, $buyable, $quantity, $parameters);
+		if($item){ //find existing order item or make one
+			$item->Quantity += $quantity;
 			$item->write();
 			$this->currentOrder()->Attributes()->add($item); //save to current order
 			//TODO: distinquish between incremented and set
 			//TODO: use sprintf to allow product name etc to be included in message
-			$this->addMessage(($quantity == 1)?_t("ShoppingCart.ITEMADDED", "Item added."):_t("ShoppingCart.ITEMSADDED", "Items added."),'good');
+			if($quantity > 1) {
+				$msg = _t("ShoppingCart.ITEMSADDED", "Items added.");
+			}
+			else {
+				$msg = _t("ShoppingCart.ITEMADDED", "Item added.");
+			}
+			$this->addMessage($msg,'good');
+			return $item;
+			
 		}
 		$this->addMessage(_t("ShoppingCart.ITEMCOULDNOTBEADDED", "Item could not be added."),'bad');
+	}
+	
+	/**
+	 * Sets quantity for an item in the cart.
+	 *@param DataObject $buyable - the buyable (generally a product) being added to the cart
+	 *@param Integer $quantity - number of items add.
+	 *@param Array $parameters - array of parameters to target a specific order item. eg: group=1, length=5
+	 *@return false | DataObject (OrderItem) 
+	 */
+	function setQuantity($buyable, $quantity, $parameters = array()) {
+		$item = $this->prepareQuantityChange($mustBeExistingItem = true, $buyable, $quantity, $parameters);
+		if($item) {
+			$item->Quantity = $quantity; //remove quantity
+			$item->write();
+			$this->addMessage(_t("ShoppingCart.CANTREMOVENONE", "Item updated."),'good');
+			return $item;
+		}
+		return false;
 	}
 
 	/**
 	 * Removes any number of items from the cart.
+	 *@param DataObject $buyable - the buyable (generally a product) being added to the cart
+	 *@param Integer $quantity - number of items add.
+	 *@param Array $parameters - array of parameters to target a specific order item. eg: group=1, length=5
+	 *@return false | DataObject (OrderItem) 
+	 */
+	public function decrementBuyable($buyable,$quantity = 1, $parameters = array()){
+		$item = $this->prepareQuantityChange($mustBeExistingItem = false, $buyable, $quantity, $parameters);
+		if($item) {
+			$item->Quantity -= $quantity; //remove quantity
+			if($item->Quantity < 0 ) {
+				$item->Quantity = 0;
+			}
+			$item->write();
+			if($quantity > 1) {
+				$msg = _t("ShoppingCart.ITEMSREMOVED", "Items removed.");
+			}
+			else {
+				$msg = _t("ShoppingCart.ITEMREMOVED", "Item removed.");
+			}
+			$this->addMessage($msg ,'good');
+			return $item;
+		}
+		return false;
+	}
+
+	/**
+	 * Delete item from the cart.
+	 *@param OrderItem $buyable - the buyable (generally a product) being added to the cart
+	 *@param Array $parameters - array of parameters to target a specific order item. eg: group=1, length=5
 	 *@return boolean - successfully removed
 	 */
-	public function removeBuyable($buyable,$quantity = 1, $parameters = array()){
-		$item = $this->getExistingItem($buyable,$parameters);
-		if(!$item){//check for existence of item
-			$this->addMessage(_t("ShoppingCart.ITEMCOULDNOTBEFOUNDINCART", "Item could not found in cart."),'warning');
-			return;
-		}
-		if($quantity <= 0){
-			$this->addMessage(_t("ShoppingCart.CANTREMOVENONE", "It is not possible to reduce the quantity below one."),'warning');
-			return;
-		}
-		$item->Quantity -= $quantity; //remove quantity
-		if($item->Quantity <= 0 || $quantity == 'all'){ //remove all items from cart
+	function deleteBuyable($buyable, $parameters = array()) {
+		$item = $this->prepareQuantityChange($mustBeExistingItem = true, $buyable, $quantity = 1, $parameters);
+		if($item) {
 			$this->currentOrder()->Attributes()->remove($item);
 			$item->delete();
 			$item->destroy();
-			$this->addMessage(_t("ShoppingCart.ITEMCOMPLETELYREMOVED", "Item completely removed."),'good');
+			$this->addMessage(_t("ShoppingCart.ITEMCOMPLETELYREMOVED", "Item removed from cart."),'good');
+			return $item;
 		}
-		else{
-			$item->write();
-			$this->addMessage(_t("ShoppingCart.ITEMREMOVED", "Item removed."),'good');
-		}
+		return false;
 	}
 
+	/**
+	 * Checks and prepares variables for a quantity change (add, edit, remove) for an Order Item.
+	 *@param Boolean $mustBeExistingItems - if false, the Order Item get created if it does not exist - if TRUE the order item is searched for and an error shows if there is no Order item.
+	 *@param DataObject $buyable - the buyable (generally a product) being added to the cart
+	 *@param Integer $quantity - number of items add.
+	 *@param Array $parameters - array of parameters to target a specific order item. eg: group=1, length=5* 
+	 *@return boolean | DataObject ($orderItem) 
+	 */
+	protected function prepareQuantityChange($mustBeExistingItem = true, $buyable, $quantity = 1, $parameters = array()) {
+		if(!$buyable) {
+			user_error("No buyable was provided", E_USER_WARNING);
+		}
+		if($buyable->canPurchase()) {
+			if($mustBeExistingItem) {
+				$item = $this->getExistingItem($buyable,$parameters);
+			}
+			else {
+				$item = $this->findOrMakeItem($buyable,$parameters); //find existing order item or make one
+			}
+		}
+		if(!$item){//check for existence of item
+			$this->addMessage(_t("ShoppingCart.ITEMCOULDNOTBEFOUNDINCART", "Item could not found in cart."),'warning');
+			return false;
+		}
+		$quantity = intval($quantity);		
+		if($quantity < 0 || (!$quantity && $quantity !== 0)) {
+			$this->addMessage(_t("ShoppingCart.INVALIDQUANTITY", "Invalid quantity."),'warning');
+			return false;
+		}
+		return $item;
+	} 
 
 	/**
 	 * Helper function for making / retrieving order items.
 	 * we do not need things like "canPurchase" here, because that is with the "addBuyable" method.
 	 * NOTE: does not write!
 	 *@param DataObject $buyable
-	 *@param array $parameters
+	 *@param Array $parameters
 	 *@return OrderItem
 	 */
 	public function findOrMakeItem($buyable,$parameters = array()){
@@ -146,6 +217,7 @@ class ShoppingCart extends Object{
 		//otherwise create a new item
 		$className = $buyable->classNameForOrderItem();
 		$item = new $className();
+		$item->BuyableID = $buyable->ID;
 		return $item;
 	}
 
@@ -296,7 +368,7 @@ class ShoppingCart extends Object{
 		$orderItemClassName = $buyable->classNameForOrderItem();
 		$orderID = $this->currentOrder()->ID;
 		// NOTE: MUST HAVE THE EXACT CLASSNAME !!!!! THEREFORE INCLUDED IN WHERE PHRASE
-		return DataObject::get_one($orderItemClassName, "\"ClassName\" = '".$orderItemClassName."' AND \"OrderID\" = ".$orderID." AND \"BuyableID\" = ".$buyableID." ". $filterString);
+		return DataObject::get_one($orderItemClassName, "\"ClassName\" = '".$orderItemClassName."' AND \"OrderID\" = ".$orderID." AND \"BuyableID\" = ".$buyable->ID." ". $filterString);
 	}
 
 	/**
@@ -346,12 +418,15 @@ class ShoppingCart extends Object{
 	 *@return array of messages
 	 */
 	function getMessages(){
+		$sessionVariableName = (ShoppingCart::get_session_variable()."Messages");
 		//get old messages
-		$messages = unserialize(Session::get(ShoppingCart::get_session_variable()."Messages"));
+		$messages = unserialize(Session::get($sessionVariableName));
 		//clear old messages
-		$messages = Session::set(ShoppingCart::get_session_variable()."Messages", "");
+		Session::clear($sessionVariableName, "");
 		//set to form????
-		$this->messages = array_merge($message, $this->messages);
+		if($messages && count($messages)) {
+			$this->messages = array_merge($messages, $this->messages);
+		}
 		return $this->messages;
 	}
 
@@ -492,7 +567,7 @@ class ShoppingCart_Controller extends Controller{
 	 *@return Mixed - if the request is AJAX, it returns JSON - CartResponse::ReturnCartData(); If it is not AJAX it redirects back to requesting page.
 	 */
 	public function setquantityitem(){
-		$this->cart->addBuyable($this->buyable(),$this->quantity(),$this->parameters(),$overwriteQuantity = true);
+		$this->cart->setQuantity($this->buyable(),$this->quantity(),$this->parameters());
 		return $this->setMessageAndReturn();
 	}
 
@@ -501,7 +576,7 @@ class ShoppingCart_Controller extends Controller{
 	 *@return Mixed - if the request is AJAX, it returns JSON - CartResponse::ReturnCartData(); If it is not AJAX it redirects back to requesting page.
 	 */
 	public function removeitem(){
-		$this->cart->removeBuyable($this->buyable(),$this->quantity(),$this->parameters());
+		$this->cart->decrementBuyable($this->buyable(),$this->quantity(),$this->parameters());
 		return $this->setMessageAndReturn();
 	}
 
@@ -510,7 +585,7 @@ class ShoppingCart_Controller extends Controller{
 	 *@return Mixed - if the request is AJAX, it returns JSON - CartResponse::ReturnCartData(); If it is not AJAX it redirects back to requesting page.
 	 */
 	public function removeallitem(){
-		$this->cart->removeBuyable($this->buyable(),'all',$this->parameters());
+		$this->cart->deleteBuyable($this->buyable(),$this->parameters());
 		return $this->setMessageAndReturn();
 	}
 
@@ -608,6 +683,11 @@ class ShoppingCart_Controller extends Controller{
 					return $obj;
 				}
 			}
+			else {
+				if(strpos($className, "OrderItem")) {
+					user_error("ClassName in URL should be buyable and not an orderitem", E_USER_NOTICE);
+				}
+			}
 		}
 		return null;
 	}
@@ -628,7 +708,7 @@ class ShoppingCart_Controller extends Controller{
 	 *@param $getpost - choose between obtaining the chosen parameters from GET or POST
 	 */
 	protected function parameters($getpost = 'GET'){
-		return ($getpost == 'GET') ? $request->getVars() : $_POST;
+		return ($getpost == 'GET') ? $this->request->getVars() : $_POST;
 	}
 
 	/**

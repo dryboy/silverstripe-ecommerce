@@ -57,6 +57,7 @@ class OrderItem extends OrderAttribute {
 	public static $summary_fields = array(
 		"Order.ID" => "Order ID",
 		"TableTitle" => "Title",
+		"TableSubTitle" => "Sub Title",
 		"UnitPrice" => "Unit Price" ,
 		"Quantity" => "Quantity" ,
 		"Total" => "Total Price" ,
@@ -326,7 +327,7 @@ HTML;
 	 * @return String (URLSegment)
 	  **/
 	function AddLink() {
-		return ShoppingCart::add_item_link($this->BuyableID, $this->ClassName,$this->linkParameters());
+		return ShoppingCart_Controller::add_item_link($this->BuyableID, $this->Buyable()->ClassName,$this->linkParameters());
 	}
 
 	/**
@@ -334,7 +335,7 @@ HTML;
 	 * @return String (URLSegment)
 	  **/
 	function IncrementLink() {
-		return ShoppingCart::increment_item_link($this->BuyableID, $this->ClassName,$this->linkParameters());
+		return ShoppingCart_Controller::increment_item_link($this->BuyableID, $this->Buyable()->ClassName,$this->linkParameters());
 	}
 
 	/**
@@ -342,7 +343,7 @@ HTML;
 	 * @return String (URLSegment)
 	  **/
 	function DecrementLink() {
-		return ShoppingCart::decrement_item_link($this->BuyableID, $this->ClassName,$this->linkParameters());
+		return ShoppingCart_Controller::decrement_item_link($this->BuyableID, $this->Buyable()->ClassName,$this->linkParameters());
 	}
 
 	/**
@@ -350,7 +351,7 @@ HTML;
 	 * @return String (URLSegment)
 	  **/
 	function RemoveLink() {
-		return ShoppingCart::remove_item_link($this->BuyableID, $this->ClassName,$this->linkParameters());
+		return ShoppingCart_Controller::remove_item_link($this->BuyableID, $this->Buyable()->ClassName,$this->linkParameters());
 	}
 
 	/**
@@ -358,7 +359,7 @@ HTML;
 	 * @return String (URLSegment)
 	  **/
 	function RemoveAllLink() {
-		return ShoppingCart::remove_all_item_link($this->BuyableID, $this->ClassName,$this->linkParameters());
+		return ShoppingCart_Controller::remove_all_item_link($this->BuyableID, $this->Buyable()->ClassName,$this->linkParameters());
 	}
 
 	/**
@@ -366,7 +367,7 @@ HTML;
 	 * @return String (URLSegment)
 	  **/
 	function SetQuantityLink() {
-		return ShoppingCart::set_quantity_item_link($this->BuyableID, $this->ClassName,$this->linkParameters());
+		return ShoppingCart_Controller::set_quantity_item_link($this->BuyableID, $this->Buyable()->ClassName,$this->linkParameters());
 	}
 
 	/**
@@ -374,7 +375,7 @@ HTML;
 	 * @return String (URLSegment)
 	  **/
 	function SetSpecificQuantityItemLink($quantity) {
-		return ShoppingCart::set_quantity_item_link($this->BuyableID, $this->ClassName, array_merge($this->linkParameters(), array("quantity" => $quantity)));
+		return ShoppingCart_Controller::set_quantity_item_link($this->BuyableID, $this->Buyable()->ClassName, array_merge($this->linkParameters(), array("quantity" => $quantity)));
 	}
 
 	/**

@@ -103,7 +103,7 @@ class BillingAddress extends OrderAddress {
 		);
 		$billingFields->SetID('BillingFields');
 		$fields->push($billingFields);
-		$this->owner->extend('augmentEcommerceBillingAddressFields', $fields);
+		$this->extend('augmentEcommerceBillingAddressFields', $fields);
 		return $fields;
 	}
 
@@ -121,7 +121,7 @@ class BillingAddress extends OrderAddress {
 			'Address',
 			'City'
 		);
-		$this->owner->extend('augmentEcommerceBillingAddressRequiredFields', $requiredFieldsArray);
+		$this->extend('augmentEcommerceBillingAddressRequiredFields', $requiredFieldsArray);
 		return $requiredFieldsArray;
 	}
 

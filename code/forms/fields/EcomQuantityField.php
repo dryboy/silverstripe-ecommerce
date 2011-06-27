@@ -45,7 +45,7 @@ class EcomQuantityField extends NumericField {
 		Requirements::javascript("ecommerce/javascript/EcomQuantityField.js"); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
 		Requirements::customScript("EcomQuantityField.set_hidePlusAndMins(".(EcomQuantityField::get_hide_plus_and_minus() ? 1 : 0).")");
 		if(Object::has_extension($object->class,'Buyable')){
-			$this->orderItem = ShoppingCart::get_order_item_by_buyableid($object->ID,$object->ClassName.Buyable::get_order_item_class_name_post_fix(),$parameters);
+			$this->orderItem = ShoppingCart::singleton()->findOrMakeItem($object,$parameters);
 			 //provide a 0-quantity facade item if there is no such item in cart OR perhaps we should just store the product itself, and do away with the facade, as it might be unnecessary complication
 			if(!$this->orderItem) {
 				$this->orderItem = new Product_OrderItem($object->dataRecord,0);
@@ -110,7 +110,7 @@ class EcomQuantityField extends NumericField {
 	 * Used for storing the quantity update link for ajax use.
 	 */
 	function AJAXLinkHiddenField(){
-		if($quantitylink = ShoppingCart::set_quantity_item_link($this->orderItem->BuyableID, $this->orderItem->class,$this->parameters)){
+		if($quantitylink = ShoppingCart_Controller::set_quantity_item_link($this->orderItem->BuyableID, $this->orderItem->Buyable()->ClassName,$this->parameters)){
 			$attributes = array(
 				'type' => 'hidden',
 				'class' => 'ajaxQuantityField_qtylink',
@@ -126,14 +126,14 @@ class EcomQuantityField extends NumericField {
 	 *@return String (URLSegment)
 	 **/
 	function IncrementLink(){
-		return Convert::raw2att(ShoppingCart::increment_item_link($this->orderItem->BuyableID, $this->orderItem->ClassName,$this->parameters));
+		return Convert::raw2att(ShoppingCart_Controller::add_item_link($this->orderItem->BuyableID, $this->orderItem->Buyable()->ClassName,$this->parameters));
 	}
 
 	/**
 	 *@return String (URLSegment)
 	 **/
 	function DecrementLink(){
-		return Convert::raw2att(ShoppingCart::decrement_item_link($this->orderItem->BuyableID, $this->orderItem->ClassName,$this->parameters));
+		return Convert::raw2att(ShoppingCart_Controller::remove_item_link($this->orderItem->BuyableID, $this->orderItem->Buyable()->ClassName,$this->parameters));
 	}
 
 	/**

@@ -28,6 +28,7 @@
 				<% else %>
 					$TableTitle
 				<% end_if %>
+				<% if TableSubTitle %><div class="tableSubTitle">$TableSubTitle</div ><% end_if %>				
 			</td>
 			<td class="center quantity">
 				$QuantityField
@@ -62,6 +63,7 @@
 				<% else %>
 					$TableTitle
 				<% end_if %>
+				<% if TableSubTitle %><div class="tableSubTitle">$TableSubTitle</div ><% end_if %>
 			</td>
 			<td>&nbsp;</td>
 			<td class="right total" id="$TableTotalID">$TableValue.Nice</td>

@@ -13,7 +13,7 @@
 	);
 	var EcomOrderFormWithShippingAddress = {
 
-		firstNameSelector: "#FirstName input"
+		firstNameSelector: "#FirstName input",
 
 		shippingFirstNameSelector: "#ShippingFirstName input",
 
@@ -120,12 +120,12 @@
 			//name
 			var FirstName = jQuery(EcomOrderFormWithShippingAddress.firstNameSelector).val();
 			var ShippingFirstName = jQuery(EcomOrderFormWithShippingAddress.shippingFirstNameSelector).val();
-			if(!ShippingFirstName ||  && FirstName) {
+			if(!ShippingFirstName && FirstName) {
 				jQuery(EcomOrderFormWithShippingAddress.shippingFirstNameSelector).val(FirstName);
 			}
 			var Surname = jQuery(EcomOrderFormWithShippingAddress.SurnameSelector).val();
 			var ShippingSurname = jQuery(EcomOrderFormWithShippingAddress.shippingSurnameSelector).val();
-			if(!ShippingSurname ||  && Surname) {
+			if(!ShippingSurname && Surname) {
 				jQuery(EcomOrderFormWithShippingAddress.shippingSurnameSelector).val(Surname);
 			}
 

@@ -20,7 +20,9 @@ class OrderForm extends Form {
 		Requirements::javascript('ecommerce/javascript/EcomOrderForm.js'); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
 		$requiredFields = array();
 
+
 		//  ________________ 1) Member + Address fields
+
 
 		//member fields
 		$addressFields = new FieldSet();
@@ -55,7 +57,10 @@ class OrderForm extends Form {
 		$leftFields = new CompositeField($addressFields);
 		$leftFields->setID('LeftOrder');
 
+
 		//  ________________  2) Log in / vs Create Account fields - RIGHT-HAND-SIDE fields
+
+		
 		$rightFields = new CompositeField();
 		$rightFields->setID('RightOrder');
 		if(!$member || ($member && (!$member->exists() || !$member->Password))) {
@@ -87,7 +92,10 @@ class OrderForm extends Form {
 			$rightFields->push(new FieldGroup($passwordField));
 		}
 
+
 		//  ________________  3) Payment fields - BOTTOM FIELDS
+
+		
 		$bottomFields = new CompositeField();
 		$bottomFields->setID('BottomOrder');
 		$totalAsCurrencyObject = $order->TotalAsCurrencyObject(); //should instead be $totalobj = $order->dbObject('Total');
@@ -103,9 +111,9 @@ class OrderForm extends Form {
 		}
 
 
-
-
 		//  ________________  4) FINAL FIELDS
+
+		
 		$finalFields = new CompositeField();
 		$finalFields->setID('FinalFields');
 		$finalFields->push(new HeaderField(_t('OrderForm.COMPLETEORDER','Complete Order'), 3));
@@ -117,11 +125,14 @@ class OrderForm extends Form {
 		$finalFields->push(new TextareaField('CustomerOrderNote', _t('OrderForm.CUSTOMERNOTE','Note / Question'), 7, 30));
 
 
-
 		//  ________________  5) Put all the fields in one FieldSet
+
+		
 		$fields = new FieldSet($rightFields, $leftFields, $bottomFields, $finalFields);
 
-		// 6) Actions and required fields creation + Final Form construction
+		//  ________________  6) Actions and required fields creation + Final Form construction
+
+		
 		$actions = new FieldSet(new FormAction('processOrder', _t('OrderForm.PROCESSORDER','Place order and make payment')));
 		$requiredFields = new OrderForm_Validator($requiredFields);
 		$this->extend('updateValidator',$requiredFields);
@@ -328,7 +339,14 @@ class OrderForm extends Form {
 	 *@return Boolean
 	 **/
 	protected function memberShouldBeLoggedIn($data) {
-		return EcommerceRole::get_automatic_membership() && !Member::currentUserID() && this->uniqueMemberFieldCanBeUsed($data) ? true : false;
+		if(!Member::currentUserID()) {
+			if(EcommerceRole::get_automatic_membership()) {
+				if($this->uniqueMemberFieldCanBeUsed($data)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	/**

@@ -119,7 +119,7 @@ class Buyable extends DataObjectDecorator {
 		$filter = "";
 		$className = $this->owner->ClassName;
 		$this->owner->extend('updateItemFilter',$filter);
-		$item = ShoppingCart::singleton()->findOrMakeItem($this, $filter);
+		$item = ShoppingCart::singleton()->findOrMakeItem($this->owner, $filter);
 		$this->owner->extend('updateDummyItem',$item);
 		return $item; //return dummy item so that we can still make use of Item
 	}

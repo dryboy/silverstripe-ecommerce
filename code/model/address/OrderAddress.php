@@ -95,16 +95,17 @@ class OrderAddress extends DataObject {
 		if(EcommerceRegion::show()) {
 			$regionsForDropdown = EcommerceRegion::list_of_allowed_entries_for_dropdown();
 			$regionField = new DropdownField($name,EcommerceRegion::$singular_name, $regionsForDropdown);
+			if(count($regionsForDropdown) < 2) {
+				$regionField = $regionField->performReadonlyTransformation();
+				if(count($regionsForDropdown) < 1) {
+					$regionField = new HiddenField($name, '', 0);
+				}
+			}
+			
 		}
 		else {
 			//adding region field here as hidden field to make the code easier below...
-
-		}
-		if(count($regionsForDropdown) < 2) {
-			$regionField = $regionField->performReadonlyTransformation();
-			if(count($regionsForDropdown) < 1) {
-				$regionField = new HiddenField($name, '', 0);
-			}
+			$regionField = new HiddenField($name, '', 0);
 		}
 		$regionField->addExtraClass(self::get_field_class_and_id_prefix().'ajaxRegionField');
 		return $regionField;
@@ -153,6 +154,7 @@ class OrderAddress extends DataObject {
 	 *@return DataObject (OrderAddress / ShippingAddress / BillingAddfress)
 	 **/
 	public function FillWithLastAddressFromMember($member = null) {
+		$prefix = $this->prefix();
 		if(!$member) {
 			//cant use "Current Member" here, because the order might be created by the Shop Admin...
 			$member = $this->getMemberFromOrder();
@@ -160,12 +162,6 @@ class OrderAddress extends DataObject {
 		if($member) {
 			$oldAddress = $this->previousAddressFromMember($member);
 			if($oldAddress) {
-				if($this instanceOf BillingAddress) {
-					$prefix = "";
-				}
-				elseif($this instanceOf ShippingAddress) {
-					$prefix = "Shipping";
-				}
 				$fieldNameArray = $this->getFieldNameArray($prefix);
 				foreach($fieldNameArray as $field) {
 					if(!$this->$field && isset($oldAddress->$field)) {
@@ -174,13 +170,13 @@ class OrderAddress extends DataObject {
 				}
 			}
 			//copy data from  member
-			if(!$prefix) {
+			if($this instanceOf BillingAddress) {
 				$this->Email = $member->Email;
 			}
 			$fieldNameArray = array("FirstName" => $prefix."FirstName", "Surname" => $prefix."Surname");
 			foreach($fieldNameArray as $memberField => $fieldName) {
 				//NOTE, we always override the Billing Address (which does not have a prefix)
-				if(!$this->$fieldName || !$prefix) {$this->$fieldName = $member->$memberField();}
+				if(!$this->$fieldName || $this instanceOf BillingAddress) {$this->$fieldName = $member->$memberField;}
 			}
 		}
 		$this->write();
@@ -248,6 +244,16 @@ class OrderAddress extends DataObject {
 			}
 		}
 		return $fieldNameArray;
+	}
+
+	protected function prefix() {
+		if($this instanceOf BillingAddress) {
+			$prefix = "";
+		}
+		elseif($this instanceOf ShippingAddress) {
+			$prefix = "Shipping";
+		}
+		return $prefix;
 	}
 
 }

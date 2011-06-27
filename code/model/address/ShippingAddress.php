@@ -109,7 +109,7 @@ class ShippingAddress extends OrderAddress {
 		else {
 			$fields = new FieldSet();
 		}
-		$this->owner->extend('augmentEcommerceShippingAddressFields', $fields);
+		$this->extend('augmentEcommerceShippingAddressFields', $fields);
 		return $fields;
 	}
 
@@ -121,7 +121,7 @@ class ShippingAddress extends OrderAddress {
 	 */
 	function getEcommerceRequiredFields() {
 		$requiredFieldsArray = array();
-		$this->owner->extend('augmentEcommerceShippingAddressRequiredFields', $requiredFieldsArray);
+		$this->extend('augmentEcommerceShippingAddressRequiredFields', $requiredFieldsArray);
 		return $requiredFieldsArray;
 	}
 
