@@ -174,13 +174,10 @@ class OrderModifier extends OrderAttribute {
 	* This method simply checks if a fields has changed and if it has changed it updates the field.
 	**/
 	protected function checkField($fieldName) {
-		//$start =  microtime();
 		if($this->canBeUpdated()) {
 			$functionName = "Live".$fieldName;
-			if($this->$functionName() != $this->$fieldName) {
-				$this->$fieldName = $this->$functionName();
-				$this->mustUpdate = true;
-			}
+			$this->$fieldName = $this->$functionName();
+			$this->mustUpdate = true;
 		}
 		//debug::show($this->ClassName.".".$fieldName.": ".floatval(microtime() - $start));
 	}
@@ -355,6 +352,7 @@ class OrderModifier extends OrderAttribute {
 // ######################################## ***  calculate database fields ( = protected function Live[field name]() { ....}
 
 	protected function LiveName() {
+		user_error("This function has be defined in ...".$this->ClassName, E_USER_NOTICE);
 		return self::$defaults["Name"];
 	}
 

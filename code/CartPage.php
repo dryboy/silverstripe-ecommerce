@@ -88,8 +88,6 @@ class CartPage_Controller extends Page_Controller{
 
 	protected $currentOrder = null;
 
-	protected $orderID = 0;
-
 	protected $memberID = 0;
 
 	protected $message = "";
@@ -104,23 +102,21 @@ class CartPage_Controller extends Page_Controller{
 		parent::init();
 		//Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js"); VIA EcommerceSiteTreeExtension::initcontentcontroller()
 		Requirements::javascript('ecommerce/javascript/EcomCart.js'); 
-
+		$orderID = 0;
 		//WE HAVE THIS FOR SUBMITTING FORMS!
 		if(isset($_REQUEST['OrderID'])) {
-			$this->orderID = intval($_REQUEST['OrderID']);
+			$orderID = intval($_REQUEST['OrderID']);
 		}
 		elseif(Director::urlParam('ID') && Director::urlParam('Action') == "showorder"){
-			$this->orderID = intval(Director::urlParam('ID'));
+			$orderID = intval(Director::urlParam('ID'));
 		}
-		if($this->OrderID) {
-			$this->currentOrder = DataObject::get_by_id("Order", $this->orderID);
+		if($orderID) {
+			$this->currentOrder = Order::get_by_id_if_can_view($orderID);
 		}
 		else {
 			$this->currentOrder = ShoppingCart::current_order();
-		}
-		if($this->currentOrder) {
-			if($this->currentOrder->IsSubmitted())  {
-				$this->currentOrder->tryToFinaliseOrder();
+			if(!$this->currentOrder) {
+				$this->currentOrder = DataObject::get_one("Order", "\"SessionID\" = '".session_id()."'");
 			}
 		}
 	}
@@ -142,14 +138,6 @@ class CartPage_Controller extends Page_Controller{
 	 *@return DataObject | Null - Order
 	 **/
 	public function Order() {
-		if(!$this->currentOrder) {
-			if($this->orderID) {
-				$this->currentOrder = Order::get_by_id_if_can_view($this->orderID);
-			}
-			else {
-				$this->currentOrder = ShoppingCart::current_order();
-			}
-		}
 		return $this->currentOrder;
 	}
 
@@ -185,6 +173,7 @@ class CartPage_Controller extends Page_Controller{
 		if ($orderID = intval($request->param('ID'))) {
 			$this->currentOrder = ShoppingCart::singleton()->loadOrder($orderID);
 			Director :: redirect($this->Link());
+			exit();
 		}
 		return array ();
 	}
@@ -194,7 +183,7 @@ class CartPage_Controller extends Page_Controller{
 	 */
 	function startneworder($request) {
 		ShoppingCart :: singleton()->clear();
-		Director :: redirectBack();
+		Director :: redirect($this->Link());
 	}
 
 

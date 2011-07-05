@@ -67,9 +67,9 @@ class OrderAttribute extends DataObject {
 					if($this->Order()->canEdit($member)) {
 						$this->_canEdit = true;
 					}
-				}
-			}
-		}
+				} 
+			} 
+		} 
 		return $this->_canEdit;
 	}
 

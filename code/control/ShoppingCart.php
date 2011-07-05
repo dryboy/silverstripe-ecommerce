@@ -234,6 +234,8 @@ class ShoppingCart extends Object{
 	 */
 	public function clear(){
 		Session::clear(self::$session_variable); //clear the orderid from session
+		Session::set(self::$session_variable, null); //clear the orderid from session
+		Session::save(); //clear the orderid from session
 		$this->order = null; //clear local variable
 	}
 

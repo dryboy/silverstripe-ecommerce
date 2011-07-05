@@ -188,7 +188,7 @@ class Order extends DataObject {
 		if($order && is_object($order) && $order->canView()){
 			if(!$order->canEdit()) {
 				// LITTLE HACK TO MAKE SURE WE SHOW THE LATEST INFORMATION!
-				$this->currentOrder->tryToFinaliseOrder();
+				$order->tryToFinaliseOrder();
 			}
 			return $order;
 		}
@@ -1034,22 +1034,28 @@ class Order extends DataObject {
 	 *@return Boolean
 	 **/
 	public function canView($member = null) {
+		if(!$this->ID ) {
+			return true;
+		}		
 		$member = $this->getMemberForCanFunctions($member);
 		//check if this has been "altered" in a DataObjectDecorator
 		$extended = $this->extendedCan('canView', $member->ID);
 		if($extended !== null) {return $extended;}
 		//no member present: ONLY if the member can edit the order it can be viewed...
-		if($member->IsShopAdmin()) {
-			return true;
+		if($member->ID) {
+			if($member->IsShopAdmin()) {
+				return true;
+			}
 		}
-		elseif($this->SessionID == session_id()){
-
+		$currentOrder = ShoppingCart::current_order();
+		if($currentOrder && $currentOrder->ID == $this->ID){
 			return true;
 		}
 		elseif(!$this->MemberID) {
+			echo $this->SessionID .'<br />'. session_id();
 			return false;
 		}
-		elseif($member && $this->MemberID == $member->ID && !$this->IsCancelled()) {
+		elseif($member && $this->MemberID == $member->ID) {
 			return true;
 		}
 		return false;
@@ -1061,17 +1067,24 @@ class Order extends DataObject {
 	 *@return Boolean
 	 **/
 	function canEdit($member = null) {
+		if($this->canView($member) && $this->MyStep()->CustomerCanEdit) {
+			return true;
+		}
+		
 		$member = $this->getMemberForCanFunctions($member);
 		$extended = $this->extendedCan('canEdit', $member->ID);
 		if($extended !== null) {return $extended;}
-		if(!$this->canView($member) || $this->IsCancelled()) {
-			return false;
-		}
+
 		if($member->ID) {
 			if($member->IsShopAdmin()) {
 				return true;
 			}
 		}
+		
+		if(!$this->canView($member) || $this->IsCancelled()) {
+			return false;
+		}
+
 		return $this->MyStep()->CustomerCanEdit;
 	}
 
