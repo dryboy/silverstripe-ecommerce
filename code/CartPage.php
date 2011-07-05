@@ -103,7 +103,7 @@ class CartPage_Controller extends Page_Controller{
 	public function init() {
 		parent::init();
 		//Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js"); VIA EcommerceSiteTreeExtension::initcontentcontroller()
-		//Requirements::javascript('ecommerce/javascript/EcomCart.js'); //VIA ShoppingCartRequirements.ss
+		Requirements::javascript('ecommerce/javascript/EcomCart.js'); 
 
 		//WE HAVE THIS FOR SUBMITTING FORMS!
 		if(isset($_REQUEST['OrderID'])) {
