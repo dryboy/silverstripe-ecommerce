@@ -628,7 +628,14 @@ class Order extends DataObject {
 	 * @return boolean
 	 */
 	public function IsCancelled() {
-		return (bool)$this->CancelledByID;
+		return $this->getIsCancelled();
+	}
+
+	/**
+	 * IT is important to have both IsCancelled and getIsCancelled.
+	 **/ 
+	public function getIsCancelled() {
+		return $this->CancelledByID ? TRUE : FALSE;
 	}
 
 	/**
@@ -1425,9 +1432,23 @@ class Order extends DataObject {
 	 *@return Boolean
 	 **/
 	function IsSubmitted() {
-		$className = OrderStatusLog::get_order_status_log_class_used_for_submitting_order();
-		return DataObject::get_one($className, "\"OrderID\" = ".$this->ID)? true : false;
+		return $this->getIsSubmitted();
 	}
+
+	/**
+	 * we MUST have this function in addtion to IsSubmitted
+	 **/
+	function getIsSubmitted() {
+		$className = OrderStatusLog::get_order_status_log_class_used_for_submitting_order();
+		$submissionLog = DataObject::get_one($className, "\"OrderID\" = ".$this->ID);
+		if($submissionLog) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+		
 
 	/**
 	 * returns the link to view the Order
@@ -1440,15 +1461,18 @@ class Order extends DataObject {
 			$page = DataObject::get_one("CartPage", "\"ClassName\" = 'CartPage'");
 		}
 		else {
-			user_error("An OrderConfirmation page needs to be created", E_USER_NOTICE);
 			$page = DataObject::get_one("OrderConfirmationPage");
 		}
 		//backup.... may take you to the checkout page....
 		if(!$page) {
+			user_error("An OrderConfirmation page needs to be created", E_USER_NOTICE);			
 			$page = DataObject::get_one("CartPage");
 		}
 		if($page) {
 			return $page->getOrderLink($this->ID);
+		}
+		else {
+			user_error("An Cart Page or similar needs to be setup.", E_USER_WARNING);
 		}
 	}
 

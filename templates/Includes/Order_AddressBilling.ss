@@ -1,6 +1,6 @@
-<% if OrderAddress %><% control OrderAddress %>
+<% if BillingAddress %><% control BillingAddress %>
 <address class="addressSection" cellspacing="0" cellpadding="0" id="BillingAddressSection">
-	<% if Name %>$Name<br /><% end_if %>
+	$FirstName $Surname<br />
 	<% if Address %>$Address<br/><% end_if %>
 	<% if Address2 %>$Address2<br /><% end_if %>
 	<% if City %>$City<br /><% end_if %>

@@ -79,7 +79,7 @@ class CartPage extends Page{
 	}
 
 	public function getOrderLink($orderID) {
-		$this->Link('showorder').'/'.$orderID.'/';
+		return $this->Link('showorder').'/'.$orderID.'/';
 	}
 
 }
@@ -117,6 +117,11 @@ class CartPage_Controller extends Page_Controller{
 		}
 		else {
 			$this->currentOrder = ShoppingCart::current_order();
+		}
+		if($this->currentOrder) {
+			if($this->currentOrder->IsSubmitted())  {
+				$this->currentOrder->tryToFinaliseOrder();
+			}
 		}
 	}
 

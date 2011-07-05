@@ -1,6 +1,6 @@
 <% if ShippingAddress %> <% control ShippingAddress %>
 <address class="addressSection" id="ShippingAddressAddressSection">
-	<% if ShippingName %>$ShippingName<br /><% end_if %>
+	$ShippingFirstName $ShippingSurname<br />
 	<% if ShippingAddress %>$ShippingAddress<br /><% end_if %>
 	<% if ShippingAddress2 %>$ShippingAddress2<br /><% end_if %>
 	<% if ShippingCity %>$ShippingCity<br /><% end_if %>
