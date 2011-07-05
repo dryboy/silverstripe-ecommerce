@@ -1440,9 +1440,10 @@ class Order extends DataObject {
 			$page = DataObject::get_one("CartPage", "\"ClassName\" = 'CartPage'");
 		}
 		else {
+			user_error("An OrderConfirmation page needs to be created", E_USER_NOTICE);
 			$page = DataObject::get_one("OrderConfirmationPage");
 		}
-		//backup....
+		//backup.... may take you to the checkout page....
 		if(!$page) {
 			$page = DataObject::get_one("CartPage");
 		}
