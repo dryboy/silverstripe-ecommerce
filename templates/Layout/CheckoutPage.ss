@@ -3,7 +3,7 @@
 
 	<h1 class="pagetitle">$Title</h1>
 
-	<div id="MainCheckoutMessage">$Message</div>
+	<% if Message %><div id="MainCheckoutMessage">$Message</div><% end_if %>
 <% if ActionLinks %>
 	<ul id="UsefulLinks">
 		<% control ActionLinks %><li><a href="$Link">$Title</a></li><% end_control %>
