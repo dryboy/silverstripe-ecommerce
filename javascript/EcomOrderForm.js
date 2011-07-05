@@ -24,6 +24,7 @@
 
 		init: function() {
 			this.passwordInitalisation();
+			this.postalCodeLink();
 		},
 
 		//toggles password selection and enters random password so that users still end up with a password
@@ -55,6 +56,10 @@
 				randomstring += this.chars.substring(rnum,rnum+1);
 			}
 			return randomstring;
+		},
+
+		postalCodeLink: function() {
+			jQuery(".postalCodeLink").attr("target", "_postalcode");
 		}
 	}
 })(jQuery);

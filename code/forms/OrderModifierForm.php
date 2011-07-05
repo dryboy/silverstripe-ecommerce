@@ -60,10 +60,19 @@ class OrderModifierForm extends Form {
 			$validator = new $className();
 		}
 		parent::__construct($optionalController, $name, $fields, $actions, $validator);
+		Requirements::themedCSS($this->ClassName);
+		Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js");
+		Requirements::javascript(THIRDPARTY_DIR."/jquery-form/jquery.form.js");
+	
 	}
 
 	function redirect($status = "success", $message = ""){
 		//return ShoppingCart::singleton()->addmessage($status, $message);
+	}
+
+	function submit($data, $form, $message = "order updated", $status = "good") {
+		//to do - add other checks here...
+		 return ShoppingCart::singleton()->setMessageAndReturn($message, $status);
 	}
 
 }
@@ -100,13 +109,16 @@ class OrderModifierForm_AjaxSubmit extends OrderModifierForm {
  */
 class OrderModifierForm_Controller extends Controller{
 
+	protected $currentOrder = null;
+
 	static $allowed_actions = array(
 		'removemodifier'
 	);
 
 	public function init() {
-		$this->initVirtualMethods();
 		parent::init();
+		$this->currentOrder = ShoppingCart::current_order();	
+		$this->initVirtualMethods();
 	}
 
 	/**
@@ -114,10 +126,12 @@ class OrderModifierForm_Controller extends Controller{
 	 * redirect the action method to the form class
 	 */
 	protected function initVirtualMethods() {
-		if($forms = Order::get_modifier_forms($this)) {
-			foreach($forms as $form) {
-				$this->addWrapperMethod($form->Name(), 'getOrderModifierForm');
-				self::$allowed_actions[] = $form->Name(); // add all these forms to the list of allowed actions also
+		if($this->currentOrder) {
+			if($forms = $this->currentOrder->getModifierForms($this)) {
+				foreach($forms as $form) {
+					$this->addWrapperMethod($form->Name(), 'getOrderModifierForm');
+					self::$allowed_actions[] = $form->Name(); // add all these forms to the list of allowed actions also
+				}
 			}
 		}
 	}
@@ -129,9 +143,11 @@ class OrderModifierForm_Controller extends Controller{
 	 * @return Form
 	 */
 	protected function getOrderModifierForm($name) {
-		if($forms = Order::get_modifier_forms($this)) {
-			foreach($forms as $form) {
-				if($form->Name() == $name) return $form;
+		if($this->currentOrder) {
+			if($forms = $this->currentOrder->getModifierForms($this)) {		
+				foreach($forms as $form) {
+					if($form->Name() == $name) return $form;
+				}
 			}
 		}
 	}

@@ -80,7 +80,7 @@ class OrderModifier extends OrderAttribute {
 	/**
 	 *
 	 * @return FieldSet
-	  **/
+	 **/
 	function scaffoldSearchFields(){
 		$fields = parent::scaffoldSearchFields();
 		$fields->replaceField("OrderID", new NumericField("OrderID", "Order Number"));

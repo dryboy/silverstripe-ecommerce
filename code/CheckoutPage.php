@@ -37,8 +37,7 @@
 class CheckoutPage extends CartPage {
 
 	public static $db = array (
-		'PurchaseComplete' => 'HTMLText',
-		'ChequeMessage' => 'HTMLText',
+		'InvitationToCompleteOrder' => 'HTMLText',
 		'AlreadyCompletedMessage' => 'HTMLText',
 		'FinalizedOrderLinkLabel' => 'Varchar(255)',
 		'CurrentOrderLinkLabel' => 'Varchar(255)',
@@ -53,22 +52,7 @@ class CheckoutPage extends CartPage {
 		'TermsPage' => 'Page'
 	);
 
-	public static $has_many = array ();
-
-	public static $many_many = array ();
-
-	public static $belongs_many = array ();
-
-	public static $defaults = array ();
-
 	public static $icon = 'ecommerce/images/icons/checkout';
-
-	static function set_add_shipping_fields($v) {
-		user_error("This function has been moved to Order", E_USER_ERROR);
-	}
-	static function get_add_shipping_fields() {
-		user_error("This function has been moved to Order", E_USER_ERROR);
-	}
 
 	/**
 	 * Returns the Terms and Conditions Page (if there is one).
@@ -90,10 +74,6 @@ class CheckoutPage extends CartPage {
 		return $page->Link();
 	}
 
-	function canCreate($member = null) {
-		return !DataObject :: get_one("SiteTree", "\"ClassName\" = 'CheckoutPage'");
-	}
-
 	/**
 	 * Returns the link to the checkout page on this site, using
 	 * a specific Order ID that already exists in the database.
@@ -109,10 +89,25 @@ class CheckoutPage extends CartPage {
 		return $page->Link("loadorder") . "/" . $orderID . "/";
 	}
 
+	/**
+	 * Standard SS function, we only allow for one checkout page to exist
+	 *@return Boolean
+	 **/
+	function canCreate($member = null) {
+		return !DataObject :: get_one("SiteTree", "\"ClassName\" = 'CheckoutPage'");
+	}
+
+
+	/**
+	 * Standard SS function
+	 *@return FieldSet
+	 **/
 	function getCMSFields() {
 		$fields = parent :: getCMSFields();
+		$fields->removeFieldFromTab('Root.Content.Main', "Content");
 		$fields->addFieldToTab('Root.Content.TermsAndConditions', new TreeDropdownField('TermsPageID', 'Terms and Conditions Page', 'SiteTree'));
 		$fields->addFieldsToTab('Root.Content.Messages', array (
+			new HtmlEditorField('InvitationToCompleteOrder', 'Invitation to complete order ... shown when the customer can do a normal checkout', $row = 4),
 			new HtmlEditorField('AlreadyCompletedMessage', 'Already Completed - shown when the customer tries to checkout an already completed order', $row = 4),
 			new TextField('FinalizedOrderLinkLabel', 'Label for the link pointing to a completed order - e.g. click here to view the completed order'),
 			new TextField('CurrentOrderLinkLabel', 'Label for the link pointing to the current order - e.g. click here to view current order'),
@@ -120,10 +115,9 @@ class CheckoutPage extends CartPage {
 			new HtmlEditorField('NonExistingOrderMessage', 'Non-existing Order - shown when the customer tries ', $row = 4),
 			new HtmlEditorField('NoItemsInOrderMessage', 'No items in order - shown when the customer tries to checkout an order without items.', $row = 4),
 			new HtmlEditorField('MustLoginToCheckoutMessage', 'MustLoginToCheckoutMessage', $row = 4),
-			new TextField('LoginToOrderLinkLabel', 'Label for the link pointing to the order which requires a log in - e.g. click here to log in and view order'),
-			new HtmlEditorField('PurchaseComplete', 'Purchase Complete - included in receipt email, after the customer submits the checkout ', $row = 4),
-			new HtmlEditorField('ChequeMessage', 'Cheque Message - shown when a customer selects a delayed payment option (such as a cheque payment) ', $rows = 4)
+			new TextField('LoginToOrderLinkLabel', 'Label for the link pointing to the order which requires a log in - e.g. click here to log in and view order')
 		));
+		$fields->addFieldToTab('Root.Content.AlwaysVisible', new HtmlEditorField('Content', 'General note'));
 		return $fields;
 	}
 
@@ -148,12 +142,15 @@ class CheckoutPage_Controller extends CartPage_Controller {
 	 **/
 	protected $readOnly = false;
 
+	/**
+	 * Standard SS function
+	 * if set to false, user can edit order, if set to true, user can only review order
+	 **/
 	public function init() {
 		parent :: init();
 		if (!class_exists('Payment')) {
 			trigger_error('The payment module must be installed for the ecommerce module to function.', E_USER_WARNING);
 		}
-		$this->currentOrder = ShoppingCart::current_order();
 		Requirements::javascript('ecommerce/javascript/EcomPayment.js');
 		//Requirements::themedCSS('CheckoutPage'); // VIA CheckoutPage.ss
 	}
@@ -227,7 +224,7 @@ class CheckoutPage_Controller extends CartPage_Controller {
 	 */
 	function CanCheckout() {
 		if ($this->currentOrder) {
-			if ($this->currentOrder->Items() && $this->currentOrder->canEdit()) {
+			if ($this->currentOrder->Items() && !$this->currentOrder->IsSubmitted()) {
 				return true;
 			}
 		}
@@ -242,8 +239,13 @@ class CheckoutPage_Controller extends CartPage_Controller {
 	function Message() {
 		$this->actionLinks = new DataObjectSet();
 		$checkoutLink = CheckoutPage :: find_link();
-		if (!Member :: currentUserID() && !$this->currentOrder) {
-			$redirectLink = CheckoutPage :: get_checkout_order_link();
+		if($this->CanCheckout()) {
+			return $this->InvitationToCompleteOrder;
+		}
+
+		//not logged, an order was requested, but it can not be found: must login first!
+		elseif (!Member :: currentUserID() && $this->OrderID && !$this->currentOrder ) {
+			$redirectLink = CheckoutPage :: get_checkout_order_link($this->OrderID);
 			$this->actionLinks->push(new ArrayData(array (
 				"Title" => $this->LoginToOrderLinkLabel,
 				"Link" => 'Security/login?BackURL=' . urlencode($redirectLink)
@@ -254,17 +256,20 @@ class CheckoutPage_Controller extends CartPage_Controller {
 			)));
 			return $this->MustLoginToCheckoutMessage;
 		}
-		elseif (!$this->currentOrder) {
+		//already logged in, but order can not be found: order does not exist!
+		elseif (Member :: currentUserID() && $this->OrderID && !$this->currentOrder) {
 			$this->actionLinks->push(new arrayData(array (
 				"Title" => $this->CurrentOrderLinkLabel,
 				"Link" => $checkoutLink
 			)));
 			return $this->NonExistingOrderMessage;
 		}
-		elseif (!$this->currentOrder->Items()) {
+		//no items in basket
+		elseif ($this->currentOrder && !$this->currentOrder->Items()) {
 			return $this->NoItemsInOrderMessage;
 		}
-		elseif (!$this->currentOrder->canPay() || !$this->currentOrder->canEdit()) {
+		//order can not be edited: 
+		elseif ($this->currentOrder && $this->currentOrder->IsSubmitted()) {
 			$this->actionLinks->push(new ArrayData(array (
 				"Title" => $this->FinalizedOrderLinkLabel,
 				"Link" => $this->currentOrder->Link()
@@ -275,7 +280,7 @@ class CheckoutPage_Controller extends CartPage_Controller {
 			)));
 			return $this->AlreadyCompletedMessage;
 		}
-		return "";
+		return "An error occured in retrieving your order...";
 	}
 
 	/**

@@ -131,9 +131,10 @@ class OrderAddress extends DataObject {
 
 	/**
   	 * Saves region - both shipping and billing fields are saved here for convenience sake (only one actually gets saved)
+  	 * NOTE: do not call this method SetCountry as this has a special meaning! * 
   	 * @param Integer -  RegionID
   	 **/
-	public function SetRegion($regionID) {
+	public function SetRegionFields($regionID) {
 		$this->RegionID = $regionID;
 		$this->ShippingRegionID = $regionID;
 		$this->write();
@@ -141,9 +142,10 @@ class OrderAddress extends DataObject {
 
 	/**
   	 * Saves country - both shipping and billing fields are saved here for convenience sake (only one actually gets saved)
+  	 * NOTE: do not call this method SetCountry as this has a special meaning! 
   	 * @param String - CountryCode - e.g. NZ
   	 **/
-	public function SetCountry($countryCode) {
+	public function SetCountryFields($countryCode) {
 		$this->Country = $countryCode;
 		$this->ShippingCountry = $countryCode;
 		$this->write();
@@ -254,6 +256,14 @@ class OrderAddress extends DataObject {
 			$prefix = "Shipping";
 		}
 		return $prefix;
+	}
+
+
+	function onBeforeWrite() {
+		parent::onBeforeWrite();
+		if(!$this->OrderID && $order = ShoppingCart::current_order()) {
+			$this->OrderID = $order->ID;
+		}
 	}
 
 }

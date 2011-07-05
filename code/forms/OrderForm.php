@@ -37,7 +37,7 @@ class OrderForm extends Form {
 		$requiredFields = array_merge($requiredFields, $member->getEcommerceRequiredFields());
 		$addressFields->merge($memberFields);
 		//billing address field
-		$billingAddress = $order->CreateOrReturnExistingAddress("BillingAddress", "BillingAddress");
+		$billingAddress = $order->CreateOrReturnExistingAddress("BillingAddress");
 		$billingAddressFields = $billingAddress->getFields();
 		$requiredFields = array_merge($requiredFields, $billingAddress->getRequiredFields());
 		$addressFields->merge($billingAddressFields);
@@ -47,7 +47,7 @@ class OrderForm extends Form {
 			$useShippingAddressField = new FieldSet(new CheckboxField("UseShippingAddress", _t("OrderForm.USESHIPPINGADDRESS", "Use an alternative shipping address")));
 			$addressFields->merge($useShippingAddressField);
 			//now we can add the shipping fields
-			$shippingAddress = $order->CreateOrReturnExistingAddress("ShippingAddress", "ShippingAddress");
+			$shippingAddress = $order->CreateOrReturnExistingAddress("ShippingAddress");
 			$shippingAddressFields = $shippingAddress->getFields();
 			$requiredFields = array_merge($requiredFields, $shippingAddress->getRequiredFields());
 			//finalise left fields
@@ -63,7 +63,7 @@ class OrderForm extends Form {
 		
 		$rightFields = new CompositeField();
 		$rightFields->setID('RightOrder');
-		if(!$member || ($member && (!$member->exists() || !$member->Password))) {
+		if(!$member || ($member && (!$member->exists() || !$member->Password)) && !$member->IsAdmin()) {
 			//general header
 			if(!$member->exists()) {
 				$rightFields->push(
@@ -130,6 +130,8 @@ class OrderForm extends Form {
 		
 		$fields = new FieldSet($rightFields, $leftFields, $bottomFields, $finalFields);
 
+
+
 		//  ________________  6) Actions and required fields creation + Final Form construction
 
 		
@@ -157,6 +159,8 @@ class OrderForm extends Form {
 		if ($member) {
 			$this->loadDataFrom($member);
 		}
+
+		
 		//allow updating via decoration
 		$this->extend('updateForm',$this);
 
@@ -231,17 +235,17 @@ class OrderForm extends Form {
 		}
 		$member = $this->createOrFindMember($data);
 		if(is_object($member)) {
-			if($this->memberShouldBeSaved()) {
+			if($this->memberShouldBeSaved($data)) {
 				$form->saveInto($member);
 				$member->write();
 			}
-			if($this->memberShouldBeLoggedIn()) {
+			if($this->memberShouldBeLoggedIn($data)) {
 				$member->logIn();
 			}
 			$order->MemberID = $member->ID;
 		}
 		//BILLING ADDRESS
-		if($billingAddress = $order->CreateOrReturnExistingAddress("BillingAddress", "BillingAddress")) {
+		if($billingAddress = $order->CreateOrReturnExistingAddress("BillingAddress")) {
 			$form->saveInto($billingAddress);
 			$order->BillingAddressID = $billingAddress->write();
 		}
@@ -249,7 +253,7 @@ class OrderForm extends Form {
 		// SHIPPING ADDRESS
 		if(isset($data['UseShippingAddress'])){
 			if($data['UseShippingAddress']) {
-				if($shippingAddress = $order->CreateOrReturnExistingAddress("ShippingAddress", "ShippingAddress")) {
+				if($shippingAddress = $order->CreateOrReturnExistingAddress("ShippingAddress")) {
 					$form->saveInto($shippingAddress);
 					// NOTE: write should return the new ID of the object
 					$order->ShippingAddressID = $shippingAddress->write();
@@ -356,10 +360,11 @@ class OrderForm extends Form {
 	 * returns TRUE if there is no existing member with the unique field OR the member is not logged in.
 	 * If you are not logged BUT the the unique field is used by an existing member then we can still
 	 * use the field - we just CAN NOT log in the member.
+	 * This method needs to be public because it is used by the OrderForm_Validator (see below).
 	 *@param Array - form data - should include $data[uniqueField....] - e.g. $data["Email"]
 	 *@return Boolean
 	 **/
-	protected function uniqueMemberFieldCanBeUsed($data) {
+	public function uniqueMemberFieldCanBeUsed($data) {
 		return !$this->existingMemberWithUniqueField($data) || !Member::currentUserID() ? true : false;
 	}
 
@@ -412,7 +417,7 @@ class OrderForm_Validator extends ShopAccountForm_Validator{
 			}
 		}
 		//Note the exclamation Mark - only applies if it return FALSE.
-		if(!EcommerceRole::unique_field_value_can_be_used($data)) {
+		if(!$this->form->uniqueMemberFieldCanBeUsed($data)) {
 			$uniqueField = Member::get_unique_identifier_field();
 			$this->validationError(
 				$uniqueField,

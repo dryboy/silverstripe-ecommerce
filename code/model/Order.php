@@ -683,25 +683,6 @@ class Order extends DataObject {
    * 4. LINKING ORDER WITH MEMBER AND ADDRESS
 *******************************************************/
 
-	/**
-	 *
-	 *@return DataObject - billing address
-	 **/
-	public function BillingAddress() {
-		if($this->BillingAddressID) {
-			return DataObject::get_by_id("BillingAddress", $this->BillingAddressID);
-		}
-	}
-
-	/**
-	 *
-	 *@return DataObject - shipping address
-	 **/
-	public function ShippingAddress() {
-		if($this->ShippingAddressID) {
-			return DataObject::get_by_id("ShippingAddress", $this->ShippingAddressID);
-		}
-	}
 
 	/**
 	 * returns a member linked to the order -
@@ -712,7 +693,6 @@ class Order extends DataObject {
 	public function CreateOrReturnExistingMember() {
 		if(!$this->MemberID) {
 			if($member = Member::currentMember()) {
-				$this->MemberID = $member->ID;
 				$this->write();
 			}
 		}
@@ -722,7 +702,13 @@ class Order extends DataObject {
 		if(!$member) {
 			$member = new Member();
 		}
-		return $member;
+		if($member) {
+			if($member->ID) {
+				$this->MemberID = $member->ID;
+			}
+			return $member;
+		}
+		return null;
 	}
 
 	/**
@@ -738,32 +724,33 @@ class Order extends DataObject {
 	 **/
 
 	public function CreateOrReturnExistingAddress(string $className, $alternativeMethodName = '') {
-		$variableName = $className."ID";
-		if($alternativeMethodName) {
-			$methodName = $alternativeMethodName;
-		}
-		else {
+		if($this->ID) {
+			$variableName = $className."ID";
 			$methodName = $className;
-		}
-		$address = null;
-		if($this->$variableName) {
-			if($address = $this->$methodName()) {
-				//the stuff below is just a little additional check... linking the address to the order...
-				//that is, the order could link to the address without the address linking back to the order.
-				if($address->OrderID != $this->ID && $this->ID) {
-					$address->OrderID = $this->ID;
-					$address->write();
+			if($alternativeMethodName) {
+				$methodName = $alternativeMethodName;
+			}
+			$address = null;
+			if($this->$variableName) {
+				$address = $this->$methodName();
+			}
+			if(!$address) {
+				$address = new $className();
+				if($member = $this->CreateOrReturnExistingMember()) {
+					$address->FillWithLastAddressFromMember($member, $write = false);
 				}
 			}
-		}
-		if(!$address) {
-			$address = new $className();
-			$address->OrderID = $this->ID;
-			if($member = $this->Member()) {
-				$address->FillWithLastAddressFromMember($member, $write = true);
+			if($address) {
+				//save address
+				$address->OrderID = $this->ID;
+				$address->write();
+				//save order
+				$this->$variableName = $address->ID;
+				$this->write();	
+				return $address;
 			}
 		}
-		return $address;
+		return null;
 	}
 
 	/**
@@ -771,12 +758,12 @@ class Order extends DataObject {
 	 *
 	 **/
 	public function SetCountry($countryCode) {
-		if($billingAddress = $this->CreateOrReturnExistingAddress("BillingAddress", "BillingAddress")) {
-			$billingAddress->SetCountry($countryCode);
+		if($billingAddress = $this->CreateOrReturnExistingAddress("BillingAddress")) {
+			$billingAddress->SetCountryFields($countryCode);
 		}
 		if(OrderAddress::get_use_separate_shipping_address()) {
-			if($shippingAddress = $this->CreateOrReturnExistingAddress("ShippingAddress", "ShippingAddress")) {
-				$shippingAddress->SetCountry($countryCode);
+			if($shippingAddress = $this->CreateOrReturnExistingAddress("ShippingAddress")) {
+				$shippingAddress->SetCountryFields($countryCode);
 			}
 		}
 	}
@@ -786,12 +773,12 @@ class Order extends DataObject {
 	 *
 	 **/
 	public function SetRegion($regionID) {
-		if($billingAddress = $this->CreateOrReturnExistingAddress("BillingAddress", "BillingAddress")) {
-			$billingAddress->SetRegion($regionID);
+		if($billingAddress = $this->CreateOrReturnExistingAddress("BillingAddress")) {
+			$billingAddress->SetRegionFields($regionID);
 		}
 		if(OrderAddress::get_use_separate_shipping_address()) {
-			if($shippingAddress = $this->CreateOrReturnExistingAddress("ShippingAddress", "ShippingAddress")) {
-				$shippingAddress->SetRegion($regionID);
+			if($shippingAddress = $this->CreateOrReturnExistingAddress("ShippingAddress")) {
+				$shippingAddress->SetRegionFields($regionID);
 			}
 		}
 	}
@@ -1071,7 +1058,6 @@ class Order extends DataObject {
 		$extended = $this->extendedCan('canEdit', $member->ID);
 		if($extended !== null) {return $extended;}
 		if(!$this->canView($member) || $this->IsCancelled()) {
-
 			return false;
 		}
 		if($member->ID) {
@@ -1079,7 +1065,6 @@ class Order extends DataObject {
 				return true;
 			}
 		}
-
 		return $this->MyStep()->CustomerCanEdit;
 	}
 
@@ -1446,19 +1431,24 @@ class Order extends DataObject {
 
 	/**
 	 * returns the link to view the Order
+	 * TO DO: explain why not "CheckoutPage" ???
 	 *@return String(URLSegment)
 	 */
 	function Link() {
-		if($this->canEdit()) {
+		if(!$this->IsSubmitted()) {
+			//make sure to get a Cart page and not some other extension of Cart Page
 			$page = DataObject::get_one("CartPage", "\"ClassName\" = 'CartPage'");
-			if(!$page) {
-				$page = DataObject::get_one("OrderConfirmationPage");
-			}
 		}
 		else {
 			$page = DataObject::get_one("OrderConfirmationPage");
 		}
-		return $page->getOrderLink($this->ID);
+		//backup....
+		if(!$page) {
+			$page = DataObject::get_one("CartPage");
+		}
+		if($page) {
+			return $page->getOrderLink($this->ID);
+		}
 	}
 
 	/**
@@ -1671,11 +1661,15 @@ class Order extends DataObject {
 			}
 		}
 		if($billingAddress = $this->BillingAddress()) {
-			$billingAddress->delete();
+			if($billingAddress->exists()) {			
+				$billingAddress->delete();
+			}
 			//$billingAddress->destroy();
 		}
 		if($shippingAddress = $this->ShippingAddress()) {
-			$shippingAddress->delete();
+			if($shippingAddress->exists()) {
+				$shippingAddress->delete();
+			}
 			//$shippingAddress->destroy();
 		}
 		if($emails = $this->Emails()) {

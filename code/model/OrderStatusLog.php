@@ -55,7 +55,7 @@ class OrderStatusLog extends DataObject {
 
 	/**
 	 * $available_log_classes_array tells us what order log classes are to be used.
-	 * OrderStatusLog_Submitted should always be used!
+	 * OrderStatusLog_Submitted should always be used and does not need to be listed here.
 	 *@var Array - $available_log_classes_array
 	 **/
 	protected static $available_log_classes_array = array("OrderStatusLog_PaymentCheck");
@@ -163,6 +163,7 @@ class OrderStatusLog extends DataObject {
 		if(!is_array($availableLogs)) {
 			$availableLogs = array();
 		}
+		$availableLogs = array_merge($availableLogs, array(OrderStatusLog::get_order_status_log_class_used_for_submitting_order()));
 		if($classes) {
 			foreach($classes as $className) {
 				$obj = singleton($className);
@@ -244,7 +245,6 @@ class OrderStatusLog extends DataObject {
 /**
  * OrderStatusLog_Submitted is an important class that is created when an order is submitted.
  * It is created by the order and it signifies to the OrderStep to continue to the next step.
- * It is so vital, because it
  **/
 
 class OrderStatusLog_Submitted extends OrderStatusLog {

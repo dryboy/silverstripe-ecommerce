@@ -106,11 +106,17 @@ class CartPage_Controller extends Page_Controller{
 		//Requirements::javascript('ecommerce/javascript/EcomCart.js'); //VIA ShoppingCartRequirements.ss
 
 		//WE HAVE THIS FOR SUBMITTING FORMS!
-		if(isset($_POST['OrderID'])) {
-			$this->orderID = intval($_POST['OrderID']);
+		if(isset($_REQUEST['OrderID'])) {
+			$this->orderID = intval($_REQUEST['OrderID']);
 		}
-		elseif(Director::urlParam('ID')){
-			$this->orderID = Director::urlParam('ID');
+		elseif(Director::urlParam('ID') && Director::urlParam('Action') == "showorder"){
+			$this->orderID = intval(Director::urlParam('ID'));
+		}
+		if($this->OrderID) {
+			$this->currentOrder = DataObject::get_by_id("Order", $this->orderID);
+		}
+		else {
+			$this->currentOrder = ShoppingCart::current_order();
 		}
 	}
 
@@ -159,7 +165,7 @@ class CartPage_Controller extends Page_Controller{
 	function showorder($request) {
 		//Requirements::themedCSS('Order'); // VIA Order.ss
 		//Requirements::themedCSS('Order_print', 'print'); // VIA Order.ss - hopefully that works!!!
-		if(!$this->CurrentOrder()) {
+		if(!$this->currentOrder) {
 			$this->message = _t('CartPage.ORDERNOTFOUND', 'Order can not be found.');
 		}
 		return array();

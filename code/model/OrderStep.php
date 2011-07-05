@@ -486,13 +486,25 @@ class OrderStep_Submitted extends OrderStep {
 	 **/
 	public function doStep($order) {
 		if(!$order->IsSubmitted()) {
-			$obj = new $className();
-			$obj->OrderID = $order->ID;
-			$obj->Title = $this->Name;
-			if($this->SaveOrderAsHTML)             {$obj->OrderAsHTML = $order->ConvertToHTML();}
-			if($this->SaveOrderAsSerializedObject) {$obj->OrderAsString = $order->ConvertToString();}
-			if($this->SaveOrderAsJSON)             {$obj->OrderAsJSON = $order->ConvertToJSON();}
-			$order->write();
+			$className = OrderStatusLog::get_order_status_log_class_used_for_submitting_order();
+			if(class_exists($className)) {
+				$obj = new $className();
+				if($obj instanceOf OrderStatusLog) {
+					$obj->OrderID = $order->ID;
+					$obj->Title = $this->Name;
+					if($this->SaveOrderAsHTML)             {$obj->OrderAsHTML = $order->ConvertToHTML();}
+					if($this->SaveOrderAsSerializedObject) {$obj->OrderAsString = $order->ConvertToString();}
+					if($this->SaveOrderAsJSON)             {$obj->OrderAsJSON = $order->ConvertToJSON();}
+					$obj->write();
+				}
+				else {
+					user_error('OrderStatusLog::$order_status_log_class_used_for_submitting_order refers to a class that is NOT an instance of OrderStatusLog');
+				}
+
+			}
+			else {
+				user_error('OrderStatusLog::$order_status_log_class_used_for_submitting_order refers to a non-existing class');
+			}
 		}
 	}
 

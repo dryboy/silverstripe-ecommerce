@@ -52,6 +52,14 @@ class ShoppingCart extends Object{
 	protected $messages = array();
 
 	/**
+	 * Class used to provide the Shopping Cart Response (e.g. JSON data)
+	 *@var string
+	 **/
+	protected static $response_class = "CartResponse";
+		static function set_response_class(string $s) {self::$response_class = $s;}
+		static function get_response_class() {return self::$response_class;}
+
+	/**
 	 * stores a reference to the current order object
 	 *@var Object
 	 **/
@@ -327,10 +335,17 @@ class ShoppingCart extends Object{
 	 *@param $message - the message, which could be a notification of successful action, or reason for failure
 	 *@param $type - please use good, bad, warning
 	 */
-	public function addMessage($message, $type = 'good'){
+	public function addMessage($message, $status = 'good'){
+		//clean status for the lazy programmer
+		$status = strtolower($status);
+		str_replace(array("success", "failure"), array("good", "bad"), $status);
+		$statusOptions = array("good", "bad", "warning");
+		if(!in_array($status, $statusOptions)) {
+			user_error("Message status should be one of the following: ".implode(",", $statusOptions), E_USER_NOTICE);
+		}
 		$this->messages[] = array(
 			'Message' => $message,
-			'Type' => $type
+			'Type' => $status
 		);
 	}
 
@@ -434,8 +449,26 @@ class ShoppingCart extends Object{
 	 *Saves current messages in session for retrieving them later.
 	 *@return array of messages
 	 */
-	function StoreMessagesInSession(){
+	protected function StoreMessagesInSession(){
 		Session::set(ShoppingCart::get_session_variable()."Messages", serialize($this->messages));
+	}
+
+	public function setMessageAndReturn($message = "", $status = ""){
+		if($message && $status) {
+			$this->addMessage($message,$status);
+		}
+		//TODO: handle passing back multiple messages
+		if(Director::is_ajax()){
+			$responseClass = self::get_response_class();
+			$obj = new $responseClass();
+			return $obj->ReturnCartData($this->getMessages());
+		}
+		else {
+			//TODO: handle passing a message back to a form->sessionMessage
+			$this->StoreMessagesInSession();
+			Director::redirectBack();
+			return;
+		}
 	}
 
 }
@@ -463,13 +496,6 @@ class ShoppingCart_Controller extends Controller{
 		static function set_url_segment($s) {self::$url_segment = $s;}
 		static function get_url_segment() {return self::$url_segment;}
 
-	/**
-	 * Class used to provide the Shopping Cart Response (e.g. JSON data)
-	 *@var string
-	 **/
-	protected static $response_class = "CartResponse";
-		static function set_response_class(string $s) {self::$response_class = $s;}
-		static function get_response_class() {return self::$response_class;}
 
 	protected $cart = null;
 
@@ -558,7 +584,7 @@ class ShoppingCart_Controller extends Controller{
 	 */
 	public function additem(){
 		$this->cart->addBuyable($this->buyable(),$this->quantity(),$this->parameters());
-		return $this->setMessageAndReturn();
+		return $this->cart->setMessageAndReturn();
 	}
 
 	/**
@@ -568,7 +594,7 @@ class ShoppingCart_Controller extends Controller{
 	 */
 	public function setquantityitem(){
 		$this->cart->setQuantity($this->buyable(),$this->quantity(),$this->parameters());
-		return $this->setMessageAndReturn();
+		return $this->cart->setMessageAndReturn();
 	}
 
 	/**
@@ -577,7 +603,7 @@ class ShoppingCart_Controller extends Controller{
 	 */
 	public function removeitem(){
 		$this->cart->decrementBuyable($this->buyable(),$this->quantity(),$this->parameters());
-		return $this->setMessageAndReturn();
+		return $this->cart->setMessageAndReturn();
 	}
 
 	/**
@@ -586,7 +612,7 @@ class ShoppingCart_Controller extends Controller{
 	 */
 	public function removeallitem(){
 		$this->cart->deleteBuyable($this->buyable(),$this->parameters());
-		return $this->setMessageAndReturn();
+		return $this->cart->setMessageAndReturn();
 	}
 
 	/**
@@ -595,7 +621,7 @@ class ShoppingCart_Controller extends Controller{
 	 */
 	public function removemodifier($request){
 		$this->cart->removeModifier($request->param('ID'));
-		return $this->setMessageAndReturn();
+		return $this->cart->setMessageAndReturn();
 	}
 
 	/**
@@ -604,7 +630,7 @@ class ShoppingCart_Controller extends Controller{
 	 */
 	public function addmodifier($request){
 		$this->cart->addModifier($request->param('ID'));
-		return $this->setMessageAndReturn();
+		return $this->cart->setMessageAndReturn();
 	}
 
 
@@ -619,7 +645,7 @@ class ShoppingCart_Controller extends Controller{
 			//set_country will check if the country code is actually allowed....
 			$this->cart->setCountry($countryCode);
 		}
-		return $this->setMessageAndReturn();
+		return $this->cart->setMessageAndReturn();
 	}
 
 	/**
@@ -633,7 +659,7 @@ class ShoppingCart_Controller extends Controller{
 			//set_country will check if the country code is actually allowed....
 			$this->cart->setRegion($regionID);
 		}
-		return $this->setMessageAndReturn();
+		return $this->cart->setMessageAndReturn();
 	}
 
 	function clear() {
@@ -711,24 +737,6 @@ class ShoppingCart_Controller extends Controller{
 		return ($getpost == 'GET') ? $this->request->getVars() : $_POST;
 	}
 
-	/**
-	 * Packages up error/success messages from shopping cart and returns them to the client.
-	 */
-	protected function setMessageAndReturn(){
-
-		//TODO: handle passing back multiple messages
-		if(Director::is_ajax()){
-			$responseClass = self::get_response_class();
-			$obj = new $responseClass();
-			return $obj->ReturnCartData($this->cart->getMessages());
-		}
-		else {
-			//TODO: handle passing a message back to a form->sessionMessage
-			$this->cart->StoreMessagesInSession();
-			Director::redirectBack();
-			return;
-		}
-	}
 
 	/**
 	 * Handy debugging action visit.
