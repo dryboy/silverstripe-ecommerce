@@ -269,7 +269,7 @@ class CheckoutPage_Controller extends Page_Controller {
 	 * @return string
 	 */
 	function Message() {
-		$orderID = Director::urlParam('Action');
+		$orderID = Director::urlParam('ID');
 		$checkoutLink = self::find_link();
 
 		if($memberID = Member::currentUserID()) {
