@@ -101,6 +101,9 @@ Buyable::add_class("Product");
 // * * * LOGS
 //OrderStatusLog::set_available_log_classes_array(array("OrderStatusLog_PaymentCheck"));
 
+// * * * SALES
+//SalesAdmin::add_managed_model("MyOtherLogThing")
+
 // * * * HELP
 // __________________________________ END ECOMMERCE MODULE CONFIG __________________________________
 

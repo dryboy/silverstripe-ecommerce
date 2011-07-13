@@ -45,6 +45,10 @@ class OrderAddress extends DataObject {
 	public static $plural_name = "Order Addresses";
 		function i18n_plural_name() { return _t("OrderAddress.ORDERADDRESSES", "Order Addresses");}
 
+	public static $casting = array(
+		"FullName" => "Text"
+	);
+
 	/**
 	 *
 	 *@return FieldSet
@@ -149,6 +153,14 @@ class OrderAddress extends DataObject {
 		$this->Country = $countryCode;
 		$this->ShippingCountry = $countryCode;
 		$this->write();
+	}
+
+	public function getFullName() {
+		$fieldNameField = prefix()."FirstName";
+		$fieldFirst = $this->$fieldNameField;
+		$lastNameField =  prefix()."Surname";
+		$fieldLast = $this->$lastNameField;
+		return $fieldFirst.' '.$fieldLast;
 	}
 
 	/**

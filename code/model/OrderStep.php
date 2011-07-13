@@ -122,6 +122,9 @@ class OrderStep extends DataObject {
 	);
 		static function set_order_steps_to_include(array $a) {self::$order_steps_to_include = $a;}
 		static function get_order_steps_to_include() {return(array)self::$order_steps_to_include;}
+		static function add_order_step_to_include($s, $placeAfter) {
+			array_splice(self::$order_steps_to_include, array_search($placeAfter, self::$order_steps_to_include) + 1, 0, $s);
+		}
 		/**
 		 *
 		 *@return Array
@@ -689,7 +692,7 @@ class OrderStep_SentReceipt extends OrderStep {
 	}
 
 	public function initStep($order) {
-		return true;
+		return $order->IsPaid();
 	}
 
 	public function doStep($order) {

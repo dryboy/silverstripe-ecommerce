@@ -14,14 +14,16 @@
 class BillingAddress extends OrderAddress {
 
 	static $db = array(
-		'FirstName' => 'Text',
-		'Surname' => 'Text',
-		'Address' => 'Text',
-		'Address2' => 'Text',
-		'City' => 'Text',
+		'Prefix' => 'Varchar(10)',
+		'FirstName' => 'Varchar(100)',
+		'Surname' => 'Varchar(100)',
+		'Address' => 'Varchar(200)',
+		'Address2' => 'Varchar(200)',
+		'City' => 'Varchar(100)',
 		'PostalCode' => 'Varchar(30)',
 		'Country' => 'Varchar(4)',
 		'Phone' => 'Varchar(200)',
+		'MobilePhone' => 'Varchar(200)',
 		'Email' => 'Varchar'
 	);
 

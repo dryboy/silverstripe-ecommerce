@@ -15,14 +15,16 @@ class ShippingAddress extends OrderAddress {
 
 
 	static $db = array(
-		'ShippingFirstName' => 'Text',
-		'ShippingSurname' => 'Text',
-		'ShippingAddress' => 'Text',
-		'ShippingAddress2' => 'Text',
-		'ShippingCity' => 'Text',
+		'ShippingPrefix' => 'Varchar(10)',
+		'ShippingFirstName' => 'Varchar(100)',
+		'ShippingSurname' => 'Varchar(100)',
+		'ShippingAddress' => 'Varchar(200)',
+		'ShippingAddress2' => 'Varchar(200)',
+		'ShippingCity' => 'Varchar(100)',
 		'ShippingPostalCode' => 'Varchar(30)',
 		'ShippingCountry' => 'Varchar(4)',
-		'ShippingPhone' => 'Varchar(200)'
+		'ShippingPhone' => 'Varchar(200)',
+		'ShippingMobilePhone' => 'Varchar(200)'
 	);
 
 

@@ -91,6 +91,7 @@ class OrderItem extends OrderAttribute {
 			$fields->addFieldToTab("Root.Main", new DropdownField("ClassName", _t("OrderItem.TYPE", "Type"), $classNameArray));
 			$fields->replaceField("BuyableID", new DropdownField("BuyableID", _t("OrderItem.BOUGHT", "Bought"), $buyablesArray));
 		}
+		$fields->replaceField("OrderID", new NumericField("OrderID", "Order Number"));
 		return $fields;
 	}
 
