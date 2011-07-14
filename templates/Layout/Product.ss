@@ -31,7 +31,9 @@
 <% end_if %>
 	</div>
 <% if Content %><div id="ContentHolder">$Content</div><% end_if %>
+<% include OtherProductInfo %>
 </div>
+
 
 
 <% require themedCSS(Product) %>
