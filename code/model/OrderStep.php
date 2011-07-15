@@ -509,6 +509,7 @@ class OrderStep_Submitted extends OrderStep {
 				user_error('OrderStatusLog::$order_status_log_class_used_for_submitting_order refers to a non-existing class');
 			}
 		}
+		return true;		
 	}
 
 	/**
