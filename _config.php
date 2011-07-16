@@ -86,7 +86,7 @@ Buyable::add_class("Product");
 //Product_Image::set_content_image_width(200);
 //Product_Image::set_large_image_width(500);
 //ProductGroup::set_include_child_groups(true);
-//ProductGroup::only_show_products_that_can_purchase(true);
+//ProductGroup::set_only_show_products_that_can_purchase(true);
 //ProductGroup::add_sort_option( $key = "price", $title = "Lowest Price", $sql = "Price ASC");
 //ProductGroup::remove_sort_option( $key = "title");
 //ProductGroup::set_sort_options_default( $key = "price");

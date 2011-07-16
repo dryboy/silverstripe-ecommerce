@@ -118,36 +118,30 @@ class ProductGroup extends Page {
 		$filter = ""; //
 		$join = "";
 
-		if($extraFilter) $filter.= " AND $extraFilter";
-
+		if($extraFilter) {
+			$filter.= " AND $extraFilter";
+		}
 		$limit = (isset($_GET['start']) && (int)$_GET['start'] > 0) ? (int)$_GET['start'] : "0";
 		$limit .= ", ".$this->ProductsPerPage();
-
 		if(!isset($_GET['sortby'])) {
 			$_GET['sortby'] = "";
 		}
 		$sort = $this->getSortOptionSQL($_GET['sortby']);
-
-		$groupids = array($this->ID);
-
-		if(($recursive === true || $recursive === 'true') && self::$include_child_groups && $childgroups = $this->ChildGroups(true))
-			$groupids = array_merge($groupids,$childgroups->map('ID','ID'));
-
-		$groupidsimpl = implode(',',$groupids);
-
+		$groupIDs = array();
+		$groupIDs[$this->ID] = $this->ID;
+		if(self::$include_child_groups) {
+			$childGroups = $this->ChildGroups(true);
+			if($childGroups) {
+				$groupIDs = array_merge($groupIDs,$childGroups->map('ID','ID'));
+			}
+		}
 		$join = $this->getManyManyJoin('Products','Product');
-		$multicatfilter = $this->getManyManyFilter('Products','Product');
-
-		$products = DataObject::get('Product',"(\"ParentID\" IN ($groupidsimpl) OR $multicatfilter) $filter",$sort,$join,$limit);
-		$allproducts = DataObject::get('Product',"\"ParentID\" IN ($groupidsimpl) $filter","",$join);
-
-		//FIXME: this was breaking the "get_only_show_products_that_can_purchase" code below
-		//if($allproducts) $products->TotalCount = $allproducts->Count(); //add total count to returned data for 'showing x to y of z products'
-
+		$multiCategoryFilter = $this->getManyManyFilter('Products','Product');
+		$where = "(\"ParentID\" IN (".implode(",", $groupIDs).") OR $multiCategoryFilter) $filter";
+		$products = DataObject::get('Product',$where,$sort,$join,$limit);
 		if($products && $products instanceOf DataObjectSet) {
 			$products->removeDuplicates();
 		}
-
 		//FIXME: this removing does not cater for pagination...so you end up with half empty, or fully empty pages in some cases.
 		$repaginate = false;
 		if(self::get_only_show_products_that_can_purchase()) {
@@ -166,7 +160,14 @@ class ProductGroup extends Page {
 			if(Versioned::current_stage() == "Live") {
 				$stage = "_Live";
 			}
-			$products = DataObject::get('Product',"\"Product$stage\".\"ID\" IN (".implode(",", $products->map("ID", "ID")).")",null, null,$limit);
+			$whereForPageOnly = "\"Product$stage\".\"ID\" IN (".implode(",", $products->map("ID", "ID")).")";
+			$products = DataObject::get('Product',$whereForPageOnly,null, null,$limit);
+		}
+		 //add total count to returned data for 'showing x to y of z products'
+		 //this might not always be accurate!
+		$allproducts = DataObject::get('Product',$where,"",$join);
+		if($allproducts) {
+			$products->TotalCount = $allproducts->Count();
 		}
 		return $products;
 	}
