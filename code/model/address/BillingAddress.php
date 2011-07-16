@@ -91,7 +91,7 @@ class BillingAddress extends OrderAddress {
 	public function getFields() {
 		$fields = parent::getEcommerceFields();
 		$billingFields = new CompositeField(
-			new HeaderField(_t('OrderAddress.BILLING DETAILS','Billing Details'), 3),
+			new HeaderField(_t('OrderAddress.BILLINGDETAILS','Billing Details'), 3),
 			new EmailField('Email', _t('OrderAddress.EMAIL','Email')),
 			new TextField('FirstName', _t('OrderAddress.FIRSTNAME','First Name')),
 			new TextField('Surname', _t('OrderAddress.SURNAME','Surname')),
