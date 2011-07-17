@@ -25,10 +25,10 @@ class CartCleanupTask extends HourlyTask {
 
 	protected $description = "Deletes abandonned carts";
 
-	static function run_on_demand() {
+	public static function run_on_demand() {
 		$obj = new CartCleanupTask();
-		$obj->run();
-		$obj->cleanupUnlinkedOrderObjects();
+		$obj->run($verbose = true);
+		$obj->cleanupUnlinkedOrderObjects($verbose = true);
 	}
 
 
@@ -36,7 +36,7 @@ class CartCleanupTask extends HourlyTask {
 	 * CLEARING OLD ORDERS
 *******************************************************/
 
-	protected static $clear_days = 90;
+	protected static $clear_days = 30;
 		function set_clear_days(integer $i){self::$clear_days = $i;}
 		function get_clear_days(){return(integer)self::$clear_days;}
 
@@ -48,7 +48,7 @@ class CartCleanupTask extends HourlyTask {
 		function set_maximum_number_of_objects_deleted(integer $i){self::$maximum_number_of_objects_deleted = $i;}
 		function get_maximum_number_of_objects_deleted(){return(integer)self::$maximum_number_of_objects_deleted;}
 
-	protected static $never_delete_if_linked_to_member = false;
+	protected static $never_delete_if_linked_to_member = true;
 		function set_never_delete_if_linked_to_member(boolean $b){self::$never_delete_if_linked_to_member = $b;}
 		function get_never_delete_if_linked_to_member(){return(boolean)self::$never_delete_if_linked_to_member;}
 
@@ -68,10 +68,10 @@ class CartCleanupTask extends HourlyTask {
 	/**
 	 *@return Integer - number of carts destroyed
 	 **/
-	public function run(){
+	public function run($verbose = false){
 		$count = 0;
 		$time = date('Y-m-d H:i:s', strtotime("-".self::$clear_days." days"));
-		$where = "\"StatusID\" = ".OrderStep::get_status_id_from_code("CREATED")." AND \"LastEdited\" < '$time'";
+		$where = "\"StatusID\" = ".OrderStep::get_status_id_from_code("CREATED")." AND \"Order\".\"LastEdited\" < '$time'";
 		$sort = "\"Order\".\"Created\" ASC";
 		$join = "";
 		$limit = "0, ".self::get_maximum_number_of_objects_deleted();
@@ -79,18 +79,37 @@ class CartCleanupTask extends HourlyTask {
 			$where .= " AND \"Member\".\"ID\" IS NULL";
 			$join .= "LEFT JOIN \"Member\" ON \"Member\".\"ID\" = \"Order\".\"MemberID\" ";
 		}
-		$oldcarts = DataObject::get('Order',$where, $sort, $join, $limit);
-		if($oldcarts){
-			foreach($oldcarts as $cart){
+		$oldCarts = DataObject::get('Order',$where, $sort, $join, $limit);
+		if($oldCarts){
+			if($verbose) {
+				$totalToDeleteSQLObject = DB::query("SELECT COUNT(*) FROM \"Order\" $join WHERE $where");
+				$totalToDelete = $totalToDeleteSQLObject->value();
+				DB::alteration_message("<h2>Total number of abandonned carts: ".$totalToDelete." .... now deleting: ".self::get_maximum_number_of_objects_deleted()." from ".self::get_clear_days()." days ago or more.</h2>", "created");
+				if(self::get_never_delete_if_linked_to_member()) {
+					DB::alteration_message("<h3>Carts linked to a member will NEVER be deleted.</h3>", "edited");
+				}
+				else {
+					DB::alteration_message("<h3>We will also delete carts in this category that are linked to a member.</h3>", "edited");
+				}
+			}
+			foreach($oldCarts as $carts){
 				$count++;
-				$cart->delete();
-				$cart->destroy();
+				if($verbose) {
+					DB::alteration_message("$count ... deleting abandonned order #".$carts->ID, "deleted");
+				}
+				$carts->delete();
+				$carts->destroy();
+			}
+		}
+		else {
+			if($verbose) {
+				DB::alteration_message("There are no abandonned orders.", "created");
 			}
 		}
 		return $count;
 	}
 
-	function cleanupUnlinkedOrderObjects() {
+	function cleanupUnlinkedOrderObjects($verbose = false) {
 		$classNames = self::get_linked_objects_array();
 		if(is_array($classNames) && count($classNames)) {
 			foreach($classNames as $className) {
@@ -101,6 +120,9 @@ class CartCleanupTask extends HourlyTask {
 				$unlinkedObjects = DataObject::get($className, $where, $sort, $join, $limit);
 				if($unlinkedObjects){
 					foreach($unlinkedObjects as $object){
+						if($verbose) {
+							DB::alteration_message("Deleting ".$object->ClassName." with ID #".$object->ID." because it does not appear to link to an order.", "deleted");
+						}
 						$object->delete();
 						$object->destroy();
 					}
