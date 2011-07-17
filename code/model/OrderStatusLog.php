@@ -18,7 +18,7 @@ class OrderStatusLog extends DataObject {
 
 	public static $db = array(
 		'Title' => 'Varchar(100)',
-		'Note' => 'Text',
+		'Note' => 'HTMLText',
 		'EmailCustomer' => 'Boolean',
 		'EmailSent' => 'Boolean',
 		'InternalUseOnly' => 'Boolean'
@@ -30,7 +30,7 @@ class OrderStatusLog extends DataObject {
 	);
 
 	public static $casting = array(
-		"CustomerNote" => "Text",
+		"CustomerNote" => "HTMLText",
 		"Type" => "Varchar",
 		'EmailCustomerNice' => 'Varchar',
 		'EmailSentNice' => 'Varchar',
@@ -59,8 +59,13 @@ class OrderStatusLog extends DataObject {
 	 *@var Array - $available_log_classes_array
 	 **/
 	protected static $available_log_classes_array = array("OrderStatusLog_PaymentCheck");
-		static function set_available_log_classes_array(array $a) {self::$available_log_classes_array = $a;}
 		static function get_available_log_classes_array() {return self::$available_log_classes_array;}
+		static function set_available_log_classes_array(array $a) {self::$available_log_classes_array = $a;}
+		static function add_available_log_classes_array($s) {
+			if(!in_array($s, self::$available_log_classes_array)) {
+				self::$available_log_classes_array[] = $s;
+			}
+		}
 
 	/**
 	 * the order status log class used to record that the order has been submitted.
@@ -78,10 +83,8 @@ class OrderStatusLog extends DataObject {
 		if(!$member) {
 			$member = Member::currentUser();
 		}
-		if($member) {
-			if($member->IsShopAdmin()) {
-				return true;
-			}
+		if(EcommerceRole::CurrentMemberIsShopAdmin($member)) {
+			return true;
 		}
 		if(!$this->InternalUseOnly) {
 			if($this->Order()) {
@@ -149,6 +152,7 @@ class OrderStatusLog extends DataObject {
 	**/
 	function getCMSFields() {
 		$fields = parent::getCMSFields();
+		$fields->dataFieldByName("Note")->setRows(3);
 		$fields->replaceField("EmailSent", $fields->dataFieldByName("EmailSent")->performReadonlyTransformation());
 		$fields->replaceField("AuthorID", $fields->dataFieldByName("AuthorID")->performReadonlyTransformation());
 		if($this->OrderID) {
@@ -259,6 +263,10 @@ class OrderStatusLog_Submitted extends OrderStatusLog {
 		"InternalUseOnly" => true
 	);
 
+	public static $casting = array(
+		"HTMLRepresentation" => "HTMLText"
+	);
+
 	public static $singular_name = "Submitted Order";
 		function i18n_singular_name() { return _t("OrderStatusLog.SUBMITTEDORDER", "Submitted Order - Fulltext Backup");}
 
@@ -287,8 +295,22 @@ class OrderStatusLog_Submitted extends OrderStatusLog {
 	*@return Boolean
 	**/
 	public function canCreate($member = null) {
-		return false;
+		return true;
 	}
+
+	function HTMLRepresentation(){
+		if($this->OrderAsHTML) {
+			return $this->OrderAsHTML;
+		}
+		elseif($this->OrderAsString) {
+			return unserialize($this->OrderAsString);
+		}
+		else {
+			return $this->OrderAsJSON;
+		}
+	}
+
+	
 }
 
 class OrderStatusLog_Dispatch extends OrderStatusLog {
@@ -308,12 +330,7 @@ class OrderStatusLog_Dispatch extends OrderStatusLog {
 	 *@return Boolean
 	 **/
 	public function canDelete($member = null) {
-		if(!$member) {
-			$member = Member::currentMember();
-		}
-		if($member) {
-			return $member->IsShopAdmin();
-		}
+		return EcommerceRole::CurrentMemberIsShopAdmin($member);
 	}
 
 
@@ -362,6 +379,12 @@ class OrderStatusLog_DispatchPhysicalOrder extends OrderStatusLog_Dispatch {
 		"EmailSentNice" => "Email Sent"
 	);
 
+
+	public static $defaults = array(
+		"InternalUseOnly" => false,
+		"EmailCustomer" => true
+	);
+
 	public static $singular_name = "Order Log Physical Dispatch Entry";
 		function i18n_singular_name() { return _t("OrderStatusLog.ORDERLOGPHYSICALDISPATCHENTRY", "Order Log Physical Dispatch Entry");}
 
@@ -378,7 +401,7 @@ class OrderStatusLog_DispatchPhysicalOrder extends OrderStatusLog_Dispatch {
 			$this->Title = $sc->DispatchEmailSubject;
 		}
 		$this->DispatchedOn =  date('Y-m-d');
-		$this->DispatchedBy =  Member::currentUserID();
+		$this->DispatchedBy =  Member::currentUser()->getTitle();
 	}
 
 	/**
