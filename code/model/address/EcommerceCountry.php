@@ -75,7 +75,7 @@ class EcommerceCountry extends EcommerceRegion {
 			}
 			//3. check GEOIP information
 			if(!$countryCode) {
-				$countryCode = Geoip::visitor_country();
+				$countryCode = @Geoip::visitor_country();
 				//4 check default country set in GEO IP....
 				if(!$countryCode) {
 					$countryCode = Geoip::$default_country_code;
