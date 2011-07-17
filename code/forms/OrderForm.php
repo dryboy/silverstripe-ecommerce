@@ -273,7 +273,6 @@ class OrderForm extends Form {
 
 		//----------------- CLEAR OLD DATA ------------------------------
 		$this->clearSessionData(); //clears the stored session form data that might have been needed if validation failed
-		//
 		ShoppingCart::singleton()->clear();
 		//----------------- PAYMENT ------------------------------
 		return EcommercePayment::process_payment_form_and_return_next_step($order, $form, $data, $member);
