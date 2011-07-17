@@ -161,7 +161,7 @@ class EcommerceDefaultRecords_DataObject extends DataObject {
 			$adminGroup->Title = EcommerceRole::get_admin_group_name();
 			$adminGroup->write();
 			Permission::grant( $adminGroup->ID, EcommerceRole::get_admin_permission_code());
-			DB::alteration_message(EcommerceRole::get_adminGroup_name().' Group created',"created");
+			DB::alteration_message(EcommerceRole::get_admin_group_name().' Group created',"created");
 		}
 		elseif(DB::query("SELECT * FROM \"Permission\" WHERE \"GroupID\" = '".$adminGroup->ID."' AND \"Code\" LIKE '".EcommerceRole::get_admin_permission_code()."'")->numRecords() == 0 ) {
 			Permission::grant($adminGroup->ID, EcommerceRole::get_admin_permission_code());

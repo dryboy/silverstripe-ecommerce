@@ -156,9 +156,9 @@ class OrderAddress extends DataObject {
 	}
 
 	public function getFullName() {
-		$fieldNameField = prefix()."FirstName";
+		$fieldNameField = $this->prefix()."FirstName";
 		$fieldFirst = $this->$fieldNameField;
-		$lastNameField =  prefix()."Surname";
+		$lastNameField =  $this->prefix()."Surname";
 		$fieldLast = $this->$lastNameField;
 		return $fieldFirst.' '.$fieldLast;
 	}

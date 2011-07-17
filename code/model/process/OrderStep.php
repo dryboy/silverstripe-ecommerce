@@ -704,7 +704,7 @@ class OrderStep_Confirmed extends OrderStep {
 
 	function addOrderStepFields(&$fields, $order) {
 		OrderStatusLog::add_available_log_classes_array("OrderStatusLog_PaymentCheck");
-		$msg = _t("OrderStep.MUSTDOPAYMENTCHECK", " ... To move this order to the next step you must carry out a payment check (is the money in the bank?) and record it below");
+		$msg = _t("OrderStep.MUSTDOPAYMENTCHECK", " ... To move this order to the next step you must carry out a payment check (is the money in the bank?) by creating a record here (click me)");
 		$fields->addFieldToTab("Root.Main", $order->OrderStatusLogsTable("OrderStatusLog_PaymentCheck", $msg),"StatusID");
 		return $fields;
 	}

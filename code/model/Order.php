@@ -500,6 +500,7 @@ class Order extends DataObject {
 			}
 		}
 			
+		$this->MyStep()->addOrderStepFields($fields, $this);
 
 		$this->extend('updateCMSFields',$fields);
 		return $fields;
@@ -1822,43 +1823,52 @@ class Order extends DataObject {
 	 * delete attributes, statuslogs, and payments
 	 */
 	function onBeforeDelete(){
+		parent::onBeforeDelete();
 		if($attributes = $this->Attributes()){
 			foreach($attributes as $attribute){
 				$attribute->delete();
 				$attribute->destroy();
 			}
 		}
+		return;
+		
+		//THE REST WAS GIVING ERRORS - POSSIBLY DUE TO THE FUNNY RELATIONSHIP (one-one, two times...)
+		if($billingAddress = $this->BillingAddress()) {
+			if($billingAddress->exists()) {			
+				$billingAddress->delete();
+				$billingAddress->destroy();
+			}
+		}
+		if($shippingAddress = $this->ShippingAddress()) {
+			if($shippingAddress->exists()) {
+				$shippingAddress->delete();
+				$shippingAddress->destroy();
+			}
+		}
+		
+		/**
+		 * THIS SHOULD NOT BE DELETED - ORDER SHOULD BE CANCELLED - NOT DELETED
 		if($statuslogs = $this->OrderStatusLogs()){
 			foreach($statuslogs as $log){
 				$log->delete();
-				//$log->destroy();
+				$log->destroy();
 			}
 		}
 		if($payments = $this->Payments()){
 			foreach($payments as $payment){
 				$payment->delete();
-				//$payment->destroy();
+				$payment->destroy();
 			}
-		}
-		if($billingAddress = $this->BillingAddress()) {
-			if($billingAddress->exists()) {			
-				$billingAddress->delete();
-			}
-			//$billingAddress->destroy();
-		}
-		if($shippingAddress = $this->ShippingAddress()) {
-			if($shippingAddress->exists()) {
-				$shippingAddress->delete();
-			}
-			//$shippingAddress->destroy();
 		}
 		if($emails = $this->Emails()) {
 			foreach($emails as $email){
 				$email->delete();
-				//$email->destroy();
+				$email->destroy();
 			}
 		}
-		parent::onBeforeDelete();
+		* 
+		**/
+		
 	}
 
 

@@ -44,7 +44,7 @@ class CartCleanupTask extends HourlyTask {
 	 * We need to protect the system from falling over by limiting the number of objects that can be deleted at any one time
 	 *@var Integer
 	 **/
-	protected static $maximum_number_of_objects_deleted = 100;
+	protected static $maximum_number_of_objects_deleted = 2;
 		function set_maximum_number_of_objects_deleted(integer $i){self::$maximum_number_of_objects_deleted = $i;}
 		function get_maximum_number_of_objects_deleted(){return(integer)self::$maximum_number_of_objects_deleted;}
 
@@ -52,11 +52,17 @@ class CartCleanupTask extends HourlyTask {
 		function set_never_delete_if_linked_to_member(boolean $b){self::$never_delete_if_linked_to_member = $b;}
 		function get_never_delete_if_linked_to_member(){return(boolean)self::$never_delete_if_linked_to_member;}
 
-
+	/**
+	 *
+	 *key = table where OrderID is saved
+	 *value = table where LastEdited is saved
+	 **/ 
 	protected static $linked_objects_array = array(
-		"ShippingAddress",
-		"BillingAddress",
-		"OrderAttribute",
+		"OrderAttribute" =>"OrderAttribute",
+		"BillingAddress" => "OrderAddress",
+		"ShippingAddress" => "OrderAddress",
+		"OrderStatusLog" =>"OrderStatusLog",
+		"OrderEmailRecord" =>"OrderEmailRecord"
 	);
 		static function set_linked_objects_array($a) {self::$linked_objects_array = $a;}
 		static function get_linked_objects_array() {return self::$linked_objects_array;}
@@ -92,13 +98,13 @@ class CartCleanupTask extends HourlyTask {
 					DB::alteration_message("<h3>We will also delete carts in this category that are linked to a member.</h3>", "edited");
 				}
 			}
-			foreach($oldCarts as $carts){
+			foreach($oldCarts as $oldCart){
 				$count++;
 				if($verbose) {
-					DB::alteration_message("$count ... deleting abandonned order #".$carts->ID, "deleted");
+					DB::alteration_message("$count ... deleting abandonned order #".$oldCart->ID, "deleted");
 				}
-				$carts->delete();
-				$carts->destroy();
+				$oldCart->delete();
+				$oldCart->destroy();
 			}
 		}
 		else {
@@ -112,19 +118,23 @@ class CartCleanupTask extends HourlyTask {
 	function cleanupUnlinkedOrderObjects($verbose = false) {
 		$classNames = self::get_linked_objects_array();
 		if(is_array($classNames) && count($classNames)) {
-			foreach($classNames as $className) {
-				$where = "\"Order\".\"ID\" IS NULL";
+			foreach($classNames as $classWithOrderID => $classWithLastEdited) {
+				if($verbose) {
+					DB::alteration_message("looking for $classWithOrderID objects withour link to order.", "deleted");
+				}
+				$time = date('Y-m-d H:i:s', strtotime("-".self::$clear_days." days"));
+				$where = "\"Order\".\"ID\" IS NULL AND \"$classWithLastEdited\".\"LastEdited\" < '$time'";
 				$sort = '';
-				$join = "LEFT JOIN \"Order\" ON \"Order\".\"ID\" = \"OrderID\"";
+				$join = "LEFT JOIN \"Order\" ON \"Order\".\"ID\" = \"$classWithOrderID\".\"OrderID\"";
 				$limit = "0, ".self::get_maximum_number_of_objects_deleted();
-				$unlinkedObjects = DataObject::get($className, $where, $sort, $join, $limit);
+				$unlinkedObjects = DataObject::get($classWithLastEdited, $where, $sort, $join, $limit);
 				if($unlinkedObjects){
-					foreach($unlinkedObjects as $object){
+					foreach($unlinkedObjects as $unlinkedObject){
 						if($verbose) {
-							DB::alteration_message("Deleting ".$object->ClassName." with ID #".$object->ID." because it does not appear to link to an order.", "deleted");
+							DB::alteration_message("Deleting ".$unlinkedObject->ClassName." with ID #".$unlinkedObject->ID." because it does not appear to link to an order.", "deleted");
 						}
-						$object->delete();
-						$object->destroy();
+						$unlinkedObject->delete();
+						$unlinkedObject->destroy();
 					}
 				}
 			}
