@@ -83,13 +83,7 @@ class EcommercePayment extends DataObjectDecorator {
 	 *@return Boolean
 	 **/
 	function canCreate($member = null) {
-		if(!$member) {
-			$member = Member::currentUser();
-		}
-		if($member) {
-			return $member->IsShopAdmin();
-		}
-		return false;
+		return EcommerceRole::CurrentMemberIsShopAdmin($member);
 	}
 	/**
 	 *@return Boolean
