@@ -23,8 +23,8 @@ class ShippingAddress extends OrderAddress {
 		'ShippingCity' => 'Varchar(100)',
 		'ShippingPostalCode' => 'Varchar(30)',
 		'ShippingCountry' => 'Varchar(4)',
-		'ShippingPhone' => 'Varchar(200)',
-		'ShippingMobilePhone' => 'Varchar(200)'
+		'ShippingPhone' => 'Varchar(100)',
+		'ShippingMobilePhone' => 'Varchar(100)'
 	);
 
 
