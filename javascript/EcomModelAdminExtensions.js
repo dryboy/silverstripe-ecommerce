@@ -9,9 +9,15 @@
 
 var EcomModelAdminExtensions = {
 
+	saveButtonSelector: '#action_doSave',
+	
+	currButtonSelector: '#action_goCurr',
+	
 	nextButtonSelector: '#action_goNext',
 
 	prevButtonSelector: '#action_goPrev',
+
+	currRecordURLSelector: '#currRecordURL',
 
 	nextRecordURLSelector: '#nextRecordURL',
 
@@ -38,6 +44,14 @@ var EcomModelAdminExtensions = {
 			function() {
 				prevPage = jQuery(EcomModelAdminExtensions.prevRecordURLSelector).val();
 				EcomModelAdminExtensions.loadForm(prevPage);
+				return false;
+			}
+		);
+		jQuery(EcomModelAdminExtensions.currButtonSelector).live(
+			'click',
+			function() {
+				currPage = jQuery(EcomModelAdminExtensions.currRecordURLSelector).val();
+				EcomModelAdminExtensions.loadForm(currPage);
 				return false;
 			}
 		);
