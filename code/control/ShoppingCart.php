@@ -74,6 +74,11 @@ class ShoppingCart extends Object{
 	 */
 	public static function singleton(){
 		if(!self::$singletoncart){
+			if(self::$cleanup_every_time) {
+				$obj = new CartCleanupTask();
+				$obj->run($verbose = false);
+				$obj->cleanupUnlinkedOrderObjects($verbose = false);
+			}
 			self::$singletoncart = new ShoppingCart();
 		}
 		return self::$singletoncart;
