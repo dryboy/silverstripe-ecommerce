@@ -448,9 +448,58 @@ class Order extends DataObject {
 			}
 			$fields->addFieldToTab("Root.Main", new DropdownField("MemberID", "Select Cutomer", $array),"CustomerOrderNote");
 		}
-		if($this->MyStep()) {
-			$this->MyStep()->addOrderStepFields($fields, $this);
+		
+		$fields->addFieldToTab('Root.Addresses',new HeaderField("BillingAddressHeader", "Billing Address"));
+		$billingAddress = new HasOneComplexTableField(
+			$this, //$controller
+			"BillingAddress", //$name =
+			"BillingAddress", //$sourceClass =
+			null, //$fieldList =
+			null, //$detailedFormFields =
+			"\"OrderID\" = ".$this->ID."", //$sourceFilter =
+			"\"Created\" ASC", //$sourceSort =
+			null //$sourceJoin =
+		);
+		if(!$this->BillingAddressID) {
+			$billingAddress->setPermissions(array('edit', 'export', 'add', 'inlineadd', 'show'));
 		}
+		elseif($this->canEdit()) {
+			$billingAddress->setPermissions(array('edit', 'export', 'show'));
+		}
+		else {
+			$billingAddress->setPermissions(array( 'export',  'show'));
+		}
+		//$billingAddress->setShowPagination(false);
+		$fields->addFieldToTab('Root.Addresses',$billingAddress);
+
+		if(OrderAddress::get_use_separate_shipping_address()) {
+			
+			$fields->addFieldToTab('Root.Addresses',new HeaderField("ShippingAddressHeader", "Shipping Address"));
+			$fields->addFieldToTab('Root.Addresses',new CheckboxField("UseShippingAddress", "Use separate shipping address"));
+			if($this->UseShippingAddress) {
+				$shippingAddress = new HasOneComplexTableField(
+					$this, //$controller
+					"ShippingAddress", //$name =
+					"ShippingAddress", //$sourceClass =
+					null, //$fieldList =
+					null, //$detailedFormFields =
+					"\"OrderID\" = ".$this->ID."", //$sourceFilter =
+					"\"Created\" ASC", //$sourceSort =
+					null //$sourceJoin =
+				);
+				if(!$this->ShippingAddressID) {
+					$shippingAddress->setPermissions(array('edit', 'export', 'add', 'inlineadd', 'show'));
+				}
+				elseif($this->canEdit()) {
+					$shippingAddress->setPermissions(array('edit', 'export', 'show'));
+				}
+				else {
+					$shippingAddress->setPermissions(array( 'export',  'show'));
+				}
+				$fields->addFieldToTab('Root.Addresses',$shippingAddress);
+			}
+		}
+			
 
 		$this->extend('updateCMSFields',$fields);
 		return $fields;
