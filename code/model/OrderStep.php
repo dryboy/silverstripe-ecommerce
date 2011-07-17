@@ -443,6 +443,12 @@ class OrderStep_Created extends OrderStep {
 		return null;
 	}
 
+
+	function addOrderStepFields(&$fields, $order) {
+		return $fields;
+	}
+
+
 }
 
 class OrderStep_Submitted extends OrderStep {
@@ -523,6 +529,34 @@ class OrderStep_Submitted extends OrderStep {
 		}
 		return null;
 	}
+
+
+	function addOrderStepFields(&$fields, $order) {
+		if(!$order->IsSubmitted()) {
+			//LINE BELOW IS NOT REQUIRED
+			//OrderStatusLog::add_available_log_classes_array($className);
+			$header = _t("OrderStep.SUBMITORDER", "Submit Order");
+			$msg = _t("OrderStep.MUSTDOSUBMITRECORD", "Tick the box below to submit this order.");
+			$problems = array();
+			if(!$order->Items()) {
+				$problems[] = "There are no items associated with this order.";
+			}
+			$problems = array();
+			if(!$order->MemberID) {
+				$problems[] = "There is no customer associated with this order.";
+			}
+			if(count($problems)) {
+				$msg = "You can not submit this order because <ul><li>".implode("</li><li>", $problems)."</li></ul>";
+			}
+			$fields->addFieldToTab("Root.Main", new HeaderField("CreateSubmitRecordHeader", $header), "CustomerOrderNote");
+			$fields->addFieldToTab("Root.Main", new LiteralField("CreateSubmitRecordMessage", '<p>'.$msg.'</p>'), "CustomerOrderNote");
+			if(!$problems) {
+				$fields->addFieldToTab("Root.Main", new CheckboxField("SubmitNow", "Submit Now"), "CustomerOrderNote");
+			}
+		}
+		return $fields;
+	}
+
 
 }
 
@@ -620,6 +654,18 @@ class OrderStep_Paid extends OrderStep {
 		return null;
 	}
 
+
+	function addOrderStepFields(&$fields, $order) {
+		if(!$order->IsPaid()) {
+			//LINE BELOW IS NOT REQUIRED
+			//OrderStatusLog::add_available_log_classes_array($className);
+			$header = _t("OrderStep.SUBMITORDER", "Order NOT Paid");
+			$msg = _t("OrderStep.ORDERNOTPAID", "This order can not be completed, because it has not been paid.");
+			$fields->addFieldToTab("Root.Main", new HeaderField("NotPaidHeader", $header), "StatusID");
+			$fields->addFieldToTab("Root.Main", new LiteralField("NotPaidMessage", '<p>'.$msg.'</p>'), "StatusID");
+		}
+		return $fields;
+	}
 }
 
 
@@ -657,9 +703,9 @@ class OrderStep_Confirmed extends OrderStep {
 
 
 	function addOrderStepFields(&$fields, $order) {
-		$msg = _t("OrderStep.MUSTDOPAYMENTCHECK", "To move this order to the next step you must carry out a payment check (is the money in the bank?) and record it below");
-		$fields->addFieldToTab("Root.Main", new HeaderField("OrderStep_Confirmed", $msg, 3),"StatusID");
-		$fields->addFieldToTab("Root.Main", $order->OrderStatusLogsTable("OrderStatusLog_PaymentCheck"),"StatusID");
+		OrderStatusLog::add_available_log_classes_array("OrderStatusLog_PaymentCheck");
+		$msg = _t("OrderStep.MUSTDOPAYMENTCHECK", " ... To move this order to the next step you must carry out a payment check (is the money in the bank?) and record it below");
+		$fields->addFieldToTab("Root.Main", $order->OrderStatusLogsTable("OrderStatusLog_PaymentCheck", $msg),"StatusID");
 		return $fields;
 	}
 
@@ -754,9 +800,9 @@ class OrderStep_Sent extends OrderStep {
 	}
 
 	function addOrderStepFields(&$fields, $order) {
-		$msg = _t("OrderStep.MUSTENTERDISPATCHRECORD", "To move this order to the next step you enter the dispatch details in the logs.");
-		$fields->addFieldToTab("Root.Main", new HeaderField("OrderStep_Sent", $msg, 3),"StatusID");
-		$fields->addFieldToTab("Root.Main", $order->OrderStatusLogsTable("OrderStatusLog_DispatchPhysicalOrder"),"StatusID");
+		OrderStatusLog::add_available_log_classes_array("OrderStatusLog_DispatchPhysicalOrder");
+		$msg = _t("OrderStep.MUSTENTERDISPATCHRECORD", " ... To move this order to the next step you enter the dispatch details in the logs.");
+		$fields->addFieldToTab("Root.Main", $order->OrderStatusLogsTable("OrderStatusLog_DispatchPhysicalOrder", $msg),"StatusID");
 		return $fields;
 	}
 
@@ -792,14 +838,6 @@ class OrderStep_Archived extends OrderStep {
 	public function nextStep($order) {
 		//IMPORTANT
 		return null;
-	}
-
-
-	function addOrderStepFields(&$fields, $order) {
-		$msg = _t("OrderStep.ADDITIONALNOTES", "This order has been completed.");
-		$fields->addFieldToTab("Root.Main", new HeaderField("OrderStep_Archived", $msg, 3),"StatusID");
-		$fields->addFieldToTab("Root.Main", $order->OrderStatusLogsTable("OrderStatusLog"),"StatusID");
-		return $fields;
 	}
 
 }
