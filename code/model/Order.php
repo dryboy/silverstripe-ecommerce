@@ -73,7 +73,8 @@ class Order extends DataObject {
 		'IsCancelled' => 'Boolean',
 		'Country' => "Varchar", //This is the applicable country for the order - for tax purposes, etc....
 		'FullNameCountry' => "Varchar",
-		'IsSubmitted' => "Boolean"
+		'IsSubmitted' => "Boolean",
+		'CanHaveShippingAddress' => "Boolean"
 	);
 
 	public static $create_table_options = array(
@@ -207,6 +208,20 @@ class Order extends DataObject {
    * 1. CMS STUFF
 *******************************************************/
 
+	protected $fieldsAndTabsToBeRemoved = array(
+		'MemberID',
+		'Attributes',
+		'SessionID',
+		'BillingAddressID',
+		'ShippingAddressID',
+		'UseShippingAddress',
+		'OrderStatusLogs',
+		'Payments',
+		'OrderDate',
+		'UIDHash'
+	);
+
+
 	/**
 	 * STANDARD SILVERSTRIPE STUFF
 	 **/
@@ -235,11 +250,12 @@ class Order extends DataObject {
 			'title' => 'Customer Last Name',
 			'filter' => 'PartialMatchFilter'
 		),
+		/*
 		'BillingAddress.Email' => array(
 			'title' => 'Customer Email',
 			'filter' => 'PartialMatchFilter'
 		),
-
+		*/
 		//TODO: this breaks the sales part of the CMS
 		/*'Member.Phone' => array(
 			'title' => 'Customer Phone',
@@ -307,29 +323,28 @@ class Order extends DataObject {
 	 * broken up into submitted and not (yet) submitted
 	 **/
 	function getCMSFields(){
-		$this->tryToFinaliseOrder();
 		$fields = parent::getCMSFields();
-
-
 		$submitted = (bool)$this->IsSubmitted();
-		$fieldsAndTabsToBeRemoved = array('MemberID', 'Attributes', 'SessionID', 'BillingAddressID', 'ShippingAddressID', 'UseShippingAddress', 'OrderStatusLogs', 'Payments');
+		if($submitted) {
+			$this->tryToFinaliseOrder();
+		}
 		if(!$submitted) {
-			$fieldsAndTabsToBeRemoved[] = "Emails";
+			$this->fieldsAndTabsToBeRemoved[] = "Emails";
 		}
 		else {
-			$fieldsAndTabsToBeRemoved[] = "CustomerOrderNote";
+			$this->fieldsAndTabsToBeRemoved[] = "CustomerOrderNote";
 		}
-		foreach($fieldsAndTabsToBeRemoved as $field) {
+		foreach($this->fieldsAndTabsToBeRemoved as $field) {
 			$fields->removeByName($field);
 		}
-		$fields->insertBefore(new LiteralField('Title',"<h2>".$this->Title()."</h2>"),'Root');
+		//$fields->insertBefore(new LiteralField('Title',"<h2>".$this->Title()."</h2>"),'Root');
 		if($submitted) {
 			$htmlSummary = $this->renderWith("Order");
 			$printlabel = _t("Order.PRINTINVOICE", "Print Invoice");
+			$fields->addFieldToTab('Root.Main', new LiteralField('MainDetails', $htmlSummary));
 			$fields->addFieldsToTab('Root.Main', array(
 				new LiteralField("PrintInvoice",'<p class="print"><a href="OrderReport_Popup/index/'.$this->ID.'?print=1" onclick="javascript: window.open(this.href, \'print_order\', \'toolbar=0,scrollbars=1,location=1,statusbar=0,menubar=0,resizable=1,width=800,height=600,left = 50,top = 50\'); return false;">'.$printlabel.'</a></p>')
-			));
-			$fields->addFieldToTab('Root.Main', new LiteralField('MainDetails', $htmlSummary));
+			));			
 			$paymentsTable = new HasManyComplexTableField(
 				$this,
 				"Payments", //$name
@@ -351,7 +366,7 @@ class Order extends DataObject {
 			$paymentsTable->setRelationAutoSetting(true);
 			$fields->addFieldToTab('Root.Payments',$paymentsTable);
 			if($member = $this->Member()) {
-				$fields->addFieldToTab('Root.Customer', $member->getEcommerceFieldsForCMS());
+				$fields->addFieldToTab('Root.Customer', new LiteralField("MemberDetails", $member->getEcommerceFieldsForCMSAsString()));
 			}
 			/*
 			$fields->addFieldsToTab(
@@ -363,6 +378,23 @@ class Order extends DataObject {
 				)
 			);
 			*/
+			
+			$fields->replaceField("StatusID", $fields->dataFieldByName("StatusID")->performReadonlyTransformation());
+			$cancelledField = $fields->dataFieldByName("CancelledByID");
+			$fields->removeByName("CancelledByID");
+			$fields->addFieldToTab("Root.Cancellation", $cancelledField);
+			$oldOrderStatusLogs = new ComplexTableField(
+				$this,
+				$name ="OldOrderStatusLogs",
+				$sourceClass = "OrderStatusLog",
+				$fieldList = null,
+				$detailFormFields = null,
+				$sourceFilter = "\"OrderID\" = ".$this->ID,
+				$sourceSort = "",
+				$sourceJoin = ""
+			);
+			$oldOrderStatusLogs->setPermissions(array("show"));
+			$fields->addFieldsToTab('Root.Log', $oldOrderStatusLogs);
 		}
 		else {
 			$fields->addFieldToTab('Root.Main', new LiteralField('MainDetails', _t("Order.NODETAILSSHOWN", '<p>No details are shown here as this order has not been submitted yet. Once you change the status of the order more options will be available.</p>')));
@@ -393,12 +425,34 @@ class Order extends DataObject {
 			$modifierTable->setPermissions(array('edit', 'delete', 'export', 'add', 'show'));
 			$modifierTable->setPageSize(100);
 			$fields->addFieldToTab('Root.Extras',$modifierTable);
+
+			//MEMBER STUFF
+			$array = array();
+			if($this->MemberID) {
+				$array[0] =  "Remove Customer";
+				$array[$this->MemberID] =  "Leave with current customer: ".$this->Member()->getTitle();
+			}
+			else {
+				$array[0] =  " -- Select Customer -- ";
+				$currentMember = Member::currentUser();
+				$currentMemberID = $currentMember->ID;			
+				$array[$currentMemberID] = "Assign this order to me: ".Member::currentUser()->getTitle();			
+			}
+			$group = DataObject::get_one("Group", "\"Code\" = '".EcommerceRole::get_customer_group_code()."'");
+			if($group) {
+				$members = $group->Members();
+				if($members) {
+					$membersArray = $members->toDropDownMap($index = 'ID', $titleField = 'Title', $emptyString = "---- select an existing customer ---", $sort = true);
+					$array = array_merge($array, $membersArray);
+				}
+			}
+			$fields->addFieldToTab("Root.Main", new DropdownField("MemberID", "Select Cutomer", $array),"CustomerOrderNote");
 		}
 		if($this->MyStep()) {
 			$this->MyStep()->addOrderStepFields($fields, $this);
 		}
+
 		$this->extend('updateCMSFields',$fields);
-		$fields->addFieldToTab('Root.Debug',new LiteralField('sessionid',"order session id: ".$this->SessionID." your session id: ".session_id()));//debug
 		return $fields;
 	}
 
@@ -406,7 +460,7 @@ class Order extends DataObject {
 	 *
 	 *@return HasManyComplexTableField
 	 **/
-	function OrderStatusLogsTable($sourceClass) {
+	function OrderStatusLogsTable($sourceClass, $title, $fieldList = null, $detailedFormFields = null) {
 		$orderStatusLogsTable = new HasManyComplexTableField(
 			$this,
 			"OrderStatusLogs", //$name
@@ -418,6 +472,9 @@ class Order extends DataObject {
 		$orderStatusLogsTable->setPageSize(100);
 		$orderStatusLogsTable->setShowPagination(false);
 		$orderStatusLogsTable->setRelationAutoSetting(true);
+		if($title) {
+			$orderStatusLogsTable->setAddTitle($title);
+		}
 		return $orderStatusLogsTable;
 	}
 
@@ -1023,7 +1080,6 @@ class Order extends DataObject {
 		$member = $this->getMemberForCanFunctions($member);
 		$extended = $this->extendedCan('canCreate', $member->ID);
 		if($extended !== null) {return $extended;}
-		//TO DO: setup a special group of shop admins (probably can copy some code from Blog)
 		if($member->ID) {
 			return $member->IsShopAdmin();
 		}
@@ -1042,10 +1098,8 @@ class Order extends DataObject {
 		$extended = $this->extendedCan('canView', $member->ID);
 		if($extended !== null) {return $extended;}
 		//no member present: ONLY if the member can edit the order it can be viewed...
-		if($member->ID) {
-			if($member->IsShopAdmin()) {
-				return true;
-			}
+		if(EcommerceRole::CurrentMemberIsShopAdmin($member)) {
+			return true;
 		}
 		$currentOrder = ShoppingCart::current_order();
 		if($currentOrder && $currentOrder->ID == $this->ID){
@@ -1075,10 +1129,8 @@ class Order extends DataObject {
 		$extended = $this->extendedCan('canEdit', $member->ID);
 		if($extended !== null) {return $extended;}
 
-		if($member->ID) {
-			if($member->IsShopAdmin()) {
-				return true;
-			}
+		if(EcommerceRole::CurrentMemberIsShopAdmin($member)) {
+			return true;
 		}
 		
 		if(!$this->canView($member) || $this->IsCancelled()) {
@@ -1114,10 +1166,8 @@ class Order extends DataObject {
 		$member = $this->getMemberForCanFunctions($member);
 		$extended = $this->extendedCan('canCancel', $member->ID);
 		if($extended !== null) {return $extended;}
-		if($member->ID) {
-			if($member->IsShopAdmin()) {
-				return true;
-			}
+		if(EcommerceRole::CurrentMemberIsShopAdmin($member)) {
+			return true;
 		}
 		return $this->MyStep()->CustomerCanCancel;
 	}
@@ -1156,6 +1206,21 @@ class Order extends DataObject {
 		return null;
 	}
 
+	function CustomerViewableOrderStatusLogs() {
+		$customerViewableOrderStatusLogs = new DataObjectSet();
+		$logs = $this->OrderStatusLogs();
+		foreach($logs as $log) {
+			if(!$log->InternalUseOnly) {
+				$customerViewableOrderStatusLogs->push($log);
+			}
+		}
+		if($customerViewableOrderStatusLogs->count()) {
+			return $customerViewableOrderStatusLogs;
+		}
+		return null;
+
+	}
+	
 
 
 
@@ -1450,6 +1515,10 @@ class Order extends DataObject {
 
 	/**
 	 * we MUST have this function in addtion to IsSubmitted
+
+	 * Casted variable - has the order been submitted?
+	 *
+	 *@return Boolean
 	 **/
 	function getIsSubmitted() {
 		$className = OrderStatusLog::get_order_status_log_class_used_for_submitting_order();
@@ -1462,6 +1531,23 @@ class Order extends DataObject {
 		}
 	}
 		
+	/**
+	 * Casted variable - does the order have a potential shipping address?
+	 *
+	 *@return Boolean
+	 **/
+	function CanHaveShippingAddress() {
+		return $this->getCanHaveShippingAddress();
+	}
+	
+	/**
+	 * Casted variable - does the order have a potential shipping address?
+	 *
+	 *@return Boolean
+	 **/
+	function getCanHaveShippingAddress() {
+		return OrderAddress::get_use_separate_shipping_address();
+	}
 
 	/**
 	 * returns the link to view the Order
@@ -1671,6 +1757,13 @@ class Order extends DataObject {
 		parent::onAfterWrite();
 		if($this->newRecord) {
 			$this->init();
+		}
+		if(EcommerceRole::CurrentMemberIsShopAdmin()) {
+			if(isset($_REQUEST["SubmitNow"])) {
+				$this->tryToFinaliseOrder();
+				//just in case it writes again...
+				unset($_REQUEST["SubmitNow"]);
+			}
 		}
 	}
 
