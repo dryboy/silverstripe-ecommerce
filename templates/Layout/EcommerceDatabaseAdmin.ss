@@ -1,5 +1,5 @@
-<p><a href="{$BaseHref}CartCleanupTask">Cleanup old carts</a> - removes abandoned carts</p>
-<p><a href="{$BaseHref}shoppingcart/clear">Clear the current shopping cart</a></p>
+<p><a href="$Link(clearoldcarts)">Cleanup old carts</a> - removes abandoned carts</p>
+<p><a href="{$BaseHref}shoppingcart/clear">Clear the current shopping cart</a> - useful for testing purposes</p>
 <p><a href="{$BaseHref}shoppingcart/debug">Debug the shopping cart</a></p>
 <!--  <p>Load test products and categories</p>  -->
 

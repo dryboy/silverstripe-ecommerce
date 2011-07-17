@@ -18,7 +18,7 @@
 		<tr  class="itemRow $EvenOdd $FirstLast">
 			<td class="product title" scope="row">
 				<% if Link %>
-					<a href="$Link" title="<% sprintf(_t("Order.READMORE","Click here to read more on &quot;%s&quot;"),$Title) %>">$TableTitle</a> $TableSubTitle
+					<a href="$Link" target="_blank">$TableTitle</a> $TableSubTitle
 				<% else %>
 					$TableTitle $TableSubTitle
 				<% end_if %>

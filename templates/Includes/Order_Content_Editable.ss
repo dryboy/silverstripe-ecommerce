@@ -56,14 +56,14 @@
 			<% control Modifiers %>
 				<% if ShowInTable %>
 		<tr id="$TableID" class="$Classes hideOnZeroItems">
-			<th <% if Link %><% else %> id="$TableTitleID"<% end_if %> colspan="3" scope="row">
+			<td <% if Link %><% else %> id="$TableTitleID"<% end_if %> colspan="3" scope="row">
 				<% if Link %>
 					<a id="$TableTitleID" href="$Link" title="<% sprintf(_t("Order.READMORE","Click here to read more on &quot;%s&quot;"),$TableTitle) %>">$TableTitle</a>
 				<% else %>
 					$TableTitle
 				<% end_if %>
 				<% if TableSubTitle %><div class="tableSubTitle">$TableSubTitle</div ><% end_if %>
-			</th>
+			</td>
 			<td class="right total" id="$TableTotalID">$TableValue.Nice</td>
 			<td class="right remove">
 				<% if CanBeRemoved %>
