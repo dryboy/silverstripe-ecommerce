@@ -40,9 +40,9 @@ class EcommerceRole extends DataObjectDecorator {
 	}
 
 
-	protected static $customer_group_code = 'shop_customers';
+	protected static $customer_group_code = 'shopcustomers';
 		static function set_customer_group_code(string $s) {self::$customer_group_code = $s;}
-		static function get_customer_group_code() {return self::$customer_group_code;}
+		static function get_customer_group_code() {return ereg_replace("[^A-Za-z0-9]", "", self::$customer_group_code);}
 
 	protected static $customer_group_name = "shop customers";
 		static function set_customer_group_name(string $s) {self::$customer_group_name = $s;}
@@ -50,7 +50,7 @@ class EcommerceRole extends DataObjectDecorator {
 
 	protected static $customer_permission_code = "SHOP_CUSTOMER";
 		static function set_customer_permission_code(string $s) {self::$customer_permission_code = $s;}
-		static function get_customer_permission_code() {return self::$customer_permission_code;}
+		static function get_customer_permission_code() {return ereg_replace("[^A-Za-z0-9]", "", self::$customer_permission_code);}
 
 
 	/**
@@ -64,10 +64,19 @@ class EcommerceRole extends DataObjectDecorator {
    * SHOP ADMIN
 *******************************************************/
 
+	public static function CurrentMemberIsShopAdmin($member = null) {
+		if(!$member) {
+			$member = Member::currentMember();
+		}
+		if($member) {
+			return $member->IsShopAdmin();
+		}
+		return false;
+	}
 
-	protected static $admin_group_code = "shop_administrators";
+	protected static $admin_group_code = "shopadministrators";
 		static function set_admin_group_code(string $s) {self::$admin_group_code = $s;}
-		static function get_admin_group_code() {return self::$admin_group_code;}
+		static function get_admin_group_code() {return ereg_replace("[^A-Za-z0-9]", "", self::$admin_group_code);}
 
 	protected static $admin_group_name = "shop administrators";
 		static function set_admin_group_name(string $s) {self::$admin_group_name = $s;}
@@ -75,7 +84,7 @@ class EcommerceRole extends DataObjectDecorator {
 
 	protected static $admin_permission_code = "SHOP_ADMIN";
 		static function set_admin_permission_code(string $s) {self::$admin_permission_code = $s;}
-		static function get_admin_permission_code() {return self::$admin_permission_code;}
+		static function get_admin_permission_code() {return ereg_replace("[^A-Za-z0-9]", "", self::$admin_permission_code);}
 
 	protected static function add_members_to_customer_group() {
 		$gp = DataObject::get_one("Group", "\"Title\" = '".self::get_customer_group_name()."'");
@@ -124,12 +133,20 @@ class EcommerceRole extends DataObjectDecorator {
 		$fields->push($memberEmail->performReadonlyTransformation());
 		$lastLogin = new TextField("MemberLastLogin","Last login",$this->owner->dbObject('LastVisited')->Nice());
 		$fields->push($lastLogin->performReadonlyTransformation());
-		if($group = EcommerceRole::get_customer_group()) {
-			$fields->push(new LiteralField("EditMembers", '<p><a href="/admin/security/show/'.$group->ID.'/">view (and edit) all customers</a></p>'));
-		}
 		return $fields;
 	}
 
+	function getEcommerceFieldsForCMSAsString() {
+		$v = "<address>";
+		$v = "Name: ". $this->owner->getTitle();
+		$v .= "<br />Email: <a href=\"".$this->owner->Email."\" target=\"_blank\">".$this->owner->Email."</a>";
+		$v .= "<br />Last Login: ".$this->owner->dbObject('LastVisited')->Nice();
+		$v .= "</address>";
+		if($group = EcommerceRole::get_customer_group()) {
+			$v .= '<p><a href="/admin/security/show/'.$group->ID.'/" target="_blank">view (and edit) all customers</a></p>';
+		}
+		return $v;
+	}
 
 
 	/**
