@@ -1147,7 +1147,7 @@ class Order extends DataObject {
 		$extended = $this->extendedCan('canView', $member->ID);
 		if($extended !== null) {return $extended;}
 		//no member present: ONLY if the member can edit the order it can be viewed...
-		if(EcommerceRole::CurrentMemberIsShopAdmin($member)) {
+		if(EcommerceRole::current_member_is_shop_admin($member)) {
 			return true;
 		}
 		$currentOrder = ShoppingCart::current_order();
@@ -1178,7 +1178,7 @@ class Order extends DataObject {
 		$extended = $this->extendedCan('canEdit', $member->ID);
 		if($extended !== null) {return $extended;}
 
-		if(EcommerceRole::CurrentMemberIsShopAdmin($member)) {
+		if(EcommerceRole::current_member_is_shop_admin($member)) {
 			return true;
 		}
 		
@@ -1215,7 +1215,7 @@ class Order extends DataObject {
 		$member = $this->getMemberForCanFunctions($member);
 		$extended = $this->extendedCan('canCancel', $member->ID);
 		if($extended !== null) {return $extended;}
-		if(EcommerceRole::CurrentMemberIsShopAdmin($member)) {
+		if(EcommerceRole::current_member_is_shop_admin($member)) {
 			return true;
 		}
 		return $this->MyStep()->CustomerCanCancel;
@@ -1807,7 +1807,7 @@ class Order extends DataObject {
 		if($this->newRecord) {
 			$this->init();
 		}
-		if(EcommerceRole::CurrentMemberIsShopAdmin()) {
+		if(EcommerceRole::current_member_is_shop_admin()) {
 			if(isset($_REQUEST["SubmitNow"])) {
 				$this->tryToFinaliseOrder();
 				//just in case it writes again...

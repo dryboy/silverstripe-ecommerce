@@ -64,7 +64,7 @@ class EcommerceRole extends DataObjectDecorator {
    * SHOP ADMIN
 *******************************************************/
 
-	public static function CurrentMemberIsShopAdmin($member = null) {
+	public static function current_member_is_shop_admin($member = null) {
 		if(!$member) {
 			$member = Member::currentMember();
 		}

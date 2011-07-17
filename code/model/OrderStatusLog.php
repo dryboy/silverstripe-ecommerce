@@ -83,7 +83,7 @@ class OrderStatusLog extends DataObject {
 		if(!$member) {
 			$member = Member::currentUser();
 		}
-		if(EcommerceRole::CurrentMemberIsShopAdmin($member)) {
+		if(EcommerceRole::current_member_is_shop_admin($member)) {
 			return true;
 		}
 		if(!$this->InternalUseOnly) {
@@ -330,7 +330,7 @@ class OrderStatusLog_Dispatch extends OrderStatusLog {
 	 *@return Boolean
 	 **/
 	public function canDelete($member = null) {
-		return EcommerceRole::CurrentMemberIsShopAdmin($member);
+		return EcommerceRole::current_member_is_shop_admin($member);
 	}
 
 
