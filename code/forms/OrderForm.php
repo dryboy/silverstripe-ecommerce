@@ -16,7 +16,6 @@ class OrderForm extends Form {
 
 	function __construct($controller, $name) {
 		$order = ShoppingCart::current_order();
-		Requirements::themedCSS('OrderForm'); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
 		Requirements::javascript('ecommerce/javascript/EcomOrderForm.js'); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
 		$requiredFields = array();
 
@@ -85,7 +84,7 @@ class OrderForm extends Form {
 			}
 			$requiredFields[] = 'Password[_Password]';
 			$requiredFields[] = 'Password[_ConfirmPassword]';
-			Requirements::customScript('jQuery("#ChoosePassword").click();'); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
+			Requirements::customScript('jQuery("#ChoosePassword").click();', "EommerceChoosePassword"); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
 			$rightFields->push(
 				new LiteralField('AccountInfo','<p>'._t('OrderForm.ACCOUNTINFO','Please <a href="#Password" class="choosePassword">choose a password</a>, so you can log in and check your order history in the future.').'</p>')
 			);

@@ -40,13 +40,15 @@ class EcommerceSiteTreeExtension extends DataObjectDecorator {
 		return 0;
 	}
 
-	public function contentcontrollerInit() {
-		Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js");
-	}
 
 }
 
 class EcommerceSiteTreeExtension_Controller extends Extension {
+
+	function init() {
+		die("it works");
+		Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js");
+	}
 
 	/**
 	 *@return string

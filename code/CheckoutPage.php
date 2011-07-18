@@ -97,7 +97,6 @@ class CheckoutPage extends CartPage {
 		return !DataObject :: get_one("SiteTree", "\"ClassName\" = 'CheckoutPage'");
 	}
 
-
 	/**
 	 * Standard SS function
 	 *@return FieldSet
@@ -152,7 +151,6 @@ class CheckoutPage_Controller extends CartPage_Controller {
 			trigger_error('The payment module must be installed for the ecommerce module to function.', E_USER_WARNING);
 		}
 		Requirements::javascript('ecommerce/javascript/EcomPayment.js');
-		//Requirements::themedCSS('CheckoutPage'); // VIA CheckoutPage.ss
 	}
 
 	function processmodifierform($request) {

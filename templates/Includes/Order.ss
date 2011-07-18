@@ -19,4 +19,4 @@
 
 
 <% require themedCSS(Order) %>
-<% require themedCSS(Order_print, print) %>
+<% require themedCSS(Order_Print, print) %>

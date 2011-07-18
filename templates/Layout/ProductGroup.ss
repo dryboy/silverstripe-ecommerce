@@ -36,5 +36,4 @@
 
 
 
-<% require themedCSS(ProductGroup) %>
 

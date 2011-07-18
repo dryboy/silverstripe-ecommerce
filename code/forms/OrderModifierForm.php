@@ -61,9 +61,8 @@ class OrderModifierForm extends Form {
 		}
 		parent::__construct($optionalController, $name, $fields, $actions, $validator);
 		Requirements::themedCSS($this->ClassName);
-		Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js");
 		Requirements::javascript(THIRDPARTY_DIR."/jquery-form/jquery.form.js");
-	
+		//add JS for the modifier - added in modifier
 	}
 
 	function redirect($status = "success", $message = ""){
@@ -96,9 +95,6 @@ class OrderModifierForm_AjaxSubmit extends OrderModifierForm {
 	 **/
 
 	function __construct($optionalController = null, $name, FieldSet $fields, FieldSet $actions,$validator = null){
-		//jQuery.Form is included to make Ajax-based submission available.
-		//Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js"); // INCLUDED VIA EcommerceSiteTreeExtension
-		Requirements::javascript(THIRDPARTY_DIR."/jquery-form/jquery.form.js"); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
 		parent::__construct($optionalController, $name, $fields, $actions, $validator);
 	}
 

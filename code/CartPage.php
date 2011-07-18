@@ -45,17 +45,21 @@ class CartPage extends Page{
 	/**
 	 *@return String (HTML Snippet)
 	 **/
-	function EcommerceMenuTitle() {
+	function getMenuTitle() {
 		$count = 0;
 		$order = ShoppingCart::current_order();
 		if($order) {
 			$count = $order->TotalItems();
+			if($count) {
+				$html = $this->renderWith("AjaxItemsInCart");
+				$js = '
+					var html = jQuery("a[href=\''.$this->Link().'\']").html()
+					jQuery("a[href=\''.$this->Link().'\']").html(html + " '.$html.'");
+				';
+				Requirements::customscript($js, "NumItemsInCart".$this->ID);
+			}
 		}
-		$v = $this->MenuTitle;
-		if($count) {
-			$v .= " <span class=\"numberOfItemsInCart\">(".$count.")</span>";
-		}
-		return $v;
+		return parent::getMenuTitle();
 	}
 
 	/**
@@ -78,8 +82,13 @@ class CartPage extends Page{
 		return self::find_link(). 'showorder/' . $orderID . '/';
 	}
 
+	/**
+	 * Return a link to view the order on this page.
+	 * @return String (URLSegment)
+	 * @param int|string $orderID ID of the order
+	 */
 	public function getOrderLink($orderID) {
-		return $this->Link('showorder').'/'.$orderID.'/';
+		return self::get_order_link($orderID);
 	}
 
 }
@@ -100,7 +109,7 @@ class CartPage_Controller extends Page_Controller{
 
 	public function init() {
 		parent::init();
-		//Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js"); VIA EcommerceSiteTreeExtension::initcontentcontroller()
+		Requirements::themedCSS('Cart'); 
 		Requirements::javascript('ecommerce/javascript/EcomCart.js'); 
 		$orderID = 0;
 		//WE HAVE THIS FOR SUBMITTING FORMS!
@@ -156,8 +165,6 @@ class CartPage_Controller extends Page_Controller{
 	 *@return array just so that template shows -  sets CurrentOrder variable
 	 **/
 	function showorder($request) {
-		//Requirements::themedCSS('Order'); // VIA Order.ss
-		//Requirements::themedCSS('Order_print', 'print'); // VIA Order.ss - hopefully that works!!!
 		if(!$this->currentOrder) {
 			$this->message = _t('CartPage.ORDERNOTFOUND', 'Order can not be found.');
 		}

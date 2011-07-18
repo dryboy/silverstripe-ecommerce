@@ -43,7 +43,7 @@ class EcomQuantityField extends NumericField {
 
 	function __construct($object, $parameters = null){
 		Requirements::javascript("ecommerce/javascript/EcomQuantityField.js"); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
-		Requirements::customScript("EcomQuantityField.set_hidePlusAndMins(".(EcomQuantityField::get_hide_plus_and_minus() ? 1 : 0).")");
+		Requirements::customScript("EcomQuantityField.set_hidePlusAndMins(".(EcomQuantityField::get_hide_plus_and_minus() ? 1 : 0).")", "set_hidePlusAndMins");
 		if(Object::has_extension($object->class,'Buyable')){
 			$this->orderItem = ShoppingCart::singleton()->findOrMakeItem($object,$parameters);
 			 //provide a 0-quantity facade item if there is no such item in cart OR perhaps we should just store the product itself, and do away with the facade, as it might be unnecessary complication

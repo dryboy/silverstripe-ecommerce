@@ -5,6 +5,11 @@
   **/
 
 
+#Product { margin-left: 230px; }
+.priceDisplay { font-weight: bold; font-size: 1.2em; }
+#Product .noimage { padding: 20px; height: 100px; width: 200px; text-align: center; background: #eeeeee; color: #d3d3d3; display: block; text-decoration: none; font-size: 20px; }
+
+
 .category { overflow-x: hidden; }
 .sortOptions .current { text-decoration: none; font-weight: bold; }
 .productList { padding: 0; margin: 0; }
