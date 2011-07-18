@@ -51,7 +51,7 @@ class CartPage extends Page{
 		if($order) {
 			$count = $order->TotalItems();
 			if($count) {
-				$html = $this->renderWith("AjaxItemsInCart");
+				$html = $this->renderWith("AjaxNumItemsInCart");
 				$js = '
 					var html = jQuery("a[href=\''.$this->Link().'\']").html()
 					jQuery("a[href=\''.$this->Link().'\']").html(html + " '.$html.'");

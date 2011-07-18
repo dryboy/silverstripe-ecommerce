@@ -96,7 +96,7 @@ class EcomQuantityField extends NumericField {
 		$attributes = array(
 			'type' => 'text',
 			'class' => implode(' ',$this->classes),
-			'name' => $this->orderItem->MainID() . '_Quantity',
+			'name' => $this->orderItem->QuantityFieldName(),
 			'value' => ($this->orderItem->Quantity) ? $this->orderItem->Quantity : "",
 			'maxlength' => $maxlength,
 			'size' => $size

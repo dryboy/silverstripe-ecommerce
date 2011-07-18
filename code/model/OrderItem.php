@@ -188,19 +188,14 @@ HTML;
 	}
 
 	/**
-	 *
-	 *@return integer
+	 * Link to the Quantity Field
+	 * 
+	 *@return String
 	  **/
-	protected function QuantityFieldName() {
+	public function QuantityFieldName() {
 		return $this->MainID() . '_Quantity';
 	}
 
-	/*
-	 * @Depricated - use QuantityField
-	 */
-	function AjaxQuantityField(){
-		return $this->QuantityField();
-	}
 
 	/**
 	 *
