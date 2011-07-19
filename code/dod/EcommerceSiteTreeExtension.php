@@ -46,7 +46,6 @@ class EcommerceSiteTreeExtension extends DataObjectDecorator {
 class EcommerceSiteTreeExtension_Controller extends Extension {
 
 	function init() {
-		die("it works");
 		Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js");
 	}
 
