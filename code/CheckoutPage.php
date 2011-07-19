@@ -106,21 +106,43 @@ class CheckoutPage extends CartPage {
 		$fields->removeFieldFromTab('Root.Content.Main', "Content");
 		$fields->addFieldToTab('Root.Content.TermsAndConditions', new TreeDropdownField('TermsPageID', 'Terms and Conditions Page', 'SiteTree'));
 		$fields->addFieldsToTab('Root.Content.Messages', array (
-			new HtmlEditorField('InvitationToCompleteOrder', 'Invitation to complete order ... shown when the customer can do a normal checkout', $row = 4),
-			new HtmlEditorField('AlreadyCompletedMessage', 'Already Completed - shown when the customer tries to checkout an already completed order', $row = 4),
-			new TextField('FinalizedOrderLinkLabel', 'Label for the link pointing to a completed order - e.g. click here to view the completed order'),
-			new TextField('CurrentOrderLinkLabel', 'Label for the link pointing to the current order - e.g. click here to view current order'),
-			new TextField('StartNewOrderLinkLabel', 'Label for starting new order - e.g. click here to start new order'),
-			new HtmlEditorField('NonExistingOrderMessage', 'Non-existing Order - shown when the customer tries ', $row = 4),
-			new HtmlEditorField('NoItemsInOrderMessage', 'No items in order - shown when the customer tries to checkout an order without items.', $row = 4),
-			new HtmlEditorField('MustLoginToCheckoutMessage', 'MustLoginToCheckoutMessage', $row = 4),
-			new TextField('LoginToOrderLinkLabel', 'Label for the link pointing to the order which requires a log in - e.g. click here to log in and view order')
+			new TabSet(
+				"MessageOptions",
+				new Tab(
+					"NormalOrder",
+					new HtmlEditorField('InvitationToCompleteOrder', 'Invitation to complete order ... shown when the customer can do a normal checkout', $row = 4)
+					
+				),
+				new Tab(
+					"NoItems",
+					new HtmlEditorField('NoItemsInOrderMessage', 'No items in order - shown when the customer tries to checkout an order without items.', $row = 4)
+					
+				),
+				new Tab(
+					"NonExistingOrder",
+					new HtmlEditorField('NonExistingOrderMessage', 'Non-existing Order - shown when the customer tries to load a non-existing order.', $row = 4)
+				),
+				new Tab(
+					"AlreadyCompleted",
+					new HtmlEditorField('AlreadyCompletedMessage', 'Already Completed - shown when the customer tries to checkout an already completed order', $row = 4)
+				),
+				new Tab(
+					"OldOrder",
+					new HtmlEditorField('MustLoginToCheckoutMessage', 'MustLoginToCheckoutMessage', $row = 4)
+					
+				),
+				new Tab (
+					"LinksAndLabels",
+					new TextField('FinalizedOrderLinkLabel', 'Label for the link pointing to a completed order - e.g. click here to view the completed order'),
+					new TextField('CurrentOrderLinkLabel', 'Label for the link pointing to the current order - e.g. click here to view current order'),
+					new TextField('StartNewOrderLinkLabel', 'Label for starting new order - e.g. click here to start new order'),
+					new TextField('LoginToOrderLinkLabel', 'Label for the link pointing to the order which requires a log in - e.g. click here to log in and view order')
+				)
+			)
 		));
 		$fields->addFieldToTab('Root.Content.AlwaysVisible', new HtmlEditorField('Content', 'General note'));
 		return $fields;
 	}
-
-
 }
 class CheckoutPage_Controller extends CartPage_Controller {
 
