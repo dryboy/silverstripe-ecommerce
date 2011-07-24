@@ -307,6 +307,7 @@ class CheckoutPage_Controller extends CartPage_Controller {
 	 *@return DataObjectSet (Title, Link)
 	 **/
 	function ActionLinks() {
+		$this->Message();
 		if ($this->actionLinks && $this->actionLinks->count()) {
 			return $this->actionLinks;
 		}

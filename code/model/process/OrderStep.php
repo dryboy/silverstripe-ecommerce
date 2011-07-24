@@ -501,9 +501,10 @@ class OrderStep_Submitted extends OrderStep {
 				if($obj instanceOf OrderStatusLog) {
 					$obj->OrderID = $order->ID;
 					$obj->Title = $this->Name;
-					if($this->SaveOrderAsHTML)             {$obj->OrderAsHTML = $order->ConvertToHTML();}
-					if($this->SaveOrderAsSerializedObject) {$obj->OrderAsString = $order->ConvertToString();}
-					if($this->SaveOrderAsJSON)             {$obj->OrderAsJSON = $order->ConvertToJSON();}
+					$saved = false;
+					if($this->SaveOrderAsJSON)                        {$obj->OrderAsJSON = $order->ConvertToJSON(); $saved = true;}
+					if($this->SaveOrderAsHTML)                        {$obj->OrderAsHTML = $order->ConvertToHTML(); $saved = true;}
+					if($this->SaveOrderAsSerializedObject|| !$saved)  {$obj->OrderAsString = $order->ConvertToString();$saved = true; }
 					$obj->write();
 				}
 				else {

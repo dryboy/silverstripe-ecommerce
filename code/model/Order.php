@@ -63,6 +63,7 @@ class Order extends DataObject {
 	public static $default_sort = "\"Created\" DESC";
 
 	public static $casting = array(
+		'RetrieveLink' => 'Text',
 		'Title' => 'Text',
 		'Total' => 'Currency',
 		'SubTotal' => 'Currency',
@@ -187,7 +188,7 @@ class Order extends DataObject {
 	public static function get_by_id_if_can_view($id) {
 		$order = DataObject::get_by_id("Order", $id);
 		if($order && is_object($order) && $order->canView()){
-			if(!$order->canEdit()) {
+			if($order->IsSubmitted()) {
 				// LITTLE HACK TO MAKE SURE WE SHOW THE LATEST INFORMATION!
 				$order->tryToFinaliseOrder();
 			}
@@ -328,11 +329,11 @@ class Order extends DataObject {
 		if($submitted) {
 			$this->tryToFinaliseOrder();
 		}
-		if(!$submitted) {
-			$this->fieldsAndTabsToBeRemoved[] = "Emails";
+		if($submitted) {
+			$this->fieldsAndTabsToBeRemoved[] = "CustomerOrderNote";
 		}
 		else {
-			$this->fieldsAndTabsToBeRemoved[] = "CustomerOrderNote";
+			$this->fieldsAndTabsToBeRemoved[] = "Emails";
 		}
 		foreach($this->fieldsAndTabsToBeRemoved as $field) {
 			$fields->removeByName($field);
@@ -379,7 +380,7 @@ class Order extends DataObject {
 			);
 			*/
 			
-			$fields->replaceField("StatusID", $fields->dataFieldByName("StatusID")->performReadonlyTransformation());
+			//$fields->replaceField("StatusID", new OrderStepField($name = "StatusID", $this, Member::CurrentMember()));
 			$cancelledField = $fields->dataFieldByName("CancelledByID");
 			$fields->removeByName("CancelledByID");
 			$fields->addFieldToTab("Root.Cancellation", $cancelledField);
@@ -1156,7 +1157,9 @@ class Order extends DataObject {
 			return true;
 		}
 		elseif(!$this->MemberID) {
-			echo $this->SessionID .'<br />'. session_id();
+			if( $this->SessionID == session_id()) {
+				return true;
+			}
 			return false;
 		}
 		elseif($member && $this->MemberID == $member->ID) {
@@ -1259,13 +1262,15 @@ class Order extends DataObject {
 	function CustomerViewableOrderStatusLogs() {
 		$customerViewableOrderStatusLogs = new DataObjectSet();
 		$logs = $this->OrderStatusLogs();
-		foreach($logs as $log) {
-			if(!$log->InternalUseOnly) {
-				$customerViewableOrderStatusLogs->push($log);
+		if($logs) {
+			foreach($logs as $log) {
+				if(!$log->InternalUseOnly) {
+					$customerViewableOrderStatusLogs->push($log);
+				}
 			}
-		}
-		if($customerViewableOrderStatusLogs->count()) {
-			return $customerViewableOrderStatusLogs;
+			if($customerViewableOrderStatusLogs->count()) {
+				return $customerViewableOrderStatusLogs;
+			}
 		}
 		return null;
 
@@ -1281,6 +1286,24 @@ class Order extends DataObject {
 /*******************************************************
    * 8. GET METHODS (e.g. Total, SubTotal, Title, etc...)
 *******************************************************/
+
+	function RetrieveLink(){
+		return $this->getRetrieveLink();
+	}
+
+	function getRetrieveLink() {
+		if(!$this->IsSubmitted) {
+			return CheckoutPage::find_link();
+		}
+		else {
+			if(!$this->SessionID) {
+				
+				$this->SessionID = session_id();
+				$this->write();
+			}
+		}
+		return Director::AbsoluteURL(OrderConfirmationPage::find_link())."retrieveorder/".$this->SessionID."/".$this->ID."/";
+	}
 
 	/**
 	 * see Order::Title()

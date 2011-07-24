@@ -51,6 +51,25 @@ class OrderConfirmationPage extends CartPage{
 		return CartPage::find_link();
 	}
 
+
+	/**
+	 * Return a link to view the order on this page.
+	 * @return String (URLSegment)
+	 * @param int|string $orderID ID of the order
+	 */
+	public static function get_order_link($orderID) {
+		return self::find_link(). 'showorder/' . $orderID . '/';
+	}
+
+	/**
+	 * Return a link to view the order on this page.
+	 * @return String (URLSegment)
+	 * @param int|string $orderID ID of the order
+	 */
+	public function getOrderLink($orderID) {
+		return self::get_order_link($orderID);
+	}
+
 	/**
 	 *@return DataObjectSet or Null - DataObjectSet contains DataObjects. Each DataObject has two params: Heading and Orders
 	 * we use this format so that we can easily iterate through all the orders in the template.
@@ -166,6 +185,7 @@ class OrderConfirmationPage extends CartPage{
 class OrderConfirmationPage_Controller extends CartPage_Controller{
 
 	static $allowed_actions = array(
+		'retrieveorder',
 		'loadorder',
 		'startneworder',
 		'showorder',
@@ -180,7 +200,14 @@ class OrderConfirmationPage_Controller extends CartPage_Controller{
 	 **/
 	function init() {
 		parent::init();
-		if(Member::CurrentMember()) {
+		$retrievedOrder = null;
+		if($this->request && $this->request->param("Action") == "retrieveorder") {
+			$sessionID = Convert::raw2sql($this->request->param("ID"));
+			$id = intval(Convert::raw2sql($this->request->param("OtherID")));
+			$retrievedOrder = DataObject::get_one("Order", "\"Order\".\"SessionID\" = '".$sessionID."' AND \"Order\".\"ID\" = $id");
+			$this->currentOrder = $retrievedOrder;
+		}
+		if(!Member::CurrentMember() && !$retrievedOrder) {
 			$messages = array(
 				'default' => '<p class="message good">' . _t('OrderConfirmationPage.LOGINFIRST', 'You will need to login before you can access the submitted order page. ') . '</p>',
 				'logInAgain' => _t('OrderConfirmationPage.LOGINAGAIN', 'You have been logged out. If you would like to log in again, please do so below.')
@@ -225,6 +252,10 @@ class OrderConfirmationPage_Controller extends CartPage_Controller{
 			}
 		}
 	}
+
+	function retrieveorder(){
+		return array();
+	}	
 
 }
 

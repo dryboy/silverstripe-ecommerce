@@ -45,6 +45,10 @@ class EcommerceSiteTreeExtension extends DataObjectDecorator {
 
 class EcommerceSiteTreeExtension_Controller extends Extension {
 
+	/*
+	 *TO DO: this even seemed to be called then the CMS is opened
+	 **/
+
 	function init() {
 		Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js");
 	}

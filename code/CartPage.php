@@ -23,6 +23,12 @@ class CartPage extends Page{
 		'ContinuePage' => 'SiteTree'
 	);
 
+	public static $casting = array(
+		'EcommerceMenuTitle' => 'Varchar'
+	);
+
+	
+
 	public static $icon = 'ecommerce/images/icons/cart';
 
 	function canCreate($member = null) {
@@ -45,7 +51,7 @@ class CartPage extends Page{
 	/**
 	 *@return String (HTML Snippet)
 	 **/
-	function getMenuTitle() {
+	function getEcommerceMenuTitle() {
 		$count = 0;
 		$order = ShoppingCart::current_order();
 		if($order) {

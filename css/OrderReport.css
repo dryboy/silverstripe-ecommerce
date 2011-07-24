@@ -10,10 +10,7 @@
   * To specifically apply to printing use @media print { ...}
   **/
 
-body{overflow: auto !important; width: 700px; font-family: arial, helvetica, sans-serif; font-size: 12px!important; padding: 20px; }
 
-table { border-collapse: collapse; }
-table td, table th{vertical-align: top; }
 
 #Icons a {display: block;  float: right; background-repeat: no-repeat; background-position: right top; width: auto; padding-right: 20px;}
 	#PrintPageIcon {background-image: url(ecommerce/images/print.png); }
