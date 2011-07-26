@@ -84,6 +84,15 @@ class OrderConfirmationPage extends CartPage{
 	 * @return String (URLSegment)
 	 * @param int|string $orderID ID of the order
 	 */
+	public static function get_email_link($orderID) {
+		return self::find_link(). 'sendreceipt/' . $orderID . '/';
+	}
+
+	/**
+	 * Return a link to view the order on this page.
+	 * @return String (URLSegment)
+	 * @param int|string $orderID ID of the order
+	 */
 	public function getOrderLink($orderID) {
 		return self::get_order_link($orderID);
 	}
@@ -247,6 +256,18 @@ class OrderConfirmationPage_Controller extends CartPage_Controller{
 		Requirements::themedCSS('Order'); 
 		Requirements::themedCSS('Order_Print', "print"); 
 		Requirements::javascript('ecommerce/javascript/EcomPayment.js');
+	}
+
+	/**
+	 *@return array just so that template shows -  sets CurrentOrder variable
+	 **/
+	function showorder($request) {
+		if(!$this->currentOrder) {
+			$this->message = _t('CartPage.ORDERNOTFOUND', 'Order can not be found.');
+		}
+		if(isset($_REQUEST["print"])) {
+			return $this->renderWith("Invoice")''
+		}
 	}
 
 

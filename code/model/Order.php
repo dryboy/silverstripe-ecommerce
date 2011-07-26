@@ -63,6 +63,8 @@ class Order extends DataObject {
 	public static $default_sort = "\"Created\" DESC";
 
 	public static $casting = array(
+		'EmailLink' => 'Text',
+		'PrintLink' => 'Text',
 		'RetrieveLink' => 'Text',
 		'Title' => 'Text',
 		'Total' => 'Currency',
@@ -357,7 +359,7 @@ class Order extends DataObject {
 			$printlabel = _t("Order.PRINTINVOICE", "Print Invoice");
 			$fields->addFieldToTab('Root.Main', new LiteralField('MainDetails', $htmlSummary));
 			$fields->addFieldsToTab('Root.Main', array(
-				new LiteralField("PrintInvoice",'<p class="print"><a href="OrderReport_Popup/index/'.$this->ID.'?print=1" onclick="javascript: window.open(this.href, \'print_order\', \'toolbar=0,scrollbars=1,location=1,statusbar=0,menubar=0,resizable=1,width=800,height=600,left = 50,top = 50\'); return false;">'.$printlabel.'</a></p>')
+				new LiteralField("PrintInvoice",'<p class="print"><a href="'.$this->getPrintLink().'" onclick="javascript: window.open(this.href, \'print_order\', \'toolbar=0,scrollbars=1,location=1,statusbar=0,menubar=0,resizable=1,width=800,height=600,left = 50,top = 50\'); return false;">'.$printlabel.'</a></p>')
 			));			
 			$paymentsTable = new HasManyComplexTableField(
 				$this,
@@ -1288,6 +1290,28 @@ class Order extends DataObject {
 /*******************************************************
    * 8. GET METHODS (e.g. Total, SubTotal, Title, etc...)
 *******************************************************/
+
+	function EmailLink(){
+		return $this->getEmailLink();
+	}
+
+	function getEmailLink() {
+		if($this->IsSubmitted()) {
+			return Director::AbsoluteURL(OrderConfirmationPage::get_email_link($this->ID));
+		}
+	}
+
+	function PrintLink(){
+		return $this->getPrintLink();
+	}
+
+	function getPrintLink() {
+		if(!isset($_REQUEST["print"])) {
+			if($this->IsSubmitted()) {
+				return Director::AbsoluteURL(OrderConfirmationPage::get_order_link($this->ID))."?print=1";
+			}
+		}
+	}
 
 	function RetrieveLink(){
 		return $this->getRetrieveLink();

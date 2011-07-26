@@ -13,7 +13,26 @@
 	<% include Order_CustomerNote %>
 
 	<% include Order_OrderStatusLogs %>
-
+	
+	<% is EmailLink %>
+	<div id="SendCopyOfReceipt">
+		<p>
+			<a href="$EmailLink">
+				<% sprintf(_t("OrderConfirmation.SENDCOPYRECEIPT","send a copy of receipt to %s"),$Member.Email) %>
+			</a>
+		</p>
+	</div>
+	<% end_if %>
+	
+	<% is PrintLink %>
+	<div id="SendCopyOfReceipt">
+		<p>
+			<a href="$PrintLink">
+				<% _t("OrderConfirmation.PRINTINVOICE","print invoice") %>
+			</a>
+		</p>
+	</div>
+	<% end_if %>
 
 </div>
 

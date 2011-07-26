@@ -8,7 +8,6 @@
 	<% control Order %>
 		<% include Order %>
 	<% end_control %>
-	<div id="SendCopyOfReceipt"><p><a href="{$Link}sendreceipt/$CurrentOrder.ID/"><% sprintf(_t("OrderConfirmation.SENDCOPYRECEIPT","send a copy of receipt to %s"),$CurrentOrder.Member.Email) %></a></p></div>
 	<div id="PaymentForm">$PaymentForm</div>
 	<div id="CancelForm">$CancelForm</div>
 

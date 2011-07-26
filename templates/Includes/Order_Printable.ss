@@ -7,26 +7,14 @@
 	<% include OrderReport_Print %>
 </head>
 <body>
-
-	<%-- todo: allow printing multiple invoices at once --%>
+	<!-- todo: allow printing multiple invoices at once -->
 	<div style="page-break-after: always;">
-		<h1 class="title">$Top.SiteConfig.Title Invoice</h1>
-
-		<table id="SenderTable">
-			<tbody>
-				<tr>
-					<td class="sender">
-						$Top.SiteConfig.SenderAddress
-					</td>
-				</tr>
-			</tbody>
-		</table>
-		$Content
-		<% control DisplayFinalisedOrder %>
+		<h1 class="title">$SiteConfig.Title Invoice</h1>
+		<p id="ShopPhysicalAddress">$SiteConfig.ShopPhysicalAddress</p>
+		<% control Order %>
 			<% include Order %>
 		<% end_control %>
 	</div>
-
 </body>
 </html>
 
