@@ -43,7 +43,7 @@ class SalesAdmin extends ModelAdmin{
 		Requirements::themedCSS("OrderReport"); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
 		Requirements::themedCSS("OrderReport_Print", "print"); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
 		Requirements::javascript("ecommerce/javascript/EcomModelAdminExtensions.js"); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
-		Requirements::themedCSS("OrderStepField"); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
+		Requirements::themedCSS("OrderStepField"); // LEAVE HERE 
 	}
 
 

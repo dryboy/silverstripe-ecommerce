@@ -189,6 +189,7 @@ class EcommerceRole extends DataObjectDecorator {
 
 	public function requireDefaultRecords() {
 		parent::requireDefaultRecords();
+		self::add_members_to_customer_group();
 
 	}
 
