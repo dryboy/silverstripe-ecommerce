@@ -1,0 +1,6 @@
+.orderStepField { margin-bottom: 20px; border-bottom: 2px solid grey;}
+	.orderStepField ol li {list-style: none; width: auto; float: left; display: block; padding-right: 10px;}
+		.orderStepField ol li.current {color: blue; font-weight: bold;}
+		.orderStepField ol li.todo {color: grey;}
+		.orderStepField ol li.done {color: green; text-decoration: line-through;}
+	.orderStepField .clear {clear: left;}
