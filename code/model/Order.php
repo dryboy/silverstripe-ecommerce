@@ -350,7 +350,7 @@ class Order extends DataObject {
 				new OrderStepField($name = "MyOrderStep", $this, Member::CurrentMember()),
 				new HeaderField($name = "NextStepHeader", "Action Next Step"),
 				//SEE: $this->MyStep()->addOrderStepFields($fields, $this); BELOW
-				new DropdownField("StatusID", "Manuall Change Status (not recommended)", DataObject::get("OrderStep")->toDropDownMap())
+				new DropdownField("StatusID", "Change Status Manually (not recommended)", DataObject::get("OrderStep")->toDropDownMap())
 			),
 			"Emails"
 		);
