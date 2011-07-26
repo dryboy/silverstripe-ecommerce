@@ -14,7 +14,7 @@
 
 	<% include Order_OrderStatusLogs %>
 	
-	<% is EmailLink %>
+	<% if EmailLink %>
 	<div id="SendCopyOfReceipt">
 		<p>
 			<a href="$EmailLink">
@@ -24,7 +24,7 @@
 	</div>
 	<% end_if %>
 	
-	<% is PrintLink %>
+	<% if PrintLink %>
 	<div id="SendCopyOfReceipt">
 		<p>
 			<a href="$PrintLink">
