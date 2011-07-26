@@ -270,6 +270,7 @@ class OrderConfirmationPage_Controller extends CartPage_Controller{
 			Requirements::themedCSS("OrderReport_Print", "print"); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
 			return $this->renderWith("Invoice");
 		}
+		return array();
 	}
 
 
