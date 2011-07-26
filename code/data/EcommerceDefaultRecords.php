@@ -180,5 +180,6 @@ class EcommerceDefaultRecords_DataObject extends DataObject {
 			Permission::grant($customerGroup->ID, EcommerceRole::get_customer_permission_code());
 			DB::alteration_message(EcommerceRole::get_customer_group_name().' permissions granted',"created");
 		}
+		EcommerceRole::add_members_to_customer_group();		
 	}
 }
