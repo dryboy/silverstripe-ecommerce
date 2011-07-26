@@ -219,7 +219,8 @@ class Order extends DataObject {
 		'OrderStatusLogs',
 		'Payments',
 		'OrderDate',
-		'UIDHash'
+		'UIDHash',
+		'StatusID'
 	);
 
 
@@ -339,6 +340,18 @@ class Order extends DataObject {
 			$fields->removeByName($field);
 		}
 		//$fields->insertBefore(new LiteralField('Title',"<h2>".$this->Title()."</h2>"),'Root');
+		$fields->addFieldToTab(
+			"Root",
+			new Tab(
+				"Next",
+				new HeaderField($name = "MyOrderStepHeader", "Current Status"),
+				new OrderStepField($name = "MyOrderStep", $this, Member::CurrentMember()),
+				new HeaderField($name = "NextStepHeader", "Action Next Step"),
+				//SEE: $this->MyStep()->addOrderStepFields($fields, $this); BELOW
+				new DropdownField("StatusID", "Manuall Change Status (not recommended)", DataObject::get("OrderStep")->toDropDownMap())
+			),
+			"Emails"
+		);
 		if($submitted) {
 			$htmlSummary = $this->renderWith("Order");
 			$printlabel = _t("Order.PRINTINVOICE", "Print Invoice");
@@ -369,18 +382,8 @@ class Order extends DataObject {
 			if($member = $this->Member()) {
 				$fields->addFieldToTab('Root.Customer', new LiteralField("MemberDetails", $member->getEcommerceFieldsForCMSAsString()));
 			}
-			/*
-			$fields->addFieldsToTab(
-				"Root.Delivery",
-				array(
-					new CheckboxField("UseShippingAddress", "Shipping Address is not the same as Billing Address"),
-					new HeaderField("DispatchLog", _t("Order.DISPATCHLOG", "Dispatch Log")),
-					new ComplexTableField($controller = "OrderStatusLog_Dispatch", "OrderStatusLog_Dispatch", "OrderStatusLog_Dispatch", $fieldList = null, $detailFormFields = null, $sourceFilter = "\"OrderID\" = ".$this->ID, $sourceSort = "", $sourceJoin = "")
-				)
-			);
-			*/
 			
-			//$fields->replaceField("StatusID", new OrderStepField($name = "StatusID", $this, Member::CurrentMember()));
+			
 			$cancelledField = $fields->dataFieldByName("CancelledByID");
 			$fields->removeByName("CancelledByID");
 			$fields->addFieldToTab("Root.Cancellation", $cancelledField);
@@ -474,7 +477,6 @@ class Order extends DataObject {
 		$fields->addFieldToTab('Root.Addresses',$billingAddress);
 
 		if(OrderAddress::get_use_separate_shipping_address()) {
-			
 			$fields->addFieldToTab('Root.Addresses',new HeaderField("ShippingAddressHeader", "Shipping Address"));
 			$fields->addFieldToTab('Root.Addresses',new CheckboxField("UseShippingAddress", "Use separate shipping address"));
 			if($this->UseShippingAddress) {
@@ -1595,7 +1597,7 @@ class Order extends DataObject {
 	 **/
 	function getIsSubmitted() {
 		$className = OrderStatusLog::get_order_status_log_class_used_for_submitting_order();
-		$submissionLog = DataObject::get_one($className, "\"OrderID\" = ".$this->ID);
+		$submissionLog = DataObject::get_one($className, "\"OrderID\" = ".$this->ID, false);
 		if($submissionLog) {
 			return true;
 		}
@@ -1633,11 +1635,10 @@ class Order extends DataObject {
 			$page = DataObject::get_one("CartPage", "\"ClassName\" = 'CartPage'");
 		}
 		else {
-			$page = DataObject::get_one("OrderConfirmationPage");
+			$page = DataObject::get_one("OrderConfirmationPage", "\"ClassName\" = 'OrderConfirmationPage'");
 		}
 		//backup.... may take you to the checkout page....
 		if(!$page) {
-			user_error("An OrderConfirmation page needs to be created", E_USER_NOTICE);			
 			$page = DataObject::get_one("CartPage");
 		}
 		if($page) {
@@ -1706,7 +1707,7 @@ class Order extends DataObject {
 		$this->Member = $this->Member();
 		$this->BillingAddress = $this->BillingAddress();
 		$this->ShippingAddress = $this->ShippingAddress();
-		$this->Attributes = $this->OrderAttributes();
+		$this->Attributes = $this->Attributes();
 		$this->OrderStatusLogs = $this->OrderStatusLogs();
 		$this->Payments = $this->Payments();
 		$this->Emails = $this->Emails();

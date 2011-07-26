@@ -25,25 +25,27 @@ class OrderStepField extends DatalessField {
 			$currentStep = $order->MyStep();
 		}
 		$orderSteps = DataObject::get("OrderStep", $where);
-		$passedStep = false;
-		$html = "<ul>";
+		$future = false;
+		$html = "
+		<div class=\"orderStepField\">
+			<ol>";
 		foreach($orderSteps as $orderStep) {
 			$class = "";
 			if($orderStep->ID == $currentStep->ID) {
-				$passed = true;
+				$future = true;
 				$class .= " current";
 			}
-			elseif($passed) {
-				$class .= " passed";
+			elseif($future) {
+				$class .= " todo";
 			}
 			else {
-				$class .= " before";
+				$class .= " done";
 			}
-			$html .= '<li class="'.$class.'">'.$orderStep->Title.'<li>';
+			$html .= '<li class="'.$class.'">'.$orderStep->Title.'</li>';
 		}
-		$html .= "</ul>";
-
+		$html .= "</ol><div class=\"clear\"></div></div>";
 		$this->content = $html;
+		Requirements::themedCSS("OrderStepField");
 		parent::__construct($name);
 	}
 

@@ -549,10 +549,10 @@ class OrderStep_Submitted extends OrderStep {
 			if(count($problems)) {
 				$msg = "You can not submit this order because <ul><li>".implode("</li><li>", $problems)."</li></ul>";
 			}
-			$fields->addFieldToTab("Root.Main", new HeaderField("CreateSubmitRecordHeader", $header), "CustomerOrderNote");
-			$fields->addFieldToTab("Root.Main", new LiteralField("CreateSubmitRecordMessage", '<p>'.$msg.'</p>'), "CustomerOrderNote");
+			$fields->addFieldToTab("Root.Next", new HeaderField("CreateSubmitRecordHeader", $header), "CustomerOrderNote");
+			$fields->addFieldToTab("Root.Next", new LiteralField("CreateSubmitRecordMessage", '<p>'.$msg.'</p>'), "CustomerOrderNote");
 			if(!$problems) {
-				$fields->addFieldToTab("Root.Main", new CheckboxField("SubmitNow", "Submit Now"), "CustomerOrderNote");
+				$fields->addFieldToTab("Root.Next", new CheckboxField("SubmitNow", "Submit Now"), "CustomerOrderNote");
 			}
 		}
 		return $fields;
@@ -662,8 +662,8 @@ class OrderStep_Paid extends OrderStep {
 			//OrderStatusLog::add_available_log_classes_array($className);
 			$header = _t("OrderStep.SUBMITORDER", "Order NOT Paid");
 			$msg = _t("OrderStep.ORDERNOTPAID", "This order can not be completed, because it has not been paid.");
-			$fields->addFieldToTab("Root.Main", new HeaderField("NotPaidHeader", $header), "StatusID");
-			$fields->addFieldToTab("Root.Main", new LiteralField("NotPaidMessage", '<p>'.$msg.'</p>'), "StatusID");
+			$fields->addFieldToTab("Root.Next", new HeaderField("NotPaidHeader", $header), "StatusID");
+			$fields->addFieldToTab("Root.Next", new LiteralField("NotPaidMessage", '<p>'.$msg.'</p>'), "StatusID");
 		}
 		return $fields;
 	}
@@ -706,7 +706,7 @@ class OrderStep_Confirmed extends OrderStep {
 	function addOrderStepFields(&$fields, $order) {
 		OrderStatusLog::add_available_log_classes_array("OrderStatusLog_PaymentCheck");
 		$msg = _t("OrderStep.MUSTDOPAYMENTCHECK", " ... To move this order to the next step you must carry out a payment check (is the money in the bank?) by creating a record here (click me)");
-		$fields->addFieldToTab("Root.Main", $order->OrderStatusLogsTable("OrderStatusLog_PaymentCheck", $msg),"StatusID");
+		$fields->addFieldToTab("Root.Next", $order->OrderStatusLogsTable("OrderStatusLog_PaymentCheck", $msg),"StatusID");
 		return $fields;
 	}
 
@@ -803,7 +803,7 @@ class OrderStep_Sent extends OrderStep {
 	function addOrderStepFields(&$fields, $order) {
 		OrderStatusLog::add_available_log_classes_array("OrderStatusLog_DispatchPhysicalOrder");
 		$msg = _t("OrderStep.MUSTENTERDISPATCHRECORD", " ... To move this order to the next step you enter the dispatch details in the logs.");
-		$fields->addFieldToTab("Root.Main", $order->OrderStatusLogsTable("OrderStatusLog_DispatchPhysicalOrder", $msg),"StatusID");
+		$fields->addFieldToTab("Root.Next", $order->OrderStatusLogsTable("OrderStatusLog_DispatchPhysicalOrder", $msg),"StatusID");
 		return $fields;
 	}
 

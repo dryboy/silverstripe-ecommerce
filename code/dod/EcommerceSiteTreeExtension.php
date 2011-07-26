@@ -14,6 +14,14 @@
 
 class EcommerceSiteTreeExtension extends DataObjectDecorator {
 
+	function extraStatics(){
+		return array(
+			'casting' => array(
+				"EcommerceMenuTitle" => "Varchar"
+			)
+		);
+	}
+	
 	/**
 	 *@return Boolean
 	 **/
@@ -38,6 +46,13 @@ class EcommerceSiteTreeExtension extends DataObjectDecorator {
 			return $order->TotalItems();
 		}
 		return 0;
+	}
+
+	/**
+	 *@return String (HTML Snippet)
+	 **/
+	function getEcommerceMenuTitle() {
+		return parent::getMenuTitle();
 	}
 
 

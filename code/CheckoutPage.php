@@ -39,28 +39,30 @@ class CheckoutPage extends CartPage {
 	public static $db = array (
 		'InvitationToCompleteOrder' => 'HTMLText',
 		'AlreadyCompletedMessage' => 'HTMLText',
-		'FinalizedOrderLinkLabel' => 'Varchar(255)',
-		'CurrentOrderLinkLabel' => 'Varchar(255)',
-		'StartNewOrderLinkLabel' => 'Varchar(255)',
 		'NoItemsInOrderMessage' => 'HTMLText',
 		'NonExistingOrderMessage' => 'HTMLText',
 		'MustLoginToCheckoutMessage' => 'HTMLText',
-		'LoginToOrderLinkLabel' => 'Varchar(255)'
+		'LoginToOrderLinkLabel' => 'Varchar(255)',
+		'FinalizedOrderLinkLabel' => 'Varchar(255)',
+		'CurrentOrderLinkLabel' => 'Varchar(255)',
+		'StartNewOrderLinkLabel' => 'Varchar(255)'
 	);
 
 	public static $has_one = array (
 		'TermsPage' => 'Page'
 	);
 
-	public static $icon = 'ecommerce/images/icons/checkout';
+	public static $icon = 'ecommerce/images/icons/CheckoutPage';
 
 	/**
 	 * Returns the Terms and Conditions Page (if there is one).
 	 * @return DataObject (Page)
 	 */
 	public static function find_terms_and_conditions_page() {
-		$checkoutPage = DataObject :: get_one("CheckoutPage");
-		return DataObject :: get_by_id('Page', $checkoutPage->TermsPageID);
+		$checkoutPage = DataObject::get_one('CheckoutPage', "\"ClassName\" = 'CheckoutPage'");
+		if($checkoutPage) {
+			return DataObject::get_by_id('Page', $checkoutPage->TermsPageID);
+		}
 	}
 
 	/**
@@ -68,10 +70,9 @@ class CheckoutPage extends CartPage {
 	 * @return String (URLSegment)
 	 */
 	public static function find_link() {
-		if (!$page = DataObject :: get_one('CheckoutPage')) {
-			user_error('No CheckoutPage was found. Please create one in the CMS!', E_USER_ERROR);
+		if ($page = DataObject :: get_one('CheckoutPage', "\"ClassName\" = 'CheckoutPage'")) {
+			return $page->Link();
 		}
-		return $page->Link();
 	}
 
 	/**
@@ -83,10 +84,9 @@ class CheckoutPage extends CartPage {
 	 * @return string Link to checkout page
 	 */
 	public static function get_checkout_order_link($orderID) {
-		if (!$page = DataObject :: get_one('CheckoutPage')) {
-			user_error('No CheckoutPage was found. Please create one in the CMS!', E_USER_ERROR);
+		if($page = self::find_link()) {
+			return $page->Link("showorder") . "/" . $orderID . "/";
 		}
-		return $page->Link("loadorder") . "/" . $orderID . "/";
 	}
 
 	/**
@@ -140,16 +140,12 @@ class CheckoutPage extends CartPage {
 				)
 			)
 		));
-		$fields->addFieldToTab('Root.Content.AlwaysVisible', new HtmlEditorField('Content', 'General note'));
+		$fields->addFieldToTab('Root.Content.AlwaysVisible', new HtmlEditorField('Content', 'General note', 7, 7));
 		return $fields;
 	}
 }
 class CheckoutPage_Controller extends CartPage_Controller {
 
-	/**
-	 *@var $actionLinks DataObjectSet (Link, Title)
-	 **/
-	protected $actionLinks = null;
 
 	/**
 	 *@var $currentStep Integer
@@ -160,6 +156,7 @@ class CheckoutPage_Controller extends CartPage_Controller {
 	/**
 	 *@var $readOnly Boolean
 	 * if set to false, user can edit order, if set to true, user can only review order
+	 * this is typically used for the user to confirm their order after they have edited it.
 	 **/
 	protected $readOnly = false;
 
@@ -168,10 +165,7 @@ class CheckoutPage_Controller extends CartPage_Controller {
 	 * if set to false, user can edit order, if set to true, user can only review order
 	 **/
 	public function init() {
-		parent :: init();
-		if (!class_exists('Payment')) {
-			trigger_error('The payment module must be installed for the ecommerce module to function.', E_USER_WARNING);
-		}
+		parent::init();
 		Requirements::javascript('ecommerce/javascript/EcomPayment.js');
 	}
 
@@ -236,83 +230,19 @@ class CheckoutPage_Controller extends CartPage_Controller {
 	}
 
 	/**
-	 * Determine whether the user can checkout the
-	 * specified Order ID in the URL, that isn't
-	 * paid for yet.
+	 * Can the user proceed? It must be an editable order (see @link CartPage)
+	 * and is must also contain items.
 	 *
 	 * @return boolean
 	 */
 	function CanCheckout() {
-		if ($this->currentOrder) {
-			if ($this->currentOrder->Items() && !$this->currentOrder->IsSubmitted()) {
-				return true;
-			}
+		if($this->CanEditOrder()) {
+			return $this->currentOrder->Items();
 		}
 	}
 
-	/**
-	 * Returns a message explaining why the customer
-	 * can't checkout the requested order.
-	 *
-	 * @return string
-	 */
-	function Message() {
-		$this->actionLinks = new DataObjectSet();
-		$checkoutLink = CheckoutPage :: find_link();
-		if($this->CanCheckout()) {
-			return $this->InvitationToCompleteOrder;
-		}
 
-		//not logged, an order was requested, but it can not be found: must login first!
-		elseif (!Member :: currentUserID() && $this->OrderID && !$this->currentOrder ) {
-			$redirectLink = CheckoutPage :: get_checkout_order_link($this->OrderID);
-			$this->actionLinks->push(new ArrayData(array (
-				"Title" => $this->LoginToOrderLinkLabel,
-				"Link" => 'Security/login?BackURL=' . urlencode($redirectLink)
-			)));
-			$this->actionLinks->push(new ArrayData(array (
-				"Title" => $this->CurrentOrderLinkLabel,
-				"Link" => $checkoutLink
-			)));
-			return $this->MustLoginToCheckoutMessage;
-		}
-		//already logged in, but order can not be found: order does not exist!
-		elseif (Member :: currentUserID() && $this->OrderID && !$this->currentOrder) {
-			$this->actionLinks->push(new arrayData(array (
-				"Title" => $this->CurrentOrderLinkLabel,
-				"Link" => $checkoutLink
-			)));
-			return $this->NonExistingOrderMessage;
-		}
-		//no items in basket
-		elseif ($this->currentOrder && !$this->currentOrder->Items()) {
-			return $this->NoItemsInOrderMessage;
-		}
-		//order can not be edited: 
-		elseif ($this->currentOrder && $this->currentOrder->IsSubmitted()) {
-			$this->actionLinks->push(new ArrayData(array (
-				"Title" => $this->FinalizedOrderLinkLabel,
-				"Link" => $this->currentOrder->Link()
-			)));
-			$this->actionLinks->push(new ArrayData(array (
-				"Title" => $this->StartNewOrderLinkLabel,
-				"Link" => CheckoutPage :: find_link() . "startneworder/"
-			)));
-			return $this->AlreadyCompletedMessage;
-		}
-		return "An error occured in retrieving your order...";
-	}
 
-	/**
-	 *@return DataObjectSet (Title, Link)
-	 **/
-	function ActionLinks() {
-		$this->Message();
-		if ($this->actionLinks && $this->actionLinks->count()) {
-			return $this->actionLinks;
-		}
-		return null;
-	}
 
 	function ModifierForm($request) {
 		user_error("Make sure that you set the controller for your ModifierForm to a controller directly associated with the Modifier", E_USER_WARNING);
@@ -331,6 +261,82 @@ class CheckoutPage_Controller extends CartPage_Controller {
 			if (in_array($name, self :: $checkout_steps[$this->currentStep])) {
 				return true;
 			}
+		}
+	}
+
+
+
+	/**
+	 * Returns a message explaining why the customer
+	 * can't checkout the requested order.
+	 *
+	 * @return string
+	 */
+	protected function workOutMessagesAndActions() {
+		if(!$this->workedOutMessagesAndActions) {
+			$this->actionLinks = new DataObjectSet();
+			$checkoutLink = CheckoutPage::find_link();
+			if($this->CanCheckout()) {
+				//no action links...
+				$this->message = $this->InvitationToCompleteOrder;
+			}
+			//not logged in, an order was requested, must login first!
+			elseif (!Member::currentUserID() && $this->OrderID && !$this->currentOrder ) {
+				$redirectLink = CheckoutPage::get_checkout_order_link($this->OrderID);
+				//retrieve requested order by logging in
+				$this->actionLinks->push(new ArrayData(array (
+					"Title" => $this->LoginToOrderLinkLabel,
+					"Link" => 'Security/login?BackURL=' . urlencode($redirectLink)
+				)));
+				// open current order
+				$this->actionLinks->push(new ArrayData(array (
+					"Title" => $this->CurrentOrderLinkLabel,
+					"Link" => $checkoutLink
+				)));
+				$this->message = $this->MustLoginToCheckoutMessage;
+			}
+			//already logged in, but order can not be found: order does not exist!
+			elseif (Member::currentUserID() && $this->OrderID && !$this->currentOrder) {
+				$this->actionLinks->push(new arrayData(array (
+					"Title" => $this->CurrentOrderLinkLabel,
+					"Link" => $checkoutLink
+				)));
+				$this->message = $this->NonExistingOrderMessage;
+			}
+			//no items in basket
+			elseif ($this->currentOrder && !$this->currentOrder->Items()) {
+				//no action links
+				$this->message = $this->NoItemsInOrderMessage;
+			}
+			//order can not be edited: 
+			elseif ($this->currentOrder && $this->currentOrder->IsSubmitted()) {
+				//review order... in order confirmation page
+				$this->actionLinks->push(new ArrayData(array (
+					"Title" => $this->FinalizedOrderLinkLabel,
+					"Link" => $this->currentOrder->Link()
+				)));
+				//start a new order
+				$this->actionLinks->push(new ArrayData(array (
+					"Title" => $this->StartNewOrderLinkLabel,
+					"Link" => CartPage::new_order_link()
+				)));
+				$this->message = $this->AlreadyCompletedMessage;
+			}
+			else {
+				$this->message = "An error occured in retrieving your order...";
+				//review order... in order confirmation page
+				$this->actionLinks->push(new ArrayData(array (
+					"Title" => $this->FinalizedOrderLinkLabel,
+					"Link" => $this->currentOrder->Link()
+				)));
+				//start a new order
+				$this->actionLinks->push(new ArrayData(array (
+					"Title" => $this->StartNewOrderLinkLabel,
+					"Link" => CartPage::new_order_link()
+				)));
+				$this->message = $this->AlreadyCompletedMessage;				
+			}
+			$this->workedOutMessagesAndActions = true;
 		}
 	}
 

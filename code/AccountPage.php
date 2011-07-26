@@ -1,21 +1,21 @@
 <?php
 /**
  * @description:
- * Account page shows order history and a form to allow the member to edit his/her details.
+ * The Account Page allows the user to update their details. 
  * You do not need to be logged in to the account page in order to view it... If you are not logged in
  * then the account page can be a page to create an account.
+
  *
  * @authors: Silverstripe, Jeremy, Nicolaas
  *
  * @package: ecommerce
  * @sub-package: pages
- * TODO:
- * should this extend cart page?
+ *
  **/
 
 class AccountPage extends Page {
 
-	public static $icon = 'ecommerce/images/icons/account';
+	public static $icon = 'ecommerce/images/icons/AccountPage';
 
 	/**
 	 * standard SS method
@@ -33,7 +33,6 @@ class AccountPage extends Page {
 		if($page = DataObject::get_one('AccountPage', "\"ClassName\" = 'AccountPage'")) {
 			return $page->Link();
 		}
-		return CheckoutPage::find_link();
 	}
 
 }
@@ -66,20 +65,8 @@ class AccountPage_Controller extends Page_Controller {
 	 * @return ShopAccountForm
 	 */
 	function MemberForm() {
-		if(!$this->Order()) {
-			return new ShopAccountForm($this, 'MemberForm');
-		}
+		return new ShopAccountForm($this, 'MemberForm');
 	}
-
-
-	/**
-	 * Return link if any to the Order Confirmation Page 
-	 * @return String
-	 */
-	function OrderConfirmationPageLink() {
-		return OrderConfirmationPage::find_link();
-	}
-
 
 
 

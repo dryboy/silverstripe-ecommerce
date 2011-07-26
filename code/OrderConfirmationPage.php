@@ -1,7 +1,12 @@
 <?php
 
 /**
- *
+ * @description:
+ * The Order Confirmation page shows order history.
+ * It also serves as the end point for the current order...
+ * once submitted, the Order Confirmation page shows the
+ * finalised detail of the order.
+ * 
  * @authors: Silverstripe, Jeremy, Nicolaas
  *
  * @package: ecommerce
@@ -11,10 +16,23 @@
 
 class OrderConfirmationPage extends CartPage{
 
+	public static $db = array(
+		"YouDontHaveSavedOrders" => "HTMLText"
+	);
+
 	public static $icon = 'ecommerce/images/icons/OrderConfirmationPage';
 
 	function canCreate($member = null) {
 		return !DataObject :: get_one("SiteTree", "\"ClassName\" = 'OrderConfirmationPage'");
+	}
+
+	/**
+	 *@return Fieldset
+	 **/
+	function getCMSFields(){
+		$fields = parent::getCMSFields();
+		$fields->addFieldToTab("Root.Main.Messages", new HTMLEditorField("YouDontHaveSavedOrders", "Message to user: You dont have any saved orders (e.g. you have not placed any orders yet) ", 5, 5));
+		return $fields;
 	}
 
 	function canView($member = null) {
@@ -78,11 +96,22 @@ class OrderConfirmationPage extends CartPage{
 	 **/
 	public function AllMemberOrders() {
 		$dos = new DataObjectSet();
-		$doCurrentOrders = new DataObject();
-		$dos->push("ShoppingCartOrders", _t("Account.CURRENTORDER", "Current Shopping Cart"));
-		$dos->push("IncompleteOrders", _t("Account.INCOMPLETEORDERS", "Incomplete Orders"));
-		$dos->push("InProcessOrders", _t("Account.INPROCESSORDERS", "In Process Orders"));
-		$dos->push("CompleteOrders", _t("Account.COMPLETEORDERS", "Completed Orders"));
+		$doCurrentOrders = $this->putTogetherOrderDataObjectSet("ShoppingCartOrders", _t("Account.CURRENTORDER", "Current Shopping Cart"));
+		if($doCurrentOrders){
+			$dos->push($doCurrentOrders);
+		}
+		$incompleteOrders = $this->putTogetherOrderDataObjectSet("IncompleteOrders", _t("Account.INCOMPLETEORDERS", "Incomplete Orders"));
+		if($incompleteOrders){
+			$dos->push($incompleteOrders);
+		}
+		$inProcessOrders = $this->putTogetherOrderDataObjectSet("InProcessOrders", _t("Account.INPROCESSORDERS", "In Process Orders"));
+		if($inProcessOrders){
+			$dos->push($inProcessOrders);
+		}
+		$completeOrders = $this->putTogetherOrderDataObjectSet("CompleteOrders", _t("Account.COMPLETEORDERS", "Completed Orders"));
+		if($completeOrders){
+			$dos->push($completeOrders);
+		}
 		if($dos->count()) {
 			return $dos;
 		}
@@ -98,9 +127,9 @@ class OrderConfirmationPage extends CartPage{
 		$dos = new DataObject();
 		$dos->Orders = $this->$method();
 		if($dos->Orders) {
-			$dos->Heading = $title;
+			$dos->Heading = DBField::create($className = "TextField", $title);
 		}
-		return $dos;
+		return null;
 	}
 
 	/**
@@ -256,6 +285,49 @@ class OrderConfirmationPage_Controller extends CartPage_Controller{
 	function retrieveorder(){
 		return array();
 	}	
+
+
+	/**
+	 *@return Array - just so the template is still displayed
+	 **/
+	function sendreceipt($request) {
+		if($o = $this->currentOrder) {
+			if($m = $o->Member()) {
+				if($m->Email) {
+					$o->sendReceipt(_t("Account.COPYONLY", "--- COPY ONLY ---"), true);
+					$this->message = _t('Account.RECEIPTSENT', 'An order receipt has been sent to: ').$m->Email.'.';
+				}
+				else {
+					$this->message = _t('Account.RECEIPTNOTSENTNOEMAIL', 'No email could be found for sending this receipt.');
+				}
+			}
+			else {
+				$this->message = _t('Account.RECEIPTNOTSENTNOEMAIL', 'No email could be found for sending this receipt.');
+			}
+		}
+		else {
+			$this->message = _t('Account.RECEIPTNOTSENTNOORDER', 'Order could not be found...');
+		}
+		Director::redirectBack();
+		return array();
+	}
+
+
+	protected function workOutMessagesAndActions(){
+		if(!$this->workedOutMessagesAndActions) {
+			$this->actionLinks = new DataObjectSet();
+			if ($this->currentOrder && $this->currentOrder->IsSubmitted()) {
+				//start a new order
+				$this->actionLinks->push(new ArrayData(array (
+					"Title" => $this->StartNewOrderLinkLabel,
+					"Link" => CartPage::new_order_link()
+				)));
+			}			
+			$this->workedOutMessagesAndActions = true;
+			//does nothing at present....
+		}
+	}
+
 
 }
 

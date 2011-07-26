@@ -16,24 +16,22 @@
 
 class CartPage extends Page{
 
-	public static $db = array();
+	public static $db = array(
+		'ProceedToCheckoutMessage' => 'Varchar(100)',
+		'ContinueShoppingMessage' => 'Varchar(100)'
+	);
 
 	public static $has_one = array(
 		'CheckoutPage' => 'CheckoutPage',
 		'ContinuePage' => 'SiteTree'
 	);
 
-	public static $casting = array(
-		'EcommerceMenuTitle' => 'Varchar'
-	);
-
-	
-
-	public static $icon = 'ecommerce/images/icons/cart';
+	public static $icon = 'ecommerce/images/icons/CartPage';
 
 	function canCreate($member = null) {
 		return !DataObject :: get_one("SiteTree", "\"ClassName\" = 'CartPage'");
 	}
+	
 	/**
 	 *@return Fieldset
 	 **/
@@ -41,9 +39,11 @@ class CartPage extends Page{
 		$fields = parent::getCMSFields();
 		if($this->ClassName == "CartPage") {
 			if($checkouts = DataObject::get('CheckoutPage')) {
+				$fields->addFieldToTab('Root.Content.Links',new TextField('ProceedToCheckoutMessage','Proceed to checkout message (e.g. click here to go through to checkout)'));
 				$fields->addFieldToTab('Root.Content.Links',new DropdownField('CheckoutPageID','Checkout Page',$checkouts->toDropdownMap()));
 			}
 			$fields->addFieldToTab('Root.Content.Links',new TreeDropdownField('ContinuePageID','Continue Page',"SiteTree"));
+			$fields->addFieldToTab('Root.Content.Links',new TextField('ContinueShoppingMessage','Continue shopping link (click here to continue shopping'));
 		}
 		return $fields;
 	}
@@ -69,14 +69,24 @@ class CartPage extends Page{
 	}
 
 	/**
-	 * Returns the link or the Link to the CartPage on this site
+	 * Returns the Link to the CartPage on this site
 	 * @return String (URLSegment)
 	 */
 	public static function find_link() {
-		if(!$page = DataObject::get_one('CartPage', "\"ClassName\" = 'CartPage'")) {
+		if($page = DataObject::get_one('CartPage', "\"ClassName\" = 'CartPage'")) {
+			return $page->Link();
+		}
+		else {
 			return CheckoutPage::find_link();
 		}
-		return $page->Link();
+	}
+
+	/**
+	 * Returns the "new order" link
+	 * @return String (URLSegment)
+	 */
+	public static function new_order_link() {
+		return self::find_link()."startneworder/";
 	}
 
 	/**
@@ -101,10 +111,30 @@ class CartPage extends Page{
 
 class CartPage_Controller extends Page_Controller{
 
+
+	/**
+	 * This DataObjectSet holds DataObjects with a Link and Title each....
+	 *@var $actionLinks DataObjectSet 
+	 **/
+	protected $actionLinks = null;
+
+	/**
+	 * to ensure messages and actions links are only worked out once...
+	 *@var $workedOutMessagesAndActions Boolean 
+	 **/
+	protected $workedOutMessagesAndActions = false;
+
+	/**
+	 * order currently being shown on this page
+	 *@var $order DataObject
+	 **/ 
 	protected $currentOrder = null;
 
-	protected $memberID = 0;
-
+	/**
+	 * Message shown (e.g. no current order, could not find order, order updated, etc...)
+	 *
+	 *@var $message String
+	 **/ 
 	protected $message = "";
 
 	protected static $session_code = "CartPageMessage";
@@ -115,8 +145,10 @@ class CartPage_Controller extends Page_Controller{
 
 	public function init() {
 		parent::init();
+		//add requirements
 		Requirements::themedCSS('Cart'); 
-		Requirements::javascript('ecommerce/javascript/EcomCart.js'); 
+		Requirements::javascript('ecommerce/javascript/EcomCart.js');
+		// find the current order if any
 		$orderID = 0;
 		//WE HAVE THIS FOR SUBMITTING FORMS!
 		if(isset($_REQUEST['OrderID'])) {
@@ -129,21 +161,35 @@ class CartPage_Controller extends Page_Controller{
 			$this->currentOrder = Order::get_by_id_if_can_view($orderID);
 		}
 		else {
+			//if there is no order
 			$this->currentOrder = ShoppingCart::current_order();
-			if(!$this->currentOrder) {
-				$this->currentOrder = DataObject::get_one("Order", "\"SessionID\" = '".session_id()."'");
-			}
 		}
 	}
+
+	/**
+	 * This returns a DataObjectSet, each dataobject has two vars: Title and Link
+	 *@return DataObjectSet | Null 
+	 **/
+	function ActionLinks() {
+		$this->workOutMessagesAndActions();
+		if ($this->actionLinks && $this->actionLinks->count()) {
+			return $this->actionLinks;
+		}
+		return null;
+	}
+
 
 	/**
 	 *@return String
 	 **/
 	function Message() {
-		if($sessionMessage = Session::get(self::get_session_code())) {
-			$this->message .= $sessionMessage;
-			Session::set(self::get_session_code(), "");
-			Session::clear(self::get_session_code());
+		$this->workOutMessagesAndActions();
+		if(!$this->message) {
+			if($sessionMessage = Session::get(self::get_session_code())) {
+				$this->message = $sessionMessage;
+				Session::set(self::get_session_code(), "");
+				Session::clear(self::get_session_code());
+			}
 		}
 		return $this->message;
 	}
@@ -181,50 +227,50 @@ class CartPage_Controller extends Page_Controller{
 	 * Loads either the current order from the shopping cart or
 	 * by the specified Order ID in the URL.
 	 *
+	 * TO DO: untested
+	 * TO DO: what to do with old order
+	 *
 	 */
 	function loadorder($request) {
 		if ($orderID = intval($request->param('ID'))) {
+			self::set_message(_t("CartPage.ORDERLOADED", "Order has been loaded."));
 			$this->currentOrder = ShoppingCart::singleton()->loadOrder($orderID);
 			Director :: redirect($this->Link());
 			exit();
 		}
-		return array ();
+		return array();
 	}
 
 	/**
 	 * Start a new order
+	 *
+	 * TO DO: untested
 	 */
 	function startneworder($request) {
-		ShoppingCart :: singleton()->clear();
-		Director :: redirect($this->Link());
+		ShoppingCart::singleton()->clear();
+		self::set_message(_t("CartPage.NEWORDERSTARTED", "New order has been started."));
+		Director::redirect($this->Link());
+		return array();
 	}
 
-
-	/**
-	 *@return Array - just so the template is still displayed
-	 **/
-	function sendreceipt($request) {
-		if($this->orderID) {
-			if($o = $this->CurrentOrder()) {
-				if($m = $o->Member()) {
-					if($m->Email) {
-						$o->sendReceipt(_t("Account.COPYONLY", "--- COPY ONLY ---"), true);
-						$this->message = _t('Account.RECEIPTSENT', 'An order receipt has been sent to: ').$m->Email.'.';
-					}
-					else {
-						$this->message = _t('Account.RECEIPTNOTSENTNOEMAIL', 'No email could be found for sending this receipt.');
-					}
-				}
-				else {
-					$this->message = _t('Account.RECEIPTNOTSENTNOEMAIL', 'No email could be found for sending this receipt.');
-				}
-				Director::redirect($o->Link());
+	protected function workOutMessagesAndActions(){
+		if(!$this->workedOutMessagesAndActions) {
+			$this->actionLinks = new DataObjectSet();
+			if($this->ProceedToCheckoutMessage && $this->CheckoutPageID) {
+				$this->actionLinks->push(new ArrayData(array (
+					"Title" => $this->ProceedToCheckoutMessage,
+					"Link" => $this->CheckoutPage()->Link()
+				)));
 			}
-			else {
-				$this->message = _t('Account.RECEIPTNOTSENTNOORDER', 'Order could not be found.');
+			if($this->ContinueShoppingMessage && $this->ContinuePageID) {
+				$this->actionLinks->push(new ArrayData(array (
+					"Title" => $this->ContinueShoppingMessage,
+					"Link" => $this->ContinuePage()->Link()
+				)));
 			}
+			$this->workedOutMessagesAndActions = true;
+			//does nothing at present....
 		}
-		return array();
 	}
 
 }
