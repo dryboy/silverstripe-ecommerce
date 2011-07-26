@@ -324,17 +324,6 @@ class CheckoutPage_Controller extends CartPage_Controller {
 			}
 			else {
 				$this->message = "An error occured in retrieving your order...";
-				//review order... in order confirmation page
-				$this->actionLinks->push(new ArrayData(array (
-					"Title" => $this->FinalizedOrderLinkLabel,
-					"Link" => $this->currentOrder->Link()
-				)));
-				//start a new order
-				$this->actionLinks->push(new ArrayData(array (
-					"Title" => $this->StartNewOrderLinkLabel,
-					"Link" => CartPage::new_order_link()
-				)));
-				$this->message = $this->AlreadyCompletedMessage;				
 			}
 			$this->workedOutMessagesAndActions = true;
 		}

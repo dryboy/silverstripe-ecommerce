@@ -356,11 +356,7 @@ class Order extends DataObject {
 		);
 		if($submitted) {
 			$htmlSummary = $this->renderWith("Order");
-			$printlabel = _t("Order.PRINTINVOICE", "Print Invoice");
 			$fields->addFieldToTab('Root.Main', new LiteralField('MainDetails', $htmlSummary));
-			$fields->addFieldsToTab('Root.Main', array(
-				new LiteralField("PrintInvoice",'<p class="print"><a href="'.$this->getPrintLink().'" onclick="javascript: window.open(this.href, \'print_order\', \'toolbar=0,scrollbars=1,location=1,statusbar=0,menubar=0,resizable=1,width=800,height=600,left = 50,top = 50\'); return false;">'.$printlabel.'</a></p>')
-			));			
 			$paymentsTable = new HasManyComplexTableField(
 				$this,
 				"Payments", //$name

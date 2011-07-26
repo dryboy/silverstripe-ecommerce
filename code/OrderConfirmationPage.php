@@ -266,7 +266,9 @@ class OrderConfirmationPage_Controller extends CartPage_Controller{
 			$this->message = _t('CartPage.ORDERNOTFOUND', 'Order can not be found.');
 		}
 		if(isset($_REQUEST["print"])) {
-			return $this->renderWith("Invoice")''
+			Requirements::themedCSS("OrderReport"); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
+			Requirements::themedCSS("OrderReport_Print", "print"); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
+			return $this->renderWith("Invoice");
 		}
 	}
 
