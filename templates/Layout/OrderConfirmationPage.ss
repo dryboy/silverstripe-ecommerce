@@ -3,6 +3,7 @@
 	<h1 class="pagetitle">$Title</h1>
 
 	<% include CartActionsAndMessages %>
+
 	
 <% if Order %>
 	<% control Order %>

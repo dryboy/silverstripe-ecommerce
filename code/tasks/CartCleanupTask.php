@@ -120,7 +120,7 @@ class CartCleanupTask extends HourlyTask {
 		if(is_array($classNames) && count($classNames)) {
 			foreach($classNames as $classWithOrderID => $classWithLastEdited) {
 				if($verbose) {
-					DB::alteration_message("looking for $classWithOrderID objects withour link to order.", "deleted");
+					DB::alteration_message("looking for $classWithOrderID objects without link to order.", "deleted");
 				}
 				$time = date('Y-m-d H:i:s', strtotime("-".self::$clear_days." days"));
 				$where = "\"Order\".\"ID\" IS NULL AND \"$classWithLastEdited\".\"LastEdited\" < '$time'";

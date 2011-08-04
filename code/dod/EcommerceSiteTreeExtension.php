@@ -79,7 +79,7 @@ class EcommerceSiteTreeExtension_Controller extends Extension {
 	 *@return Boolean
 	 **/
 	public function MoreThanOneItemInCart() {
-		return $this->NumItemsInCart() > 1;
+		return $this->owner->NumItemsInCart() > 1;
 	}
 
 	/**

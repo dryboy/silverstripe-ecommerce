@@ -58,10 +58,10 @@ Buyable::add_class("Product");
 
 // * * * MEMBER AND ADDRESS
 //OrderAddress::set_use_separate_shipping_address(true);
-//OrderAddress::set_field_class_and_id_prefix("ABC");
+//OrderAddress::set_field_class_and_id_prefix("ABC"); //for use in templates only
 //EcommerceRegion::set_use_shipping_address_for_main_region_and_country(true);
 //EcommerceCountry::set_save_countries_in_database(false);
-//EcommerceCountry::set_allowed_country_codes(array("NZ", "UK', "AU"));
+//EcommerceCountry::set_allowed_country_codes(array("NZ", "UK", "AU"));
 //EcommerceRole::set_customer_group_name("Customers");
 //EcommerceRole::set_admin_group_name("Shop Administrators");
 //EcommerceRole::set_automatic_membership(false);

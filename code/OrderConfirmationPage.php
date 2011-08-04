@@ -16,44 +16,33 @@
 
 class OrderConfirmationPage extends CartPage{
 
+	public static $icon = 'ecommerce/images/icons/OrderConfirmationPage';
+	
 	public static $db = array(
 		"YouDontHaveSavedOrders" => "HTMLText"
 	);
 
-	public static $icon = 'ecommerce/images/icons/OrderConfirmationPage';
+	public static $defaults = array(
+		"YouDontHaveSavedOrders" => "<p>You dont have any saved orders yet.</p>"
+	);
 
 	function canCreate($member = null) {
 		return !DataObject :: get_one("SiteTree", "\"ClassName\" = 'OrderConfirmationPage'");
 	}
+
+	public static $default = array(
+		"YouDontHaveSavedOrders" => "<p>You dont have any saved orders yet.</p>"
+	);
 
 	/**
 	 *@return Fieldset
 	 **/
 	function getCMSFields(){
 		$fields = parent::getCMSFields();
-		$fields->addFieldToTab("Root.Main.Messages", new HTMLEditorField("YouDontHaveSavedOrders", "Message to user: You dont have any saved orders (e.g. you have not placed any orders yet) ", 5, 5));
+		$fields->addFieldToTab('Root.Content.Messages', new HTMLEditorField("YouDontHaveSavedOrders", "Message to user: You dont have any saved orders (e.g. you have not placed any orders yet) ", 5, 5));
 		return $fields;
 	}
 
-	function canView($member = null) {
-		if(!$member) {
-			$member = Member::CurrentMember();
-		}
-		if(EcommerceRole::current_member_is_shop_admin($member)) {
-			return true;
-		}
-		elseif($member) {
-			$orders = DataObject::get("Order", "\"MemberID\" = ".$member->ID);
-			if($orders) {
-				foreach($orders as $order) {
-					if($order->IsSubmitted()) {
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
 
 	/**
 	 * Returns the link or the Link to the OrderConfirmationPage page on this site
@@ -250,7 +239,7 @@ class OrderConfirmationPage_Controller extends CartPage_Controller{
 				'default' => '<p class="message good">' . _t('OrderConfirmationPage.LOGINFIRST', 'You will need to login before you can access the submitted order page. ') . '</p>',
 				'logInAgain' => _t('OrderConfirmationPage.LOGINAGAIN', 'You have been logged out. If you would like to log in again, please do so below.')
 			);
-			Security::permissionFailure($this, $messages);
+			//Security::permissionFailure($this, $messages);
 			return false;
 		}
 		Requirements::themedCSS('Order'); 
@@ -340,13 +329,25 @@ class OrderConfirmationPage_Controller extends CartPage_Controller{
 	protected function workOutMessagesAndActions(){
 		if(!$this->workedOutMessagesAndActions) {
 			$this->actionLinks = new DataObjectSet();
-			if ($this->currentOrder && $this->currentOrder->IsSubmitted()) {
-				//start a new order
-				$this->actionLinks->push(new ArrayData(array (
-					"Title" => $this->StartNewOrderLinkLabel,
-					"Link" => CartPage::new_order_link()
-				)));
-			}			
+			if($this->currentOrder) {
+				if ($this->currentOrder->IsSubmitted()) {
+					//start a new order
+					$this->actionLinks->push(new ArrayData(array (
+						"Title" => $this->StartNewOrderLinkLabel,
+						"Link" => CartPage::new_order_link()
+					)));
+				}
+				else {
+					//start a new order
+					$this->actionLinks->push(new ArrayData(array (
+						"Title" => "Finalise Order",
+						"Link" => "test"
+					)));
+				}
+			}
+			else {
+				die("LL");
+			}
 			$this->workedOutMessagesAndActions = true;
 			//does nothing at present....
 		}

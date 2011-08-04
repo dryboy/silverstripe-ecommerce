@@ -36,23 +36,35 @@
 
 class CheckoutPage extends CartPage {
 
+	public static $icon = 'ecommerce/images/icons/CheckoutPage';
+	
 	public static $db = array (
 		'InvitationToCompleteOrder' => 'HTMLText',
 		'AlreadyCompletedMessage' => 'HTMLText',
 		'NoItemsInOrderMessage' => 'HTMLText',
 		'NonExistingOrderMessage' => 'HTMLText',
 		'MustLoginToCheckoutMessage' => 'HTMLText',
-		'LoginToOrderLinkLabel' => 'Varchar(255)',
-		'FinalizedOrderLinkLabel' => 'Varchar(255)',
-		'CurrentOrderLinkLabel' => 'Varchar(255)',
-		'StartNewOrderLinkLabel' => 'Varchar(255)'
+		'LoginToOrderLinkLabel' => 'Varchar(100)',
+		'FinalizedOrderLinkLabel' => 'Varchar(100)',
+		'CurrentOrderLinkLabel' => 'Varchar(100)',
+		'StartNewOrderLinkLabel' => 'Varchar(100)'
 	);
 
 	public static $has_one = array (
 		'TermsPage' => 'Page'
 	);
 
-	public static $icon = 'ecommerce/images/icons/CheckoutPage';
+	public static $defaults = array (
+		'InvitationToCompleteOrder' => '<p>Please finalise your order below.</p>',
+		'AlreadyCompletedMessage' => '<p>This order has already been completed.</p>',
+		'NoItemsInOrderMessage' => '<p>There are no items in your order.</p>',
+		'NonExistingOrderMessage' => '<p>Sorry, this order can not be found.</p>',
+		'MustLoginToCheckoutMessage' => '<p>You must log in first before finalising this order.</p>',
+		'LoginToOrderLinkLabel' => 'Plese log in to access this order',
+		'FinalizedOrderLinkLabel' => 'View completed order',
+		'CurrentOrderLinkLabel' => 'Go to current order',
+		'StartNewOrderLinkLabel' => 'Start new order'
+	);
 
 	/**
 	 * Returns the Terms and Conditions Page (if there is one).
@@ -236,9 +248,7 @@ class CheckoutPage_Controller extends CartPage_Controller {
 	 * @return boolean
 	 */
 	function CanCheckout() {
-		if($this->CanEditOrder()) {
-			return $this->currentOrder->Items();
-		}
+		return $this->currentOrder->Items()  && !$this->currentOrder->IsSubmitted();
 	}
 
 

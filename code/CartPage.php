@@ -16,9 +16,12 @@
 
 class CartPage extends Page{
 
+	public static $icon = 'ecommerce/images/icons/CartPage';
+
 	public static $db = array(
 		'ProceedToCheckoutMessage' => 'Varchar(100)',
-		'ContinueShoppingMessage' => 'Varchar(100)'
+		'ContinueShoppingMessage' => 'Varchar(100)',
+		'StartNewOrderLinkLabel' => 'Varchar(100)'
 	);
 
 	public static $has_one = array(
@@ -26,7 +29,22 @@ class CartPage extends Page{
 		'ContinuePage' => 'SiteTree'
 	);
 
-	public static $icon = 'ecommerce/images/icons/CartPage';
+	public static $defaults = array(
+		'ProceedToCheckoutMessage' => '"Proceed to checkout"',
+		'ContinueShoppingMessage' => 'Continue Shopping',
+		'StartNewOrderLinkLabel' => 'Start new order'
+	);
+
+	public function populateDefaults() {
+		parent::populateDefaults();
+		if($checkoutPage = DataObject::get_one("CheckoutPage", "\"ClassName\" = 'CheckoutPage'")) {
+			$this->CheckoutPageID = $checkoutPage->ID;
+		}
+		$continuePage = DataObject::get_one("ProductGroup", "ParentID = 0");
+		if($continuePage || $continuePage = DataObject::get_one("ProductGroup")) {
+			$this->ContinuePageID = $continuePage->ID;
+		}
+	}
 
 	function canCreate($member = null) {
 		return !DataObject :: get_one("SiteTree", "\"ClassName\" = 'CartPage'");
@@ -37,14 +55,16 @@ class CartPage extends Page{
 	 **/
 	function getCMSFields(){
 		$fields = parent::getCMSFields();
-		if($this->ClassName == "CartPage") {
+		if($this->ClassName != "CheckoutPage") {
 			if($checkouts = DataObject::get('CheckoutPage')) {
 				$fields->addFieldToTab('Root.Content.Links',new TextField('ProceedToCheckoutMessage','Proceed to checkout message (e.g. click here to go through to checkout)'));
 				$fields->addFieldToTab('Root.Content.Links',new DropdownField('CheckoutPageID','Checkout Page',$checkouts->toDropdownMap()));
 			}
 			$fields->addFieldToTab('Root.Content.Links',new TreeDropdownField('ContinuePageID','Continue Page',"SiteTree"));
 			$fields->addFieldToTab('Root.Content.Links',new TextField('ContinueShoppingMessage','Continue shopping link (click here to continue shopping'));
+			$fields->addFieldsToTab('Root.Content.Messages', new TextField('StartNewOrderLinkLabel', 'Label for starting new order - e.g. click here to start new order'));		
 		}
+
 		return $fields;
 	}
 

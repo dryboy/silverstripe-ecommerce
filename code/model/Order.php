@@ -120,6 +120,15 @@ class Order extends DataObject {
 			self::$modifiers =  array_merge(self::$modifiers,$modifiers);
 		}
 	}
+	
+	/**
+	 * Set the modifiers that apply to this site.
+	 *
+	 * @param array $modifiers An array of {@link OrderModifier} subclass names
+	 */
+	public static function add_modifier($modifier) {
+		self::$modifiers[] =  $modifier;
+	}
 
 
 	public static function get_modifier_forms($controller) {
@@ -169,7 +178,7 @@ class Order extends DataObject {
 	 *@var Integer
 	 **/
  	protected static $order_id_start_number = 0;
-		static function set_order_id_start_number(integer $i) {self::$order_id_start_number = $i;}
+		static function set_order_id_start_number($i) {self::$order_id_start_number = $i;}
 		static function get_order_id_start_number() {return(integer)self::$order_id_start_number;}
 
 
@@ -1505,12 +1514,9 @@ class Order extends DataObject {
 				SELECT COUNT(\"OrderItem\".\"ID\")
 				FROM \"OrderItem\"
 					INNER JOIN \"OrderAttribute\" ON \"OrderAttribute\".\"ID\" = \"OrderItem\".\"ID\"
-					INNER JOIN \"Order\" ON \"OrderAttribute\".\"OrderID\" = \"Order\".\"ID\"
-					INNER JOIN \"OrderStep\" ON \"OrderStep\".\"ID\" = \"Order\".\"StatusID\"
-					WHERE
-						\"OrderAttribute\".\"OrderID\" = ".$this->ID."
-						AND \"OrderItem\".\"Quantity\" > 0
-						AND \"OrderStep\".\"CustomerCanEdit\" = 1"
+				WHERE
+					\"OrderAttribute\".\"OrderID\" = ".$this->ID."
+					AND \"OrderItem\".\"Quantity\" > 0"
 			)->value();
 		}
 		return self::$total_items;
