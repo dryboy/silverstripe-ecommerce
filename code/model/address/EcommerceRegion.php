@@ -18,8 +18,7 @@ class EcommerceRegion extends DataObject {
 	static $db = array(
 		"Code" => "Varchar(20)",
 		"Name" => "Varchar(200)",
-		"DoNotAllowSales" => "Boolean",
-		"Country" => "Varchar(20)"
+		"DoNotAllowSales" => "Boolean"
 	);
 
 	static $indexes = array(

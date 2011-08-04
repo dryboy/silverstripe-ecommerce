@@ -1730,6 +1730,8 @@ class Order extends DataObject {
 	 *@return DataObject - Order - with most important has one and has many items included as variables.
 	 **/
 	protected function addHasOneAndHasManyAsVariables() {
+		/*
+			THIS HAS TO BE REDONE - IT IS NONSENSICAL!
 		$this->Member = $this->Member();
 		$this->BillingAddress = $this->BillingAddress();
 		$this->ShippingAddress = $this->ShippingAddress();
@@ -1741,6 +1743,8 @@ class Order extends DataObject {
 		$this->Total = $this->Total();
 		$this->SubTotal = $this->SubTotal();
 		$this->TotalPaid = $this->TotalPaid();
+		*/
+		
 		return $this;
 	}
 

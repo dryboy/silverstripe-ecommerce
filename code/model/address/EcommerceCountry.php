@@ -61,6 +61,21 @@ class EcommerceCountry extends EcommerceRegion {
 
 
 	/**
+	 *@param $code String (Code)
+	 *@return String ( name)
+	 **/
+	public static function find_title($code) {
+		$options = Geoip::getCountryDropDown();
+		// check if code was provided, and is found in the country array
+		if($options && isset($options[$code])) {
+			return $options[$code];
+		}
+		else {
+			return "";
+		}
+	}
+
+	/**
 	 * This function works out the most likely country for the current order
 	 *@return String - Country Code - e.g. NZ
 	 **/

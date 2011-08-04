@@ -82,7 +82,7 @@ class ShippingAddress extends OrderAddress {
 	 *@return String
 	 **/
 	function ShippingFullCountryName() {
-		return EcommerceRegion::get_title($this->ShippingCountry);
+		return EcommerceCountry::find_title($this->ShippingCountry);
 	}
 
 	/**

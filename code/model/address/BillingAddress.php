@@ -13,6 +13,7 @@
 
 class BillingAddress extends OrderAddress {
 
+
 	static $db = array(
 		'Prefix' => 'Varchar(10)',
 		'FirstName' => 'Varchar(100)',
@@ -49,7 +50,7 @@ class BillingAddress extends OrderAddress {
 	);
 
 	public static $casting = array(
-		"FullCountryName" => "Varchar(200)"
+		"FullCountryName" => "Varchar"
 	);
 
 	public static $searchable_fields = array(
@@ -82,7 +83,7 @@ class BillingAddress extends OrderAddress {
 	 *@return String
 	 **/
 	function FullCountryName() {
-		return EcommerceRegion::get_title($this->Country);
+		return EcommerceCountry::find_title($this->Country);
 	}
 
 	/**

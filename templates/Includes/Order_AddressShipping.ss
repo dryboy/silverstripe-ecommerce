@@ -1,7 +1,7 @@
 <% if UseShippingAddress %>
 	<% if ShippingAddress %>
 		<% control ShippingAddress %>
-<address class="addressSection" id="ShippingAddressAddressSection">
+<address class="addressSection" id="ShippingAddressSection">
 	$ShippingFirstName $ShippingSurname<br />
 	<% if ShippingAddress %>$ShippingAddress<br /><% end_if %>
 	<% if ShippingAddress2 %>$ShippingAddress2<br /><% end_if %>
@@ -16,7 +16,7 @@
 		<p>No shipping address available.</p>
 	<% end_if %>
 <% else %>
-	<% if BillingAddress %>
+	<% if BillingAddressID %>
 		<% control BillingAddress %>
 <address class="addressSection" cellspacing="0" cellpadding="0" id="ShippingAddressSection">
 	$FirstName $Surname<br />

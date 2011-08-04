@@ -1,4 +1,4 @@
-<% if BillingAddress %>
+<% if BillingAddressID %>
 	<% control BillingAddress %>
 <address class="addressSection" cellspacing="0" cellpadding="0" id="BillingAddressSection">
 	$FirstName $Surname<br />
