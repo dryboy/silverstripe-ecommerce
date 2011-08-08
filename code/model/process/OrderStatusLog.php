@@ -312,7 +312,48 @@ class OrderStatusLog_Submitted extends OrderStatusLog {
 
 	
 }
+class OrderStatusLog_Cancel extends OrderStatusLog {
 
+	public static $defaults = array(
+		"Title" => "Order Cancelled",
+		"EmailCustomer" => false,
+		"EmailSent" => false,
+		"InternalUseOnly" => false		
+	);
+
+	public static $singular_name = "Cancelled Order";
+		function i18n_singular_name() { return _t("OrderStatusLog.SUBMITTEDORDER", "Cancelled Order");}
+
+	public static $plural_name = "Cancelled Orders";
+		function i18n_plural_name() { return _t("OrderStatusLog.SUBMITTEDORDERS", "Cancelled Orders");}
+
+	/**
+	 * This record is not editable
+	 *@return Boolean
+	 **/
+	public function canDelete($member = null) {
+		return false;
+	}
+
+	/**
+	 * This record is not editable
+	 *@return Boolean
+	 **/
+	public function canEdit($member = null) {
+		return false;
+	}
+
+
+	/**
+	* can only be created when the order is submitted
+	*@return Boolean
+	**/
+	public function canCreate($member = null) {
+		return false;
+	}
+
+
+}
 class OrderStatusLog_Dispatch extends OrderStatusLog {
 
 	public static $defaults = array(

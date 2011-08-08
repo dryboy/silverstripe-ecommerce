@@ -517,16 +517,21 @@ class OrderForm_Cancel extends Form {
 		if($member) {
 			if(isset($SQLData['OrderID']) && $order = DataObject::get_one('Order', "\"ID\" = ".intval($SQLData['OrderID'])." AND \"MemberID\" = ".$member->ID)){
 				if($order->canCancel()) {
-					$order->CancelledByID = $member->ID;
-					$order->write();
-				}
-				else {
-					user_error("Tried to cancel an order that can not be cancelled with Order ID: ".$order->ID, "E_USER_NOTICE");
-				}
-				if($link = AccountPage::find_link()){
-					//see issue 150
-					AccountPage_Controller::set_message(_t("OrderForm.ORDERHASBEENCANCELLED","Order has been cancelled"));
-					Director::redirect($link);
+					$order->Cancel($member);
+					$form->sessionMessage(
+						_t(
+							'OrderForm.CANCELLEDORDER',
+							'Order has been cancelled.'
+						),
+						'good'
+					);
+					if($link = AccountPage::find_link()){
+						//see issue 150
+						AccountPage_Controller::set_message(_t("OrderForm.ORDERHASBEENCANCELLED","Order has been cancelled"));
+						Director::redirect($link);
+					}
+					Director::redirectBack();
+					return false;
 				}
 			}
 		}
@@ -536,7 +541,7 @@ class OrderForm_Cancel extends Form {
 				'Sorry, order could not be cancelled.'
 			),
 			'bad'
-		);
+		);		
 		Director::redirectBack();
 		return false;
 	}

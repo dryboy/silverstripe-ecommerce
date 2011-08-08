@@ -635,7 +635,14 @@ class Order extends DataObject {
 	}
 
 
-
+	public function Cancel($member) {
+		$this->CancelledByID = $member->ID;
+		$this->write();
+		$obj = new OrderStatusLog_Cancel();
+		$obj->AuthorID = $member->ID;
+		$obj->OrderID = $this->ID;
+		$obj->write();
+	}
 
 
 
@@ -1223,7 +1230,7 @@ class Order extends DataObject {
 	function canCancel($member = null) {
 		//if it is already cancelled it can be cancelled again
 		if($this->CancelledByID) {
-			return true;
+			return false;
 		}
 		$member = $this->getMemberForCanFunctions($member);
 		$extended = $this->extendedCan('canCancel', $member->ID);
