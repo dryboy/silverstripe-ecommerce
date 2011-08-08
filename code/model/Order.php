@@ -356,7 +356,7 @@ class Order extends DataObject {
 			new Tab(
 				"Next",
 				new HeaderField($name = "MyOrderStepHeader", "Current Status"),
-				new OrderStepField($name = "MyOrderStep", $this, Member::CurrentMember()),
+				$this->OrderStepField(),
 				new HeaderField($name = "NextStepHeader", "Action Next Step"),
 				//SEE: $this->MyStep()->addOrderStepFields($fields, $this); BELOW
 				new DropdownField("StatusID", "Change Status Manually (not recommended)", DataObject::get("OrderStep")->toDropDownMap())
@@ -520,7 +520,7 @@ class Order extends DataObject {
 	 *
 	 *@return HasManyComplexTableField
 	 **/
-	function OrderStatusLogsTable($sourceClass, $title, $fieldList = null, $detailedFormFields = null) {
+	protected function OrderStatusLogsTable($sourceClass, $title, $fieldList = null, $detailedFormFields = null) {
 		$orderStatusLogsTable = new HasManyComplexTableField(
 			$this,
 			"OrderStatusLogs", //$name
@@ -539,7 +539,9 @@ class Order extends DataObject {
 	}
 
 
-
+	function OrderStepField() {
+		return new OrderStepField($name = "MyOrderStep", $this, Member::CurrentMember());
+	}
 
 
 
@@ -1358,7 +1360,10 @@ class Order extends DataObject {
 	function Title() {
 		if($this->ID) {
 			$v = $this->i18n_singular_name(). " #$this->ID - ".$this->dbObject('Created')->Nice();
-			if($this->MemberID && $this->Member()->exists() ) {
+			if($this->CancelledByID) {
+				$v .= " - "._t("Order.CANCELLED","CANCELLED");
+			}
+			elseif($this->MemberID && $this->Member()->exists() ) {
 				if($this->MemberID != Member::currentUserID()) {
 					$v .= " - ".$this->Member()->getName();
 				}

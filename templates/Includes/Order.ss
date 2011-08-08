@@ -14,6 +14,8 @@
 
 	<% include Order_OrderStatusLogs %>
 
+	<% include Order_OrderStepField %>
+
 	<% include Order_PrintAndMail %>
 	
 </div>
