@@ -988,6 +988,8 @@ class Order extends DataObject {
 		$replacementArray["Order"] = $this;
 		$replacementArray["EmailLogo"] = SiteConfig::current_site_config()->EmailLogo();
  		$from = Order_Email::get_from_email();
+ 		//why are we using this email and NOT the member.EMAIL?
+ 		//for historical reasons????
  		$to = $this->BillingAddress()->Email;
 		//TO DO: should be a payment specific message as well???
 		$email = new $emailClass();
