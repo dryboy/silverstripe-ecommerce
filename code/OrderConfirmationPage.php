@@ -22,10 +22,6 @@ class OrderConfirmationPage extends CartPage{
 		"YouDontHaveSavedOrders" => "HTMLText"
 	);
 
-	public static $defaults = array(
-		"YouDontHaveSavedOrders" => "<p>You dont have any saved orders yet.</p>"
-	);
-
 	function canCreate($member = null) {
 		return !DataObject :: get_one("SiteTree", "\"ClassName\" = 'OrderConfirmationPage'");
 	}
