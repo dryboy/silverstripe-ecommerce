@@ -30,8 +30,10 @@ class OrderConfirmationPage extends CartPage{
 		return !DataObject :: get_one("SiteTree", "\"ClassName\" = 'OrderConfirmationPage'");
 	}
 
-	public static $default = array(
-		"YouDontHaveSavedOrders" => "<p>You dont have any saved orders yet.</p>"
+	public static $defaults = array(
+		"YouDontHaveSavedOrders" => "<p>You dont have any saved orders yet.</p>",
+		"ShowInMenus" => false,
+		"ShowInSearch" => false
 	);
 
 	/**
