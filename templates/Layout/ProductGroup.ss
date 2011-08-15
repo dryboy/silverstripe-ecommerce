@@ -14,24 +14,10 @@
 		<div class="clear"><!-- --></div>
 	</div>
 <% end_if %>
+<% include ProductGroupPagination %>
+	<% if Form %><div id="FormHolder">$Form</div><% end_if %>
+	<% if PageComments %><div id="PageCommentsHolder">$PageComments</div><% end_if %>
 
-<% if Products.MoreThanOnePage %>
-	<div id="PageNumbers">
-		<p>
-	<% if Products.NotFirstPage %>
-			<a class="prev" href="$Products.PrevLink" title="<% _t('ProductGroup.SHOWPREVIOUSPAGE','View the previous page') %>"><% _t('ProductGroup.PREVIOUS','previous') %></a>
-	<% end_if %>
-			<span>
-	<% control Products.PaginationSummary(4) %>
-				<% if CurrentBool %>$PageNum<% else %><% if Link %><a href="$Link" title="<% sprintf(_t("ProductGroup.GOTOPAGE","View page number %s"),$PageNum) %>">$PageNum</a><% else %>&hellip;<% end_if %><% end_if %>
-	<% end_control %>
-			</span>
-	<% if Products.NotLastPage %>
-			<a class="next" href="$Products.NextLink" title="<% _t('ProductGroup.SHOWNEXTPAGE','View the next page') %>"><% _t('ProductGroup.NEXT','next') %></a>
-	<% end_if %>
-		</p>
-	</div>
-<% end_if %>
 </div>
 
 

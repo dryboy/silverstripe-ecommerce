@@ -90,7 +90,6 @@ Buyable::add_class("Product");
 //ProductGroup::add_sort_option( $key = "price", $title = "Lowest Price", $sql = "Price ASC");
 //ProductGroup::remove_sort_option( $key = "title");
 //ProductGroup::set_sort_options_default( $key = "price");
-//ProductGroup::set_only_show_products_that_can_purchase(true);
 
 // * * * EMAILS
 //Email::setAdminEmail("cool@bool.com");

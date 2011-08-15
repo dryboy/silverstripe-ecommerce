@@ -31,7 +31,7 @@ class EcommerceCountry extends EcommerceRegion {
 	 *@var Boolean
 	 **/
 	protected static $save_countries_in_database = true;
-		static function set_save_countries_in_database(boolean $b) {self::$save_countries_in_database = $b;}
+		static function set_save_countries_in_database($b) {self::$save_countries_in_database = $b;}
 		static function get_save_countries_in_database() {return self::$save_countries_in_database;}
 
 	/**

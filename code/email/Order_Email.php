@@ -19,7 +19,7 @@ class Order_Email extends Email {
 
 
 	protected static $send_all_emails_plain = false;
-		function set_send_all_emails_plain(boolean $b) {self::$send_all_emails_plain = $b;}
+		function set_send_all_emails_plain($b) {self::$send_all_emails_plain = $b;}
 		function get_send_all_emails_plain() {return self::$send_all_emails_plain;}
 
 	protected static $css_file_location = "ecommerce/css/OrderReport.css";
@@ -27,7 +27,7 @@ class Order_Email extends Email {
 		function get_css_file_location() {return self::$css_file_location;}
 
 	protected static $copy_to_admin_for_all_emails = true;
-		function set_copy_to_admin_for_all_emails(boolean $b) {self::$copy_to_admin_for_all_emails = $b;}
+		function set_copy_to_admin_for_all_emails($b) {self::$copy_to_admin_for_all_emails = $b;}
 		function get_copy_to_admin_for_all_emails() {return self::$copy_to_admin_for_all_emails;}
 
 	public function send($messageID = null, $order, $resend = false) {

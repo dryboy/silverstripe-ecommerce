@@ -16,7 +16,7 @@
 class OrderItem extends OrderAttribute {
 
 	protected static $disable_quantity_js = false;
-		static function set_disable_quantity_js(boolean $b){self::$disable_quantity_js = $b;}
+		static function set_disable_quantity_js($b){self::$disable_quantity_js = $b;}
 		static function get_disable_quantity_js(){return self::$disable_quantity_js;}
 		static function disable_quantity_js(){self::$disable_quantity_js = true;}
 

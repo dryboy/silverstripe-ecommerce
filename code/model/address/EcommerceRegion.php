@@ -40,7 +40,7 @@ class EcommerceRegion extends DataObject {
 	 *@var Boolean
 	 **/
 	protected static $use_shipping_address_for_main_region_and_country = false;
-		static function set_use_shipping_address_for_main_region_and_country(boolean $b) {self::$use_shipping_address_for_main_region_and_country = $b;}
+		static function set_use_shipping_address_for_main_region_and_country($b) {self::$use_shipping_address_for_main_region_and_country = $b;}
 		static function get_use_shipping_address_for_main_region_and_country() {return self::$use_shipping_address_for_main_region_and_country;}
 
 	/**
