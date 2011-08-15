@@ -165,10 +165,26 @@ class CartPage_Controller extends Page_Controller{
 
 	public function init() {
 		parent::init();
-		//add requirements
+		Requirements::customScript(
+			'
+			jQuery(document).ready(
+				function() {
+					jQuery("a[href=\''.str_replace('/', '\/', Convert::raw2js($this->Link())).'\']").each(
+						function(i, el){
+							if(jQuery(el).text() == \''.$this->MenuTitle.'\') {
+								var html = jQuery(el).html(\''.$this->getEcommerceMenuTitle().'\');
+							}
+						}
+					);
+				}
+			);'
+			,"getEcommerceMenuTitle"
+		);		
+		//Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js"); VIA EcommerceSiteTreeExtension::initcontentcontroller()
+		Requirements::javascript('ecommerce/javascript/EcomCart.js'); 
 		Requirements::themedCSS('Cart'); 
-		Requirements::javascript('ecommerce/javascript/EcomCart.js');
 		// find the current order if any
+
 		$orderID = 0;
 		//WE HAVE THIS FOR SUBMITTING FORMS!
 		if(isset($_REQUEST['OrderID'])) {
