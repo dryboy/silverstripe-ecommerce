@@ -244,7 +244,11 @@ class CartPage_Controller extends Page_Controller{
 	 **/
 	function CanEditOrder() {
 		if($this->currentOrder) {
-			return $this->currentOrder->canEdit();
+			if( $this->currentOrder->canEdit()) {
+				if($this->currentOrder->Items()) {
+					return true;
+				}
+			}
 		}
 		return false;
 	}
@@ -292,7 +296,7 @@ class CartPage_Controller extends Page_Controller{
 	protected function workOutMessagesAndActions(){
 		if(!$this->workedOutMessagesAndActions) {
 			$this->actionLinks = new DataObjectSet();
-			if($this->ProceedToCheckoutMessage && $this->CheckoutPageID) {
+			if($this->ProceedToCheckoutMessage && $this->CheckoutPageID && $this->currentOrder && $this->currentOrder->Items()) {
 				$this->actionLinks->push(new ArrayData(array (
 					"Title" => $this->ProceedToCheckoutMessage,
 					"Link" => $this->CheckoutPage()->Link()

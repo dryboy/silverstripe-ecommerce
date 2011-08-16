@@ -2,7 +2,7 @@
 
 	<h1 class="pagetitle">$Title</h1>
 
-	<% include CartActionsAndMessages %>
+	<% if Content %><div id="ContentHolder">$Content</div><% end_if %>
 
 	
 <% if Order %>
@@ -28,6 +28,8 @@
 		$YouDontHaveSavedOrders
 	<% end_if %>
 <% end_if %>
-	<% if Content %><div id="ContentHolder">$Content</div><% end_if %>
+
+	<% include CartActionsAndMessages %>
+
 </div>
 
