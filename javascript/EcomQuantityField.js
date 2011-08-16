@@ -34,19 +34,19 @@ EcomQuantityField = {
 				else {
 					jQuery(inputField).siblings(EcomQuantityField.removeSelector).click(
 						function() {
-							jQuery(inputField).val(parseInt(jQuery(inputField).val())-1).keyup();
+							jQuery(inputField).val(parseInt(jQuery(inputField).val())-1).change();
 							return false;
 						}
 					);
 					jQuery(inputField).siblings(EcomQuantityField.addSelector).click(
 						function() {
-							jQuery(inputField).val(parseInt(jQuery(inputField).val())+1).keyup();
+							jQuery(inputField).val(parseInt(jQuery(inputField).val())+1).change();
 							return false;
 						}
 					);
 
 				}
-				jQuery(inputField).keyup(
+				jQuery(inputField).change(
 					function() {
 						var URLSegment = EcomQuantityField.getSetQuantityURLSegment(this);
 						if(URLSegment.length > 0) {
