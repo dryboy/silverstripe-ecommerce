@@ -191,6 +191,31 @@ class EcommerceCountry extends EcommerceRegion {
 
 
 
+	/**
+	 * takes the defaultArray and limits it with "only show" and "do not show" value, relevant for the current order.
+	 *@return Array (Code, Title)
+	 **/
+	public static function list_of_allowed_entries_for_dropdown() {
+		$defaultArray = self::get_default_array();
+		$onlyShow = self::get_for_current_order_only_show();
+		$doNotShow = self::get_for_current_order_do_not_show();
+		if(is_array($onlyShow) && count($onlyShow)) {
+			foreach($defaultArray as $key => $value) {
+				if(!in_array($key, $onlyShow)) {
+					unset($defaultArray[$key]);
+				}
+			}
+		}
+		if(is_array($doNotShow) && count($doNotShow)) {
+			foreach($doNotShow as $code) {
+				if(isset($defaultArray[$code])) {
+					unset($defaultArray[$code]);
+				}
+			}
+		}
+		return $defaultArray;
+	}
+
 
 }
 

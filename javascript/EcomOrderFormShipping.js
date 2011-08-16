@@ -3,11 +3,11 @@
  * This adds functionality to the shipping address section of the checkout form
  *
  **/
-
 ;(function($) {
 	$(document).ready(
 		function() {
 			EcomOrderFormWithShippingAddress.init();
+			
 			EcomOrderFormWithShippingAddress.removeEmailFromShippingCityHack();
 		}
 	);
@@ -72,6 +72,11 @@
 					EcomOrderFormWithShippingAddress.updateFields();
 				}
 			).focus(
+				function() {
+					EcomOrderFormWithShippingAddress.updateFields();
+				}
+			);
+			jQuery("input[name='action_processOrder']").click(
 				function() {
 					EcomOrderFormWithShippingAddress.updateFields();
 				}

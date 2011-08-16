@@ -116,7 +116,7 @@ class OrderAddress extends DataObject {
 	}
 
 	/**
-	 *put together a dropdown for the region field
+	 *put together a dropdown for the country field
 	 *@param String $name - name of the field
 	 *@return DropdownField
 	 **/

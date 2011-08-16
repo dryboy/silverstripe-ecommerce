@@ -48,7 +48,8 @@ class OrderForm extends Form {
 			//now we can add the shipping fields
 			$shippingAddress = $order->CreateOrReturnExistingAddress("ShippingAddress");
 			$shippingAddressFields = $shippingAddress->getFields();
-			$requiredFields = array_merge($requiredFields, $shippingAddress->getRequiredFields());
+			//we have left this out for now as it was giving a lot of grief...
+			//$requiredFields = array_merge($requiredFields, $shippingAddress->getRequiredFields());
 			//finalise left fields
 			$addressFields->merge($shippingAddressFields);
 			Requirements::javascript('ecommerce/javascript/EcomOrderFormShipping.js'); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
