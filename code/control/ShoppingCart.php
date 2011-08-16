@@ -195,16 +195,19 @@ class ShoppingCart extends Object{
 		if(!$buyable) {
 			user_error("No buyable was provided", E_USER_WARNING);
 		}
-		if($buyable->canPurchase()) {
-			if($mustBeExistingItem) {
-				$item = $this->getExistingItem($buyable,$parameters);
-			}
-			else {
-				$item = $this->findOrMakeItem($buyable,$parameters); //find existing order item or make one
-			}
+		$item = null;
+		if($mustBeExistingItem) {
+			$item = $this->getExistingItem($buyable,$parameters);
+		}
+		else {
+			$item = $this->findOrMakeItem($buyable,$parameters); //find existing order item or make one
 		}
 		if(!$item){//check for existence of item
 			$this->addMessage(_t("ShoppingCart.ITEMCOULDNOTBEFOUNDINCART", "Item could not found in cart."),'warning');
+			return false;
+		}
+		if(!$buyable->canPurchase()) {
+			$item->delete();
 			return false;
 		}
 		$quantity = intval($quantity);		
