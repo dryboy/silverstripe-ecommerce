@@ -71,7 +71,15 @@ class CartResponse extends EcommerceResponse {
 		if(is_array($data)) {
 			$js = array_merge($js, $data);
 		}
-		return Convert::array2json($js);
+		$uniqueJS = array();
+		foreach($js as $row) {
+			if(!in_array($row, $uniqueJS)) {
+				$uniqueJS[] = $row;
+			}
+		}
+		//$uniqueJS = array_map('unserialize', array_unique(array_map('serialize', $js)));
+		//$uniqueJS = array_unique($js, SORT_REGULAR);
+		return str_replace("{", "\r\n{", Convert::array2json($uniqueJS));
 	}
 
 }
