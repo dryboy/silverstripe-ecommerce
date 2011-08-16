@@ -39,6 +39,7 @@ class CheckoutPage extends CartPage {
 	public static $icon = 'ecommerce/images/icons/CheckoutPage';
 	
 	public static $db = array (
+		'HasOrderSteps' => 'Boolean',
 		'InvitationToCompleteOrder' => 'HTMLText',
 		'AlreadyCompletedMessage' => 'HTMLText',
 		'NoItemsInOrderMessage' => 'HTMLText',
@@ -116,7 +117,8 @@ class CheckoutPage extends CartPage {
 	function getCMSFields() {
 		$fields = parent :: getCMSFields();
 		$fields->removeFieldFromTab('Root.Content.Main', "Content");
-		$fields->addFieldToTab('Root.Content.TermsAndConditions', new TreeDropdownField('TermsPageID', 'Terms and Conditions Page', 'SiteTree'));
+		$fields->addFieldToTab('Root.Content.Process', new TreeDropdownField('TermsPageID', 'Terms and Conditions Page', 'SiteTree'));
+		$fields->addFieldToTab('Root.Content.Process', new CheckboxField('HasOrderSteps', 'Checkout Process in Steps'));
 		$fields->addFieldsToTab('Root.Content.Messages', array (
 			new TabSet(
 				"MessageOptions",
@@ -155,22 +157,14 @@ class CheckoutPage extends CartPage {
 		$fields->addFieldToTab('Root.Content.AlwaysVisible', new HtmlEditorField('Content', 'General note', 7, 7));
 		return $fields;
 	}
+	
 }
 class CheckoutPage_Controller extends CartPage_Controller {
 
-
 	/**
-	 *@var $currentStep Integer
-	 * if set to zero (0), all steps will be included
+	 * FOR STEP STUFF SEE BELOW
 	 **/
-	protected $currentStep = 0;
 
-	/**
-	 *@var $readOnly Boolean
-	 * if set to false, user can edit order, if set to true, user can only review order
-	 * this is typically used for the user to confirm their order after they have edited it.
-	 **/
-	protected $readOnly = false;
 
 	/**
 	 * Standard SS function
@@ -179,6 +173,11 @@ class CheckoutPage_Controller extends CartPage_Controller {
 	public function init() {
 		parent::init();
 		Requirements::javascript('ecommerce/javascript/EcomPayment.js');
+		if($this->HasOrderSteps) {
+			if(!$this->orderstep) {
+				$this->currentStep = $this->checkoutSteps[0];
+			}
+		}		
 	}
 
 	function processmodifierform($request) {
@@ -192,23 +191,6 @@ class CheckoutPage_Controller extends CartPage_Controller {
 				}
 			}
 		}
-	}
-
-
-	/**
-	 * Show only one step in the order process (e.g. only show OrderItems)
-	 */
-	function step($request) {
-		$this->currentStep = intval($request->Param("ID"));
-		if ($this->currentStep) {
-			return $this->renderWith("CheckoutPage_step" . $this->currentStep, "Page");
-		}
-		return array ();
-	}
-
-	function confirm($request) {
-		$this->readOnly = true;
-		return $this->renderWith("CheckoutPage_confirm", "Page");
 	}
 
 	/**
@@ -252,35 +234,15 @@ class CheckoutPage_Controller extends CartPage_Controller {
 	}
 
 
-
-
 	function ModifierForm($request) {
 		user_error("Make sure that you set the controller for your ModifierForm to a controller directly associated with the Modifier", E_USER_WARNING);
 		return array ();
 	}
 
 	/**
-	 *@param $part Strong (OrderItems, OrderModifiers, OrderForm, OrderPayment)
-	 *@return Boolean
-	 **/
-	function CanShowPartInCurrentStep($part) {
-		if (!$this->currentStep) {
-			return true;
-		}
-		elseif (isset (self :: $checkout_steps[$this->currentStep])) {
-			if (in_array($name, self :: $checkout_steps[$this->currentStep])) {
-				return true;
-			}
-		}
-	}
-
-
-
-	/**
 	 * Returns a message explaining why the customer
 	 * can't checkout the requested order.
 	 *
-	 * @return string
 	 */
 	protected function workOutMessagesAndActions() {
 		if(!$this->workedOutMessagesAndActions) {
@@ -338,5 +300,53 @@ class CheckoutPage_Controller extends CartPage_Controller {
 			$this->workedOutMessagesAndActions = true;
 		}
 	}
+	/**
+	 * STEP STUFF 
+	 * 
+
+	/**
+	 *@var $currentStep Integer
+	 * if set to zero (0), all steps will be included
+	 **/
+	protected $checkoutSteps = array(
+		"orderitems",
+		"ordermodifiers",
+		"orderconfirmation",
+		"orderformandpayment"
+	);
+
+	
+	/**
+	 *@var $currentStep Integer
+	 **/
+	protected $currentStep = "";
+
+	/**
+	 * Show only one step in the order process (e.g. only show OrderItems)
+	 */
+	function orderstep($request) {
+		$step = $request->Param("ID");
+		if($step) {
+			if (in_array($step, $this->checkoutSteps)) {
+				$this->currentStep = $step;
+			}
+		}
+		return array ();
+	}
+
+
+	/**
+	 *@param $part Strong (OrderItems, OrderModifiers, OrderForm, OrderPayment)
+	 *@return Boolean
+	 **/
+	function CanShowStep($step) {
+		if (!$this->currentStep) {
+			return in_array($step, $this->checkoutSteps);
+		}
+		else {
+			return $step == $this->currentStep;
+		}
+	}
+
 
 }
