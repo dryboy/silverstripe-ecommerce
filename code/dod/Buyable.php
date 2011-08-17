@@ -73,7 +73,6 @@ class Buyable extends DataObjectDecorator {
 		}
 		//IMPORTANT - if it returns null then the product / other buyable will not take notice of this extension.
 		return true;
-
 	}
 
 	/**
