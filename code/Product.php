@@ -173,10 +173,7 @@ class Product extends Page {
 		if(!$this->dbObject('AllowPurchase')->getValue()) {
 			return false;
 		}
-		$allowpurchase = false;
-		if($this->Price > 0){
-			$allowpurchase = true;
-		}
+		$allowpurchase = true;
 		// Standard mechanism for accepting permission changes from decorators
 		$extended = $this->extendedCan('canPurchase', $member);
 		if($allowpurchase && $extended !== null) {

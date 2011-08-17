@@ -463,7 +463,7 @@ class ShoppingCart extends Object{
 		Session::set(ShoppingCart::get_session_variable()."Messages", serialize($this->messages));
 	}
 
-	public function setMessageAndReturn($message = "", $status = ""){
+	public function setMessageAndReturn($message = "", $status = "", $form = null){
 		if($message && $status) {
 			$this->addMessage($message,$status);
 		}
@@ -476,6 +476,9 @@ class ShoppingCart extends Object{
 		else {
 			//TODO: handle passing a message back to a form->sessionMessage
 			$this->StoreMessagesInSession();
+			if($form) {
+				$form->sessionMessage($message,$status);
+			}
 			Director::redirectBack();
 			return;
 		}
