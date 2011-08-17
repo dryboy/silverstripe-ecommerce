@@ -77,12 +77,7 @@ class CartPage extends Page{
 		if($order) {
 			$count = $order->TotalItems();
 			if($count) {
-				$html = $this->renderWith("AjaxNumItemsInCart");
-				$js = '
-					var html = jQuery("a[href=\''.$this->Link().'\']").html()
-					jQuery("a[href=\''.$this->Link().'\']").html(html + " '.$html.'");
-				';
-				Requirements::customscript($js, "NumItemsInCart".$this->ID);
+				return parent::getMenuTitle().' '.$this->renderWith("AjaxNumItemsInCart");
 			}
 		}
 		return parent::getMenuTitle();
@@ -165,21 +160,6 @@ class CartPage_Controller extends Page_Controller{
 
 	public function init() {
 		parent::init();
-		Requirements::customScript(
-			'
-			jQuery(document).ready(
-				function() {
-					jQuery("a[href=\''.str_replace('/', '\/', Convert::raw2js($this->Link())).'\']").each(
-						function(i, el){
-							if(jQuery(el).text() == \''.$this->MenuTitle.'\') {
-								var html = jQuery(el).html(\''.$this->getEcommerceMenuTitle().'\');
-							}
-						}
-					);
-				}
-			);'
-			,"getEcommerceMenuTitle"
-		);		
 		//Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js"); VIA EcommerceSiteTreeExtension::initcontentcontroller()
 		Requirements::javascript('ecommerce/javascript/EcomCart.js'); 
 		Requirements::themedCSS('Cart'); 

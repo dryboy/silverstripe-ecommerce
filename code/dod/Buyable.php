@@ -167,10 +167,22 @@ class Buyable extends DataObjectDecorator {
 	 * you can overwrite this function in your buyable items (such as Product)
 	 *@return String
 	 **/
-	public function classNameForOrderItem() {
-		$buyableClassName = $this->owner->ClassName;
+	public function classNameForOrderItem($buyableClassName = '') {
+		if(!$buyableClassName) {
+			$buyableClassName = $this->owner->ClassName;
+		}
 		$orderItemPostFix = Buyable::get_order_item_class_name_post_fix();
-		return $buyableClassName.$orderItemPostFix;
+		$className = $buyableClassName.$orderItemPostFix;
+		if(class_exists($className)) {
+			return $className;
+		}
+		else {
+			//lets try the parent... in case product has been extended....
+			if(class_exists(get_parent_class($this->owner))) {
+				$parentClassName = get_parent_class($this->owner);
+				return $this->classNameForOrderItem($parentClassName);
+			}
+		}
 	}
 
 

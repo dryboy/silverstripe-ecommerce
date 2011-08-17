@@ -52,7 +52,7 @@ class EcommerceSiteTreeExtension extends DataObjectDecorator {
 	 *@return String (HTML Snippet)
 	 **/
 	function getEcommerceMenuTitle() {
-		return parent::getMenuTitle();
+		return $this->owner->getMenuTitle();
 	}
 
 
@@ -64,8 +64,35 @@ class EcommerceSiteTreeExtension_Controller extends Extension {
 	 *TO DO: this even seemed to be called then the CMS is opened
 	 **/
 
-	function init() {
+	function onAfterInit() {
 		Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js");
+		$checkoutPages = DataObject::get("CartPage");
+		$linkArray = $menuTitle = $ecommercTitle = Array();
+		if($checkoutPages) {
+			foreach($checkoutPages as $page) {
+				$jsArray[] = '
+				jQuery("a[href=\''.str_replace('/', '\/', Convert::raw2js($page->Link())).'\']").each(
+					function(i, el) {
+						var oldText = jQuery(el).text();
+						var newText = \''.Convert::raw2js($page->getEcommerceMenuTitle()).'\'
+						if(oldText == \''.$page->MenuTitle.'\' && newText) {
+							jQuery(el).html(newText)
+						}
+					}
+				);';
+			}
+		}
+		if(count($jsArray)) {
+			Requirements::customScript(
+				'
+				jQuery(document).ready(
+					function() {
+						'.implode("", $jsArray).'
+					}
+				);'
+				,"getEcommerceMenuTitle"
+			);
+		}
 	}
 
 	/**

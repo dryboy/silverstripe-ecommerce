@@ -200,6 +200,58 @@ class Product_Controller extends Page_Controller {
 		Requirements::themedCSS('Products');
 	}
 
+
+	function AddProductForm(){
+		if($this->canPurchase()) {
+			$farray = array();
+			$requiredFields = array();
+			$fields = new FieldSet($farray);
+			$fields->push(new NumericField('Quantity','Quantity',1)); //TODO: perhaps use a dropdown instead (elimiates need to use keyboard)
+			$actions = new FieldSet(
+				new FormAction('addproductfromform', _t("ProductWithVariationDecorator.ADDLINK","Add this item to cart"))
+			);
+			$requiredfields[] = 'Quantity';
+			$validator = new RequiredFields($requiredfields);
+			$form = new Form($this,'AddProductForm',$fields,$actions,$validator);
+			return $form;
+		}
+		else {
+			return "Product not for sale";
+		}
+	}
+
+	function addproductfromform($data,$form){
+		if(!$this->IsInCart()) {
+			$quantity = intval($data['Quantity']);
+			if(!$quantity) {
+				$quantity = 1;
+			}
+			$product = DataObject::get_by_id("Product", $this->ID);
+			if($product) {
+				ShoppingCart::singleton()->addBuyable($product,$quantity);
+			}
+			if($this->IsInCart()) {
+				$msg = _t("Product.SUCCESSFULLYADDED","Added to cart.");
+				$status = "good";
+			}
+			else {
+				$msg = _t("Product.NOTADDEDTOCART","Not added to cart.");
+				$status = "bad";			
+			}
+			if(Director::is_ajax()){
+				return ShoppingCart::singleton()->setMessageAndReturn($msg, $status);
+			}
+			else {
+				$form->sessionMessage($msg,$status);
+				Director::redirectBack();
+			}
+		}
+		else {
+			return new EcomQuantityField($this);
+		}
+	}
+
+
 }
 
 class Product_Image extends Image {
@@ -258,6 +310,8 @@ class Product_Image extends Image {
 		$gd->setQuality(90);
 		return $gd->resizeByWidth(self::$large_image_width);
 	}
+
+
 
 }
 class Product_OrderItem extends OrderItem {

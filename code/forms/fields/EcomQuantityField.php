@@ -41,6 +41,9 @@ class EcomQuantityField extends NumericField {
 	 **/
 	protected $template = 'EcomQuantityField';
 
+	/**
+	 *@param $object - the buyable / OrderItem
+	 **/
 	function __construct($object, $parameters = null){
 		Requirements::javascript("ecommerce/javascript/EcomQuantityField.js"); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
 		Requirements::customScript("EcomQuantityField.set_hidePlusAndMins(".(EcomQuantityField::get_hide_plus_and_minus() ? 1 : 0).")", "set_hidePlusAndMins");

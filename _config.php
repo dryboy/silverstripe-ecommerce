@@ -18,7 +18,7 @@ Object::add_extension('Member', 'EcommerceRole');
 Object::add_extension('Payment', 'EcommercePayment');
 Object::add_extension('SiteConfig', 'SiteConfigEcommerceExtras');
 Object::add_extension("SiteTree", "EcommerceSiteTreeExtension");
-Object::add_extension("Controller", "EcommerceSiteTreeExtension_Controller");
+Object::add_extension("Page_Controller", "EcommerceSiteTreeExtension_Controller");
 Object::add_extension("DevelopmentAdmin", "EcommerceDevelopmentAdminDecorator");
 DevelopmentAdmin::$allowed_actions[] = 'ecommerce';
 

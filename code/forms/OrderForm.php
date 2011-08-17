@@ -162,7 +162,7 @@ class OrderForm extends Form {
 
 		
 		//allow updating via decoration
-		$this->extend('updateForm',$this);
+		$this->extend('updateOrderForm',$this);
 
 	}
 
@@ -263,17 +263,21 @@ class OrderForm extends Form {
 				$order->ShippingAddressID = 0;
 			}
 		}
+
+		
 		//ORDER
 		//saving customer note, UseShippingAddress, country...
 		$form->saveInto($order);
 
 		// IMPORTANT - SAVE ORDER....!
 		$order->write();
+
 		$order->tryToFinaliseOrder();
+
 
 		//----------------- CLEAR OLD DATA ------------------------------
 		$this->clearSessionData(); //clears the stored session form data that might have been needed if validation failed
-		ShoppingCart::singleton()->clear();
+		//ShoppingCart::singleton()->clear();
 		//----------------- PAYMENT ------------------------------
 		return EcommercePayment::process_payment_form_and_return_next_step($order, $form, $data, $member);
 	}
