@@ -227,14 +227,14 @@ HTML;
 	 *
 	 * @return DataObject (Any type of Data Object that is buyable)
 	  **/
-	function Buyable($current = true) {
+	function Buyable($current = false) {
 		$className = $this->BuyableClassName();
 		if($this->BuyableID && $this->Version && !$current) {
-			return Versioned::get_version($className, $this->BuyableID, $this->Version);
+			if($obj = Versioned::get_version($className, $this->BuyableID, $this->Version)) {
+				return $obj;
+			}
 		}
-		else {
-			return DataObject::get_by_id($className, $this->BuyableID);
-		}
+		return DataObject::get_by_id($className, $this->BuyableID);
 	}
 
 	/**
