@@ -204,13 +204,6 @@ class OrderStatusLog extends DataObject {
 
 	function onBeforeWrite() {
 		parent::onBeforeWrite();
-		if(!$this->OrderID) {
-			//backup hack
-			$this->OrderID = ShoppingCart::current_order()->ID;
-			if($this->OrderID) {
-				user_error("There is no order id for Order Status Log", E_USER_WARNING);
-			}
-		}
 		if(!$this->AuthorID && $m = Member::currentUser()) {
 			$this->AuthorID = $m->ID;
 		}

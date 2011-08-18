@@ -520,7 +520,7 @@ class Order extends DataObject {
 	 *
 	 *@return HasManyComplexTableField
 	 **/
-	protected function OrderStatusLogsTable($sourceClass, $title, $fieldList = null, $detailedFormFields = null) {
+	public function OrderStatusLogsTable($sourceClass, $title, $fieldList = null, $detailedFormFields = null) {
 		$orderStatusLogsTable = new HasManyComplexTableField(
 			$this,
 			"OrderStatusLogs", //$name
