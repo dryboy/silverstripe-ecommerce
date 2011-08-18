@@ -36,10 +36,8 @@ class Product extends Page {
 	);
 
 	public static $many_many = array(
-		'ProductGroups' => 'ProductGroup',
+		'ProductGroups' => 'ProductGroup'
 	);
-
-	public static $belongs_many_many = array();
 
 	public static $defaults = array(
 		'AllowPurchase' => true
