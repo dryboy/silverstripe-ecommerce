@@ -125,6 +125,14 @@ class OrderStep extends DataObject {
 		static function add_order_step_to_include($s, $placeAfter) {
 			array_splice(self::$order_steps_to_include, array_search($placeAfter, self::$order_steps_to_include) + 1, 0, $s);
 		}
+		static function remove_order_step_to_include($s) {
+			foreach(self::$order_steps_to_include as $key => $step) {
+				if($step == $s) {
+					unset(self::$order_steps_to_include[$key]);
+					return;
+				}
+			}
+		}
 		/**
 		 *
 		 *@return Array

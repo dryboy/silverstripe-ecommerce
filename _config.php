@@ -97,6 +97,9 @@ Buyable::add_class("Product");
 //Order_Email::set_send_all_emails_plain(true);
 //Order_Email::set_copy_to_admin_for_all_emails(false);
 
+// * * * PROCESS
+//OrderStep::set_order_steps_to_include(array("OrderStep_Created", "OrderStep_Submitted",	"OrderStep_Confirmed","OrderStep_Archived"));
+
 // * * * LOGS
 //OrderStatusLog::set_available_log_classes_array(array("OrderStatusLog_PaymentCheck"));
 
