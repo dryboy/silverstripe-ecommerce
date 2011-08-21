@@ -63,6 +63,7 @@ class Order extends DataObject {
 	public static $default_sort = "\"Created\" DESC";
 
 	public static $casting = array(
+		'OrderEmail' => 'Text',
 		'EmailLink' => 'Text',
 		'PrintLink' => 'Text',
 		'RetrieveLink' => 'Text',
@@ -1306,6 +1307,23 @@ class Order extends DataObject {
 /*******************************************************
    * 8. GET METHODS (e.g. Total, SubTotal, Title, etc...)
 *******************************************************/
+
+	function OrderEmail(){
+		return $this->getOrderEmail();
+	}
+
+	function getOrderEmail() {
+		if($this->IsSubmitted()) {
+			if($this->BillingAddressID && $this->BillingAddress())
+				if($e = $this->BillingAddress()->Email)
+					return $e;
+				}
+			}
+			if($this->MemberID && $this->Member()) {
+				return $this->Member()->Emaill;
+			}
+		}
+	}
 
 	function EmailLink(){
 		return $this->getEmailLink();
