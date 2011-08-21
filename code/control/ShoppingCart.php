@@ -521,6 +521,7 @@ class ShoppingCart_Controller extends Controller{
 		'additem',
 		'removeitem',
 		'removeallitem',
+		'removeallitemandedit',
 		'removemodifier',
 		'addmodifier',
 		'setcountry',
@@ -553,6 +554,10 @@ class ShoppingCart_Controller extends Controller{
 
 	static function remove_all_item_link($buyableID, $classNameForBuyable = "Product", $parameters = array()) {
 		return self::$url_segment.'/removeallitem/'.$buyableID."/".$classNameForBuyable."/".self::params_to_get_string($parameters);
+	}
+
+	static function remove_all_item_and_edit_link($buyableID, $classNameForBuyable = "Product", $parameters = array()) {
+		return self::$url_segment.'/removeallitemandedit/'.$buyableID."/".$classNameForBuyable."/".self::params_to_get_string($parameters);
 	}
 
 	static function set_quantity_item_link($buyableID, $classNameForBuyable = "Product", $parameters = array()) {
@@ -626,6 +631,22 @@ class ShoppingCart_Controller extends Controller{
 	public function removeallitem(){
 		$this->cart->deleteBuyable($this->buyable(),$this->parameters());
 		return $this->cart->setMessageAndReturn();
+	}
+
+	/**
+	 * Removes all of a specific item AND return back 
+	 *@return Mixed - if the request is AJAX, it returns JSON - CartResponse::ReturnCartData(); If it is not AJAX it redirects back to requesting page.
+	 */
+	public function removeallitemandedit(){
+		$buyable = $this->buyable();
+		if($buyable) {
+			$link = $buyable->Link();
+			$this->cart->deleteBuyable($buyable,$this->parameters());
+			Director::redirect($link);
+		}
+		else {
+			Director::redirectBack();
+		}
 	}
 
 	/**
@@ -719,6 +740,7 @@ class ShoppingCart_Controller extends Controller{
 			if(Buyable::is_buyable($className)) {
 				$obj = DataObject::get_by_id($className,intval($buyableID)); //TODO: possible unsafe class name being passed...do proper subclass check
 				if($obj->ClassName == $className) {
+					
 					return $obj;
 				}
 			}
