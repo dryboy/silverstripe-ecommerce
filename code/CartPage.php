@@ -170,8 +170,8 @@ class CartPage_Controller extends Page_Controller{
 		if(isset($_REQUEST['OrderID'])) {
 			$orderID = intval($_REQUEST['OrderID']);
 		}
-		elseif(Director::urlParam('ID') && Director::urlParam('Action') == "showorder"){
-			$orderID = intval(Director::urlParam('ID'));
+		elseif($this->request->param('ID') && $this->request->param('Action') == "showorder"){
+			$orderID = intval($this->request->param('ID'));
 		}
 		if($orderID) {
 			$this->currentOrder = Order::get_by_id_if_can_view($orderID);
