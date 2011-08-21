@@ -357,6 +357,13 @@ HTML;
 	function RemoveAllLink() {
 		return ShoppingCart_Controller::remove_all_item_link($this->BuyableID, $this->Buyable()->ClassName,$this->linkParameters());
 	}
+	/**
+	 *
+	 * @return String (URLSegment)
+	  **/
+	function RemoveAllAndEditLink() {
+		return ShoppingCart_Controller::remove_all_item_and_edit_link($this->BuyableID, $this->Buyable()->ClassName,$this->linkParameters());
+	}
 
 	/**
 	 *
