@@ -1314,8 +1314,8 @@ class Order extends DataObject {
 
 	function getOrderEmail() {
 		if($this->IsSubmitted()) {
-			if($this->BillingAddressID && $this->BillingAddress())
-				if($e = $this->BillingAddress()->Email)
+			if($this->BillingAddressID && $this->BillingAddress()) {
+				if($e = $this->BillingAddress()->Email) {
 					return $e;
 				}
 			}
