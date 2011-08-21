@@ -343,9 +343,6 @@ class OrderConfirmationPage_Controller extends CartPage_Controller{
 					)));
 				}
 			}
-			else {
-				die("LL");
-			}
 			$this->workedOutMessagesAndActions = true;
 			//does nothing at present....
 		}
