@@ -2,7 +2,7 @@
 	<% if EmailLink %>
 	<li id="SendCopyOfReceipt">
 		<a href="$EmailLink">
-			<% sprintf(_t("OrderConfirmation.SENDCOPYRECEIPT","send a copy of receipt to %s"),$Member.Email) %>
+			<% sprintf(_t("OrderConfirmation.SENDCOPYRECEIPT","send a copy of receipt to %s"),$OrderEmail) %>
 		</a>
 	</li>
 	<% end_if %>
