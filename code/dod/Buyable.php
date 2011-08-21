@@ -21,7 +21,21 @@ class Buyable extends DataObjectDecorator {
 		static function set_array_of_buyables(array $a) {self::$array_of_buyables = $a;}
 		static function get_array_of_buyables() {return(array)self::$array_of_buyables;}
 		static function add_class($className) {Object::add_extension($className, "Buyable");self::$array_of_buyables[$className] = $className;}
-		static function is_buyable($className) {return in_array($className, self::$array_of_buyables);}
+		static function is_buyable($className) {
+			if(in_array($className, self::$array_of_buyables)) {
+				return true;
+			}
+			else {
+				print_r(self::$array_of_buyables);
+				$array = array_reverse(ClassInfo::ancestry($className));
+				foreach($array as $className) {
+					if(in_array($className, self::$array_of_buyables)) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
 
 	/**
 	 * static variable that "remembers" if the shop is closed.
@@ -142,6 +156,10 @@ class Buyable extends DataObjectDecorator {
 
 	function RemoveAllLink() {
 		return ShoppingCart_Controller::remove_all_item_link($this->owner->ID, $this->owner->ClassName, $this->linkParameters());
+	}
+
+	function RemoveAllAndEditLink() {
+		return ShoppingCart_Controller::remove_all_item_and_edit_link($this->owner->ID, $this->owner->ClassName, $this->linkParameters());
 	}
 
 	function SetQuantityItemLink() {
