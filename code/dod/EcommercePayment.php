@@ -48,8 +48,9 @@ class EcommercePayment extends DataObjectDecorator {
 
 	public static function process_payment_form_and_return_next_step($order, $form, $data, $paidBy = null) {
 		if(!$order){
-			user_error('Order not found', E_USER_ERROR);
-			return;
+			$form->sessionMessage(_t('EcommercePayment.NOORDER','Order not found.'), 'bad');
+			Director::redirectBack();
+			return false;
 		}
 		if(!$paidBy) {
 			$paidBy = Member::currentUser();
@@ -57,7 +58,9 @@ class EcommercePayment extends DataObjectDecorator {
 		$paymentClass = (!empty($data['PaymentMethod'])) ? $data['PaymentMethod'] : null;
 		$payment = class_exists($paymentClass) ? new $paymentClass() : null;
 		if(!($payment && $payment instanceof Payment)) {
-			user_error(get_class($payment) . ' is not a valid Payment object.', E_USER_ERROR);
+			$form->sessionMessage(_t('EcommercePayment.NOPAYMENTOPTION','No Payment option selected.'), 'bad');
+			Director::redirectBack();
+			return false;
 		}
 		// Save payment data from form and process payment
 		$form->saveInto($payment);
@@ -73,9 +76,9 @@ class EcommercePayment extends DataObjectDecorator {
 		if($result->isProcessing()) {
 			return $result->getValue();
 		}
-		else {			
+		else {
 			Director::redirect($order->Link());
-			return true;		
+			return true;
 		}
 	}
 
