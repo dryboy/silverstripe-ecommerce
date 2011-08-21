@@ -26,7 +26,6 @@ class Buyable extends DataObjectDecorator {
 				return true;
 			}
 			else {
-				print_r(self::$array_of_buyables);
 				$array = array_reverse(ClassInfo::ancestry($className));
 				foreach($array as $className) {
 					if(in_array($className, self::$array_of_buyables)) {
