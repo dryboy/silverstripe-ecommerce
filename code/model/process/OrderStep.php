@@ -148,6 +148,22 @@ class OrderStep extends DataObject {
 			}
 			return $newArray;
 		}
+		/**
+		 *
+		 *@return Array
+		 **/
+		static function get_not_created_codes_for_order_steps_to_include() {
+			$array = self::get_codes_for_order_steps_to_include();
+			if(is_array($array) && count($array)) {
+				foreach($array as $className => $code) {
+					if(DataObject::get_one($className)) {
+						unset($array[$className]);
+					}
+				}
+			}
+			return $array;
+		}
+
 		function getMyCode() {
 			$array = Object::uninherited_static($this->ClassName, 'defaults');
 			if(!isset($array["Code"])) {user_error($this->class." does not have a default code specified");}
@@ -187,7 +203,7 @@ class OrderStep extends DataObject {
 		//adding
 		if(!$this->ID || !$this->isDefaultStatusOption()) {
 			$fields->removeFieldFromTab("Root.Main", "Code");
-			$fields->addFieldToTab("Root.Main", new DropdownField("ClassName", _t("OrderStep.TYPE", "Type"), self::get_codes_for_order_steps_to_include()), "Name");
+			$fields->addFieldToTab("Root.Main", new DropdownField("ClassName", _t("OrderStep.TYPE", "Type"), self::get_not_created_codes_for_order_steps_to_include()), "Name");
 		}
 		if($this->isDefaultStatusOption()) {
 			$fields->replaceField("Code", $fields->dataFieldByName("Code")->performReadonlyTransformation());
@@ -359,6 +375,18 @@ class OrderStep extends DataObject {
 		return true;
 	}
 
+	/**
+	 *
+	 *@return Boolean
+	 **/
+	public function canAdd($member = null) {
+		$array = self::get_not_created_codes_for_order_steps_to_include();
+		if(is_array($array) && count($array)) {
+			return true;
+		}
+		return false;
+	}
+
 
 	function onBeforeWrite() {
 		parent::onBeforeWrite();
@@ -524,7 +552,7 @@ class OrderStep_Submitted extends OrderStep {
 				user_error('OrderStatusLog::$order_status_log_class_used_for_submitting_order refers to a non-existing class');
 			}
 		}
-		return true;		
+		return true;
 	}
 
 	/**
