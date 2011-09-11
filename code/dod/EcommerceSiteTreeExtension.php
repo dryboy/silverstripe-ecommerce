@@ -21,7 +21,7 @@ class EcommerceSiteTreeExtension extends DataObjectDecorator {
 			)
 		);
 	}
-	
+
 	/**
 	 *@return Boolean
 	 **/
@@ -67,7 +67,7 @@ class EcommerceSiteTreeExtension_Controller extends Extension {
 	function onAfterInit() {
 		Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js");
 		$checkoutPages = DataObject::get("CartPage");
-		$linkArray = $menuTitle = $ecommercTitle = Array();
+		$jsArray = Array();
 		if($checkoutPages) {
 			foreach($checkoutPages as $page) {
 				$jsArray[] = '
