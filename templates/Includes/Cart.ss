@@ -7,11 +7,11 @@
 	<% control Items %>
 		<% if ShowInTable %>
 			<tr id="$TableID" class="$Classes hideOnZeroItems">
-				<td <% if Link %><% else %> id="$TableTitleID"<% end_if %> class="product title" scope="row">
+				<td class="product title" scope="row">
 					<% if Link %>
-						<a id="$TableTitleID" href="$Link" title="<% sprintf(_t("Order_Content_Editable.ss.READMORE","Click here to read more on &quot;%s&quot;"),$TableTitle) %>">$TableTitle</a>
+						<a id="$TableTitleID" href="$Link">$TableTitle</a>
 					<% else %>
-						$TableTitle
+						<span id="$TableTitleID">$TableTitle</span>
 					<% end_if %>
 					<% if TableSubTitle %><div class="tableSubTitle">$TableSubTitle</div ><% end_if %>
 				</td>
@@ -32,9 +32,9 @@
 		</tbody>
 	</table>
 	<p class="goToCart"><a href="$checkoutLink"><% _t("Product.GOTOCHECKOUTLINK","&raquo; Go to the checkout") %></a></p>
-	<% else %>
+<% else %>
 		<p class="noItems"><% _t("Cart.NOITEMS","There are no items in your cart") %>.</p>
-	<% end_if %>
+<% end_if %>
 </div>
 <% end_control %><% end_if %>
 
