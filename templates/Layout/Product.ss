@@ -8,8 +8,6 @@
 		<div class="productImage">
 <% if Image.ContentImage %>
 			<img class="realImage" src="$Image.ContentImage.URL" alt="<% sprintf(_t("Product.IMAGE","%s image"),$Title) %>" />
-<% else %>
-			<img class="noImage" src="/ecommerce/images/productPlaceHolderThumbnail.gif" alt="<% _t("Product.NOIMAGEAVAILABLE","no image available") %>">
 <% end_if %>
 		</div>
 <% include ProductActions %>
