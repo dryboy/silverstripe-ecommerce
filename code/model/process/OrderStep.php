@@ -85,22 +85,26 @@ class OrderStep extends DataObject {
 		)
 	);
 
-	function getCustomerCanEditNice() {if($this->CustomerCanEdit) {return _t("OrderStep.YES", "Yes");}return _t("OrderStep.NO", "No");}
-	function getCustomerCanPayNice() {if($this->CustomerCanPay) {return _t("OrderStep.YES", "Yes");}return _t("OrderStep.NO", "No");}
-	function getCustomerCanCancelNice() {if($this->CustomerCanCancel) {return _t("OrderStep.YES", "Yes");}return _t("OrderStep.NO", "No");}
-	function getShowAsUncompletedOrderNice() {if($this->ShowAsUncompletedOrder) {return _t("OrderStep.YES", "Yes");}return _t("OrderStep.NO", "No");}
-	function getShowAsInProcessOrderNice() {if($this->ShowAsInProcessOrder) {return _t("OrderStep.YES", "Yes");}return _t("OrderStep.NO", "No");}
-	function getShowAsCompletedOrderNice() {if($this->ShowAsCompletedOrder) {return _t("OrderStep.YES", "Yes");}return _t("OrderStep.NO", "No");}
-	function getHideStepFromCustomer() {if($this->HideStepFromCustomer) {return _t("OrderStep.YES", "Yes");}return _t("OrderStep.NO", "No");}
-
 	function CustomerCanEditNice() {return $this->getCustomerCanEditNice();}
-	function CustomerCanPayNice() {return $this->getCustomerCanPayNice();}
-	function CustomerCanCancelNice() {return $this->getCustomerCanCancelNice();}
-	function ShowAsUncompletedOrderNice() {return $this->getShowAsUncompletedOrderNice();}
-	function ShowAsInProcessOrderNice() {return $this->getShowAsInProcessOrderNice();}
-	function ShowAsCompletedOrderNice() {return $this->getShowAsCompletedOrderNice();}
-	function HideStepFromCustomer() {return $this->getHideStepFromCustomer();}
+	function getCustomerCanEditNice() {if($this->CustomerCanEdit) {return _t("OrderStep.YES", "Yes");}return _t("OrderStep.NO", "No");}
 
+	function CustomerCanPayNice() {return $this->getCustomerCanPayNice();}
+	function getCustomerCanPayNice() {if($this->CustomerCanPay) {return _t("OrderStep.YES", "Yes");}return _t("OrderStep.NO", "No");}
+
+	function CustomerCanCancelNice() {return $this->getCustomerCanCancelNice();}
+	function getCustomerCanCancelNice() {if($this->CustomerCanCancel) {return _t("OrderStep.YES", "Yes");}return _t("OrderStep.NO", "No");}
+
+	function ShowAsUncompletedOrderNice() {return $this->getShowAsUncompletedOrderNice();}
+	function getShowAsUncompletedOrderNice() {if($this->ShowAsUncompletedOrder) {return _t("OrderStep.YES", "Yes");}return _t("OrderStep.NO", "No");}
+
+	function ShowAsInProcessOrderNice() {return $this->getShowAsInProcessOrderNice();}
+	function getShowAsInProcessOrderNice() {if($this->ShowAsInProcessOrder) {return _t("OrderStep.YES", "Yes");}return _t("OrderStep.NO", "No");}
+
+	function ShowAsCompletedOrderNice() {return $this->getShowAsCompletedOrderNice();}
+	function getShowAsCompletedOrderNice() {if($this->ShowAsCompletedOrder) {return _t("OrderStep.YES", "Yes");}return _t("OrderStep.NO", "No");}
+
+	function HideStepFromCustomer() {return $this->getHideStepFromCustomer();}
+	function getHideStepFromCustomer() {if($this->HideStepFromCustomer) {return _t("OrderStep.YES", "Yes");}return _t("OrderStep.NO", "No");}
 
 	public static $singular_name = "Order Step";
 		function i18n_singular_name() { return _t("OrderStep.ORDERSTEP", "Order Step");}

@@ -81,10 +81,7 @@ class ShippingAddress extends OrderAddress {
 	 * returns the full name for the shipping country code saved.
 	 *@return String
 	 **/
-	function ShippingFullCountryName() {
-		return $this->getShippingFullCountryName();
-	}
-
+	function ShippingFullCountryName() {return $this->getShippingFullCountryName();}
 	function getShippingFullCountryName() {
 		return EcommerceCountry::find_title($this->ShippingCountry);
 	}

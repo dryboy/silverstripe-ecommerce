@@ -49,12 +49,16 @@ class OrderStatusLog extends DataObject {
 		"InternalUseOnly" => true
 	);
 
-	function EmailCustomerNice() {return $this->getEmailCustomerNice();}
-	function EmailSentNice() {return $this->getEmailSentNice();}
-	function InternalUseOnlyNice() {return $this->getInternalUseOnlyNice();}
 
+
+
+	function EmailCustomerNice() {return $this->getEmailCustomerNice();}
 	function getEmailCustomerNice() {if($this->EmailCustomer) { return _t("OrderStatusLog.YES", "Yes");} return _t("OrderStatusLog.No", "No");}
+
+	function EmailSentNice() {return $this->getEmailSentNice();}
 	function getEmailSentNice() {if($this->EmailSent) { return _t("OrderStatusLog.YES", "Yes");} return _t("OrderStatusLog.No", "No");}
+
+	function InternalUseOnlyNice() {return $this->getInternalUseOnlyNice();}
 	function getInternalUseOnlyNice() {if($this->InternalUseOnly) { return _t("OrderStatusLog.YES", "Yes");} return _t("OrderStatusLog.No", "No");}
 
 	/**
@@ -192,10 +196,7 @@ class OrderStatusLog extends DataObject {
 	*
 	*@return String
 	**/
-	function Type() {
-		return $this->Type();
-	}
-
+	function Type() {return $this->Type();}
 	function getType() {
 		return $this->i18n_singular_name();
 	}
@@ -241,10 +242,7 @@ class OrderStatusLog extends DataObject {
 	*
 	*@return String
 	**/
-	function CustomerNote() {
-		return $this->getCustomerNote();
-	}
-
+	function CustomerNote() {return $this->getCustomerNote();}
 	function getCustomerNote() {
 		return $this->Note;
 	}
@@ -303,10 +301,7 @@ class OrderStatusLog_Submitted extends OrderStatusLog {
 		return true;
 	}
 
-	function HTMLRepresentation(){
-		return $this->getHTMLRepresentation();
-	}
-
+	function HTMLRepresentation(){return $this->getHTMLRepresentation();}
 	function getHTMLRepresentation(){
 		if($this->OrderAsHTML) {
 			return $this->OrderAsHTML;

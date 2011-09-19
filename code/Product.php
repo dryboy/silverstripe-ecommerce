@@ -343,6 +343,7 @@ class Product_OrderItem extends OrderItem {
 	/**
 	 *@return Float
 	 **/
+	function UnitPrice() {return $this->getUnitPrice();}
 	function getUnitPrice() {
 		$unitprice = 0;
 		if($this->Product()) {
@@ -350,10 +351,6 @@ class Product_OrderItem extends OrderItem {
 			$this->extend('updateUnitPrice',$unitprice);
 		}
 		return $unitprice;
-	}
-
-	function UnitPrice() {
-		return $this->getUnitPrice();
 	}
 
 

@@ -82,10 +82,7 @@ class BillingAddress extends OrderAddress {
 	 *
 	 *@return String
 	 **/
-	function FullCountryName() {
-		return $this->getFullCountryName();
-	}
-
+	function FullCountryName() {return $this->getFullCountryName();}
 	function getFullCountryName() {
 		return EcommerceCountry::find_title($this->Country);
 	}

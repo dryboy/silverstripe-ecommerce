@@ -210,12 +210,13 @@ HTML;
 	 *
 	 * @return Float
 	  **/
+	function Total(){return $this->getTotal();}
 	function getTotal() {
 		$total = $this->UnitPrice() * $this->Quantity;
 		$this->extend('updateTotal',$total);
 		return $total;
 	}
-	function Total(){return $this->getTotal();}
+
 
 	/**
 	 *

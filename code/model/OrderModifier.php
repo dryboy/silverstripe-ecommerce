@@ -296,10 +296,7 @@ class OrderModifier extends OrderAttribute {
 	 *
 	 * @return Currency Object
 	 **/
-	public function CartValue() {
-		return $this->getCartValue();
-	}
-
+	public function CartValue() {return $this->getCartValue();}
 	public function getCartValue(){
 		return $this->TableValue();
 	}
