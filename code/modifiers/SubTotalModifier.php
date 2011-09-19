@@ -39,7 +39,8 @@ class SubTotalModifier extends OrderModifier {
 		return false;
 	}
 
-	public function TableTitle(){
+	public function TableTitle(){return $this->getTableTitle();}
+	public function getTableTitle(){
 		return _t("SubtTotalModifier.SUBTOTAL", "Sub Total");
 	}
 

@@ -80,7 +80,9 @@ class FlatTaxModifier extends OrderModifier {
 	 *
 	 * @return string
 	 */
-	public function TableTitle() {
+
+	public function TableTitle() {return $this->getTableTitle();}
+	public function getTableTitle() {
 		$message = ($this->IsExclusive()) ? self::$excludedmessage : self::$includedmessage;
 		return sprintf($message,$this->Rate * 100,$this->Name);
 	}

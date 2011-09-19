@@ -67,9 +67,9 @@ class OrderAttribute extends DataObject {
 					if($this->Order()->canEdit($member)) {
 						$this->_canEdit = true;
 					}
-				} 
-			} 
-		} 
+				}
+			}
+		}
 		return $this->_canEdit;
 	}
 
@@ -184,7 +184,8 @@ class OrderAttribute extends DataObject {
 	 *
 	 * @return string
 	 */
-	function TableTitle() {
+	function TableTitle(){return $this->getTableTitle();}
+	function getTableTitle() {
 		return 'Attribute';
 	}
 
@@ -194,7 +195,8 @@ class OrderAttribute extends DataObject {
 	 *
 	 * @return string
 	 */
-	function CartTitle() {
+	public function CartTitle() {return $this->getCartTitle();}
+	function getCartTitle() {
 		return $this->TableTitle();
 	}
 

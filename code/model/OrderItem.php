@@ -183,13 +183,14 @@ HTML;
 	## TEMPLATE METHODS ##
 	######################
 
-	function UnitPrice() {
-		user_error("OrderItem::UnitPrice() called. Please implement UnitPrice() on $this->class", E_USER_ERROR);
+	public function UnitPrice() {return $this->getUnitPrice();}
+	public function getUnitPrice() {
+		user_error("OrderItem::UnitPrice() called. Please implement UnitPrice() and getUnitPrice on $this->class", E_USER_ERROR);
 	}
 
 	/**
 	 * Link to the Quantity Field
-	 * 
+	 *
 	 *@return String
 	  **/
 	public function QuantityFieldName() {
@@ -209,11 +210,12 @@ HTML;
 	 *
 	 * @return Float
 	  **/
-	function Total() {
+	function getTotal() {
 		$total = $this->UnitPrice() * $this->Quantity;
 		$this->extend('updateTotal',$total);
 		return $total;
 	}
+	function Total(){return $this->getTotal();}
 
 	/**
 	 *
@@ -288,7 +290,8 @@ HTML;
 	 *
 	 * @return String
 	  **/
-	function TableTitle() {
+	function TableTitle() {return $this->getTableTitle();}
+	function getTableTitle() {
 		return $this->ClassName;
 	}
 
@@ -296,7 +299,8 @@ HTML;
 	 *
 	 * @return String
 	  **/
-	function TableSubTitle() {
+	function TableSubTitle() {return $this->getTableSubTitle();}
+	function getTableSubTitle() {
 		return "";
 	}
 

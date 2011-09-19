@@ -133,9 +133,10 @@ class EcommercePayment extends DataObjectDecorator {
 	/**
 	 *@return float
 	 **/
-	function AmountValue() {
+	function getAmountValue() {
 		return $this->owner->Amount->getAmount();
 	}
+	function AmountValue(){return $this->getAmountValue();}
 
 	function scaffoldSearchFields(){
 		$fields = parent::scaffoldSearchFields();

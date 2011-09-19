@@ -47,7 +47,8 @@ class OrderEmailRecord extends DataObject {
 		"Result" => true
 	);
 
-	function ResultNice() {if($this->Result) {return _t("OrderEmailRecord.YES", "Yes");}return _t("OrderEmailRecord.NO", "No");}
+	function getResultNice() {if($this->Result) {return _t("OrderEmailRecord.YES", "Yes");}return _t("OrderEmailRecord.NO", "No");}
+	function ResultNice() {return $this->getResultNice();}
 
 	public static $singular_name = "Customer Email";
 		function i18n_singular_name() { return _t("OrderEmailRecord.CUSTOMEREMAIL", "Customer Email");}
@@ -78,7 +79,7 @@ class OrderEmailRecord extends DataObject {
 	 *
 	 *@ return String
 	  **/
-	function RelatedStatus() {
+	function getRelatedStatus() {
 		if($this->OrderStepID) {
 			$orderStep = DataObject::get_by_id("OrderStep", $this->OrderStepID);
 			if($orderStep) {
@@ -87,5 +88,8 @@ class OrderEmailRecord extends DataObject {
 		}
 	}
 
+	function RelatedStatus() {
+		return $this->getRelatedStatus();
+	}
 
 }

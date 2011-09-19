@@ -43,8 +43,6 @@ class Product extends Page {
 		'AllowPurchase' => true
 	);
 
-	public static $casting = array();
-
 	public static $summary_fields = array(
 		'ID','InternalItemID','Title','Price','NumberSold'
 	);
@@ -231,7 +229,7 @@ class Product_Controller extends Page_Controller {
 			}
 			else {
 				$msg = _t("Product.NOTADDEDTOCART","Not added to cart.");
-				$status = "bad";			
+				$status = "bad";
 			}
 			if(Director::is_ajax()){
 				return ShoppingCart::singleton()->setMessageAndReturn($msg, $status);
@@ -345,7 +343,7 @@ class Product_OrderItem extends OrderItem {
 	/**
 	 *@return Float
 	 **/
-	function UnitPrice() {
+	function getUnitPrice() {
 		$unitprice = 0;
 		if($this->Product()) {
 			$unitprice = $this->Product()->Price;
@@ -354,10 +352,16 @@ class Product_OrderItem extends OrderItem {
 		return $unitprice;
 	}
 
+	function UnitPrice() {
+		return $this->getUnitPrice();
+	}
+
+
 	/**
 	 *@return String
 	 **/
-	function TableTitle() {
+	function TableTitle() {return $this->getTableTitle();}
+	function getTableTitle() {
 		$tabletitle = _t("Product.UNKNOWN", "Unknown Product");
 		if($this->Product()) {
 			$tabletitle = $this->Product()->Title;
@@ -369,7 +373,8 @@ class Product_OrderItem extends OrderItem {
 	/**
 	 *@return String
 	 **/
-	function TableSubTitle() {
+	function TableSubTitle() {return $this->getTableSubTitle();}
+	function getTableSubTitle() {
 		$tablesubtitle = "";
 		$this->extend('updateTableSubTitle',$tablesubtitle);
 		return $tablesubtitle;

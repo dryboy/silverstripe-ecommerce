@@ -297,6 +297,10 @@ class OrderModifier extends OrderAttribute {
 	 * @return Currency Object
 	 **/
 	public function CartValue() {
+		return $this->getCartValue();
+	}
+
+	public function getCartValue(){
 		return $this->TableValue();
 	}
 	/**
@@ -316,7 +320,8 @@ class OrderModifier extends OrderAttribute {
 	 *
 	 * @return string
 	 */
-	public function TableTitle() {
+	public function TableTitle() {return $this->getTableTitle();}
+	public function getTableTitle() {
 		return $this->Name;
 	}
 
@@ -326,7 +331,8 @@ class OrderModifier extends OrderAttribute {
 	 * @return String
 	 **/
 
-	public function CartTitle() {
+	public function CartTitle() {return $this->getCartTitle();}
+	public function getCartTitle() {
 		return $this->TableTitle();
 	}
 

@@ -93,7 +93,8 @@ class TaxModifier extends OrderModifier {
 	/**
 	 * @return string
 	 */
-	function TableTitle() {
+	function TableTitle(){return $this->getTableTitle();}
+	function getTableTitle() {
 		return number_format($this->Rate * 100, 1) . '% ' . $this->Name . ($this->TaxType == "Exclusive" ? '' : _t("TaxModifier.INCLUDEDINTHEPRICE", ' (included in the above price)'));
 	}
 

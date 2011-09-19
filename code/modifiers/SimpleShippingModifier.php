@@ -75,7 +75,8 @@ class SimpleShippingModifier extends OrderModifier {
 	/**
 	 * @return string
 	 */
-	public function TableTitle() {
+	public function TableTitle() {return $this->getTableTitle();}
+	public function getTableTitle() {
 		if($this->Country) {
 			$countryList = Geoip::getCountryDropDown();
 			return _t("SimpleShippingModifier.SHIPPINGTO", "Shipping to")." ".$countryList[$this->Country];
@@ -88,7 +89,8 @@ class SimpleShippingModifier extends OrderModifier {
 	/**
 	 * @return string
 	 */
-	public function CartTitle() {
+	public function CartTitle() {return $this->getCartTitle();}
+	public function getCartTitle() {
 		return _t("SimpleShippingModifier.SHIPPING", "Shipping");
 	}
 

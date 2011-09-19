@@ -75,10 +75,10 @@ class Order extends DataObject {
 		'TotalItems' => 'Int',
 		'TotalItemsTimesQuantity' => 'Int',
 		'IsCancelled' => 'Boolean',
-		'Country' => "Varchar", //This is the applicable country for the order - for tax purposes, etc....
-		'FullNameCountry' => "Varchar",
-		'IsSubmitted' => "Boolean",
-		'CanHaveShippingAddress' => "Boolean"
+		'Country' => 'Varchar', //This is the applicable country for the order - for tax purposes, etc....
+		'FullNameCountry' => 'Varchar',
+		'IsSubmitted' => 'Boolean',
+		'CanHaveShippingAddress' => 'Boolean'
 	);
 
 	public static $create_table_options = array(
@@ -121,7 +121,7 @@ class Order extends DataObject {
 			self::$modifiers =  array_merge(self::$modifiers,$modifiers);
 		}
 	}
-	
+
 	/**
 	 * Set the modifiers that apply to this site.
 	 *
@@ -390,8 +390,8 @@ class Order extends DataObject {
 			if($member = $this->Member()) {
 				$fields->addFieldToTab('Root.Customer', new LiteralField("MemberDetails", $member->getEcommerceFieldsForCMSAsString()));
 			}
-			
-			
+
+
 			$cancelledField = $fields->dataFieldByName("CancelledByID");
 			$fields->removeByName("CancelledByID");
 			$fields->addFieldToTab("Root.Cancellation", $cancelledField);
@@ -447,8 +447,8 @@ class Order extends DataObject {
 			else {
 				$array[0] =  " -- Select Customer -- ";
 				$currentMember = Member::currentUser();
-				$currentMemberID = $currentMember->ID;			
-				$array[$currentMemberID] = "Assign this order to me: ".Member::currentUser()->getTitle();			
+				$currentMemberID = $currentMember->ID;
+				$array[$currentMemberID] = "Assign this order to me: ".Member::currentUser()->getTitle();
 			}
 			$group = DataObject::get_one("Group", "\"Code\" = '".EcommerceRole::get_customer_group_code()."'");
 			if($group) {
@@ -460,7 +460,7 @@ class Order extends DataObject {
 			}
 			$fields->addFieldToTab("Root.Main", new DropdownField("MemberID", "Select Cutomer", $array),"CustomerOrderNote");
 		}
-		
+
 		$fields->addFieldToTab('Root.Addresses',new HeaderField("BillingAddressHeader", "Billing Address"));
 		$billingAddress = new HasOneComplexTableField(
 			$this, //$controller
@@ -510,7 +510,7 @@ class Order extends DataObject {
 				$fields->addFieldToTab('Root.Addresses',$shippingAddress);
 			}
 		}
-			
+
 		$this->MyStep()->addOrderStepFields($fields, $this);
 
 		$this->extend('updateCMSFields',$fields);
@@ -760,7 +760,7 @@ class Order extends DataObject {
 
 	/**
 	 * IT is important to have both IsCancelled and getIsCancelled.
-	 **/ 
+	 **/
 	public function getIsCancelled() {
 		return $this->CancelledByID ? TRUE : FALSE;
 	}
@@ -880,7 +880,7 @@ class Order extends DataObject {
 				$address->write();
 				//save order
 				$this->$variableName = $address->ID;
-				$this->write();	
+				$this->write();
 				return $address;
 			}
 		}
@@ -1093,6 +1093,53 @@ class Order extends DataObject {
 		$this->extend("onCalculate");
 	}
 
+
+
+	/**
+	 * Returns the subtotal of the modifiers for this order.
+	 * If a modifier appears in the excludedModifiers array, it is not counted.
+	 *
+	 * @param string|array $excluded - Class(es) of modifier(s) to ignore in the calculation.
+	 * @param Boolean $stopAtExcludedModifier  - when this flag is TRUE, we stop adding the modifiers when we reach an excluded modifier.
+	 *
+	 * @return Float
+	 */
+	function ModifiersSubTotal($excluded = null, $stopAtExcludedModifier = false) {
+		$total = 0;
+		if($modifiers = $this->Modifiers()) {
+			foreach($modifiers as $modifier) {
+				if(!$modifier->IsRemoved()) { //we just double-check this...
+					if(is_array($excluded) && in_array($modifier->ClassName, $excluded)) {
+						if($stopAtExcludedModifier) {
+							break;
+						}
+						continue;
+					}
+					elseif($excluded && ($modifier->ClassName == $excluded)) {
+						if($stopAtExcludedModifier) {
+							break;
+						}
+						continue;
+					}
+					$total += $modifier->CalculationTotal();
+				}
+			}
+		}
+		return $total;
+	}
+
+	/**
+	 *
+	 * @param string|array $excluded - Class(es) of modifier(s) to ignore in the calculation.
+	 * @param Boolean $stopAtExcludedModifier  - when this flag is TRUE, we stop adding the modifiers when we reach an excluded modifier.
+	 *
+	 *@return Currency (DB Object)
+	 **/
+	function ModifiersSubTotalAsCurrencyObject($excluded = null, $stopAtExcludedModifier = false) {
+		return DBField::create('Currency',$this->ModifiersSubTotal($excluded, $stopAtExcludedModifier));
+	}
+
+
 	/**
 	 * @param String $className: class name for the modifier
 	 * @return DataObject (OrderModifier)
@@ -1164,7 +1211,7 @@ class Order extends DataObject {
 	public function canView($member = null) {
 		if(!$this->ID ) {
 			return true;
-		}		
+		}
 		$member = $this->getMemberForCanFunctions($member);
 		//check if this has been "altered" in a DataObjectDecorator
 		$extended = $this->extendedCan('canView', $member->ID);
@@ -1198,7 +1245,7 @@ class Order extends DataObject {
 		if($this->canView($member) && $this->MyStep()->CustomerCanEdit) {
 			return true;
 		}
-		
+
 		$member = $this->getMemberForCanFunctions($member);
 		$extended = $this->extendedCan('canEdit', $member->ID);
 		if($extended !== null) {return $extended;}
@@ -1206,7 +1253,7 @@ class Order extends DataObject {
 		if(EcommerceRole::current_member_is_shop_admin($member)) {
 			return true;
 		}
-		
+
 		if(!$this->canView($member) || $this->IsCancelled()) {
 			return false;
 		}
@@ -1296,7 +1343,7 @@ class Order extends DataObject {
 		return null;
 
 	}
-	
+
 
 
 
@@ -1308,10 +1355,7 @@ class Order extends DataObject {
    * 8. GET METHODS (e.g. Total, SubTotal, Title, etc...)
 *******************************************************/
 
-	function OrderEmail(){
-		return $this->getOrderEmail();
-	}
-
+	function OrderEmail(){return $this->getOrderEmail();}
 	function getOrderEmail() {
 		if($this->IsSubmitted()) {
 			if($this->BillingAddressID && $this->BillingAddress()) {
@@ -1325,20 +1369,14 @@ class Order extends DataObject {
 		}
 	}
 
-	function EmailLink(){
-		return $this->getEmailLink();
-	}
-
+	function EmailLink(){return $this->getEmailLink();}
 	function getEmailLink() {
 		if($this->IsSubmitted()) {
 			return Director::AbsoluteURL(OrderConfirmationPage::get_email_link($this->ID));
 		}
 	}
 
-	function PrintLink(){
-		return $this->getPrintLink();
-	}
-
+	function PrintLink(){return $this->getPrintLink();}
 	function getPrintLink() {
 		if(!isset($_REQUEST["print"])) {
 			if($this->IsSubmitted()) {
@@ -1347,17 +1385,14 @@ class Order extends DataObject {
 		}
 	}
 
-	function RetrieveLink(){
-		return $this->getRetrieveLink();
-	}
-
+	function RetrieveLink(){return $this->getRetrieveLink();}
 	function getRetrieveLink() {
 		if(!$this->IsSubmitted) {
 			return CheckoutPage::find_link();
 		}
 		else {
 			if(!$this->SessionID) {
-				
+
 				$this->SessionID = session_id();
 				$this->write();
 			}
@@ -1366,18 +1401,11 @@ class Order extends DataObject {
 	}
 
 	/**
-	 * see Order::Title()
-	 *@return String
-	 **/
-	function getTitle() {
-		return $this->Title();
-	}
-
-	/**
 	 * A "Title" for the order, which summarises the main details (date, and customer) in a string.
 	 *@return String
 	 **/
-	function Title() {
+	function Title() {return $this->getTitle();}
+	function getTitle() {
 		if($this->ID) {
 			$v = $this->i18n_singular_name(). " #$this->ID - ".$this->dbObject('Created')->Nice();
 			if($this->CancelledByID) {
@@ -1395,55 +1423,14 @@ class Order extends DataObject {
 		return $v;
 	}
 
-	/**
-	 * Returns the subtotal of the modifiers for this order.
-	 * If a modifier appears in the excludedModifiers array, it is not counted.
-	 *
-	 * @param string|array $excluded - Class(es) of modifier(s) to ignore in the calculation.
-	 * @param Boolean $stopAtExcludedModifier  - when this flag is TRUE, we stop adding the modifiers when we reach an excluded modifier.
-	 *
-	 * @return Float
-	 */
-	function ModifiersSubTotal($excluded = null, $stopAtExcludedModifier = false) {
-		$total = 0;
-		if($modifiers = $this->Modifiers()) {
-			foreach($modifiers as $modifier) {
-				if(!$modifier->IsRemoved()) { //we just double-check this...
-					if(is_array($excluded) && in_array($modifier->ClassName, $excluded)) {
-						if($stopAtExcludedModifier) {
-							break;
-						}
-						continue;
-					}
-					elseif($excluded && ($modifier->ClassName == $excluded)) {
-						if($stopAtExcludedModifier) {
-							break;
-						}
-						continue;
-					}
-					$total += $modifier->CalculationTotal();
-				}
-			}
-		}
-		return $total;
-	}
 
-	/**
-	 *
-	 * @param string|array $excluded - Class(es) of modifier(s) to ignore in the calculation.
-	 * @param Boolean $stopAtExcludedModifier  - when this flag is TRUE, we stop adding the modifiers when we reach an excluded modifier.
-	 *
-	 *@return Currency (DB Object)
-	 **/
-	function ModifiersSubTotalAsCurrencyObject($excluded = null, $stopAtExcludedModifier = false) {
-		return DBField::create('Currency',$this->ModifiersSubTotal($excluded, $stopAtExcludedModifier));
-	}
 
 	/**
 	 * Returns the subtotal of the items for this order.
 	 *@return float
 	 */
-	function SubTotal() {
+	function SubTotal(){return $this->getSubTotal();}
+	function getSubTotal() {
 		$result = 0;
 		if($items = $this->Items()) {
 			foreach($items as $item) {
@@ -1454,6 +1441,7 @@ class Order extends DataObject {
 		}
 		return $result;
 	}
+
 
 	/**
 	 *
@@ -1467,9 +1455,11 @@ class Order extends DataObject {
   	 * Returns the total cost of an order including the additional charges or deductions of its modifiers.
 	 *@return float
   	 */
-	function Total() {
+	function Total() {return $this->getTotal();}
+	function getTotal() {
 		return $this->SubTotal() + $this->ModifiersSubTotal();
 	}
+
 
 	/**
 	 *
@@ -1485,7 +1475,8 @@ class Order extends DataObject {
 	 *
 	 *@return float
 	 **/
-	function TotalOutstanding(){
+	function TotalOutstanding(){return $this->getTotalOutstanding();}
+	function getTotalOutstanding(){
 		$total = $this->Total();
 		$paid = $this->TotalPaid();
 		$outstanding = $total - $paid;
@@ -1515,7 +1506,8 @@ class Order extends DataObject {
 	/**
 	 *@return float
 	 */
-	function TotalPaid() {
+	function TotalPaid(){return $this->getTotalPaid();}
+	function getTotalPaid() {
 		$paid = 0;
 		if($payments = $this->Payments()) {
 			foreach($payments as $payment) {
@@ -1526,6 +1518,7 @@ class Order extends DataObject {
 		}
 		return $paid;
 	}
+
 
 	/**
 	 *
@@ -1539,7 +1532,8 @@ class Order extends DataObject {
 	 * returns the total number of OrderItems (not modifiers).
 	 *@return Integer
 	 **/
-	public function TotalItems() {
+	public function TotalItems(){return $this->getTotalItems();}
+	public function getTotalItems() {
 		if(self::$total_items === null) {
 			//to do, why do we check if you can edit ????
 			self::$total_items = DB::query("
@@ -1554,11 +1548,13 @@ class Order extends DataObject {
 		return self::$total_items;
 	}
 
+
 	/**
 	 * returns the total number of OrderItems (not modifiers) times their respectective quantities.
 	 *@return Integer
 	 **/
-	function TotalItemsTimesQuantity() {
+	function TotalItemsTimesQuantity() {return $this->getTotalItemsTimesQuantity();}
+	function getTotalItemsTimesQuantity() {
 		$qty = 0;
 		if($orderItems = $this->Items()) {
 			foreach($orderItems as $item) {
@@ -1568,11 +1564,13 @@ class Order extends DataObject {
 		return $qty;
 	}
 
+
 	/**
 	 * Returns the country code for the country that applies to the order.
 	 *@return String (country code)
 	 **/
-	public function Country() {
+	public function Country() {return $this->getCountry();}
+	public function getCountry() {
 		$countryCodes = array();
 		if($this->BillingAddressID) {
 			if($billingAddress = DataObject::get_by_id("BillingAddress", $this->BillingAddressID)) {
@@ -1600,16 +1598,19 @@ class Order extends DataObject {
 	 * returns name of coutry
 	 *@return String - country name
 	 **/
-	public function FullNameCountry() {
+	public function FullNameCountry() {return $this->getFullNameCountry();}
+	public function getFullNameCountry() {
 		return EcommerceCountry::find_title($this->Country());
 	}
+
 
 	/**
 	 * Returns the region that applies to the order.
 	 * we check both billing and shipping, in case one of them is empty.
 	 *@return DataObject | Null (EcommerceRegion)
 	 **/
-	public function Region() {
+	function Region(){return $this->getRegion();}
+	public function getRegion() {
 		$regionIDs = array();
 		if($this->BillingAddressID) {
 			if($billingAddress = DataObject::get_by_id("BillingAddress", $this->BillingAddressID)) {
@@ -1642,17 +1643,7 @@ class Order extends DataObject {
 	 *
 	 *@return Boolean
 	 **/
-	function IsSubmitted() {
-		return $this->getIsSubmitted();
-	}
-
-	/**
-	 * we MUST have this function in addtion to IsSubmitted
-
-	 * Casted variable - has the order been submitted?
-	 *
-	 *@return Boolean
-	 **/
+	function IsSubmitted(){return $this->getIsSubmitted();}
 	function getIsSubmitted() {
 		$className = OrderStatusLog::get_order_status_log_class_used_for_submitting_order();
 		$submissionLog = DataObject::get_one($className, "\"OrderID\" = ".$this->ID, false);
@@ -1663,24 +1654,19 @@ class Order extends DataObject {
 			return false;
 		}
 	}
-		
+
+
 	/**
 	 * Casted variable - does the order have a potential shipping address?
 	 *
 	 *@return Boolean
 	 **/
-	function CanHaveShippingAddress() {
-		return $this->getCanHaveShippingAddress();
-	}
-	
-	/**
-	 * Casted variable - does the order have a potential shipping address?
-	 *
-	 *@return Boolean
-	 **/
+	function CanHaveShippingAddress() {return $this->getCanHaveShippingAddress();}
 	function getCanHaveShippingAddress() {
 		return OrderAddress::get_use_separate_shipping_address();
 	}
+
+
 
 	/**
 	 * returns the link to view the Order
@@ -1776,7 +1762,7 @@ class Order extends DataObject {
 		$this->SubTotal = $this->SubTotal();
 		$this->TotalPaid = $this->TotalPaid();
 		*/
-		
+
 		return $this;
 	}
 
@@ -1917,10 +1903,10 @@ class Order extends DataObject {
 			}
 		}
 		return;
-		
+
 		//THE REST WAS GIVING ERRORS - POSSIBLY DUE TO THE FUNNY RELATIONSHIP (one-one, two times...)
 		if($billingAddress = $this->BillingAddress()) {
-			if($billingAddress->exists()) {			
+			if($billingAddress->exists()) {
 				$billingAddress->delete();
 				$billingAddress->destroy();
 			}
@@ -1931,7 +1917,7 @@ class Order extends DataObject {
 				$shippingAddress->destroy();
 			}
 		}
-		
+
 		/**
 		 * THIS SHOULD NOT BE DELETED - ORDER SHOULD BE CANCELLED - NOT DELETED
 		if($statuslogs = $this->OrderStatusLogs()){
@@ -1952,9 +1938,9 @@ class Order extends DataObject {
 				$email->destroy();
 			}
 		}
-		* 
+		*
 		**/
-		
+
 	}
 
 

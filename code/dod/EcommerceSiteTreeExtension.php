@@ -54,7 +54,7 @@ class EcommerceSiteTreeExtension extends DataObjectDecorator {
 	function getEcommerceMenuTitle() {
 		return $this->owner->getMenuTitle();
 	}
-
+	function EcommerceMenuTitle(){return $this->getEcommerceMenuTitle();}
 
 }
 

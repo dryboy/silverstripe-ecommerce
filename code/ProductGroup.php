@@ -31,8 +31,6 @@ class ProductGroup extends Page {
 
 	public static $defaults = array();
 
-	public static $casting = array();
-
 	public static $default_child = 'Product';
 
 	public static $icon = 'ecommerce/images/icons/productgroup';

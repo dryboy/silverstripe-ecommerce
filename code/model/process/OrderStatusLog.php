@@ -25,33 +25,37 @@ class OrderStatusLog extends DataObject {
 	);
 
 	public static $has_one = array(
-		'Author' => 'Member',
-		'Order' => 'Order'
+		"Author" => "Member",
+		"Order" => "Order"
 	);
 
 	public static $casting = array(
 		"CustomerNote" => "HTMLText",
 		"Type" => "Varchar",
-		'EmailCustomerNice' => 'Varchar',
-		'EmailSentNice' => 'Varchar',
-		'InternalUseOnlyNice' => 'Varchar'
+		"EmailCustomerNice" => "Varchar",
+		"EmailSentNice" => "Varchar",
+		"InternalUseOnlyNice" => "Varchar"
 	);
 
 	public static $summary_fields = array(
 		"Created" => "Date",
 		"Type" => "Type",
 		"Title" => "Title",
-		'EmailSentNice' => 'Email sent to customer',
-		'InternalUseOnlyNice' => 'Internal use only'
+		"EmailSentNice" => "Email sent to customer",
+		"InternalUseOnlyNice" => "Internal use only"
 	);
 
 	public static $defaults = array(
 		"InternalUseOnly" => true
 	);
 
-	function EmailCustomerNice() {if($this->EmailCustomer) { return _t("OrderStatusLog.YES", "Yes");} return _t("OrderStatusLog.No", "No");}
-	function EmailSentNice() {if($this->EmailSent) { return _t("OrderStatusLog.YES", "Yes");} return _t("OrderStatusLog.No", "No");}
-	function InternalUseOnlyNice() {if($this->InternalUseOnly) { return _t("OrderStatusLog.YES", "Yes");} return _t("OrderStatusLog.No", "No");}
+	function EmailCustomerNice() {return $this->getEmailCustomerNice();}
+	function EmailSentNice() {return $this->getEmailSentNice();}
+	function InternalUseOnlyNice() {return $this->getInternalUseOnlyNice();}
+
+	function getEmailCustomerNice() {if($this->EmailCustomer) { return _t("OrderStatusLog.YES", "Yes");} return _t("OrderStatusLog.No", "No");}
+	function getEmailSentNice() {if($this->EmailSent) { return _t("OrderStatusLog.YES", "Yes");} return _t("OrderStatusLog.No", "No");}
+	function getInternalUseOnlyNice() {if($this->InternalUseOnly) { return _t("OrderStatusLog.YES", "Yes");} return _t("OrderStatusLog.No", "No");}
 
 	/**
 	 * $available_log_classes_array tells us what order log classes are to be used.
@@ -189,6 +193,10 @@ class OrderStatusLog extends DataObject {
 	*@return String
 	**/
 	function Type() {
+		return $this->Type();
+	}
+
+	function getType() {
 		return $this->i18n_singular_name();
 	}
 
@@ -234,6 +242,10 @@ class OrderStatusLog extends DataObject {
 	*@return String
 	**/
 	function CustomerNote() {
+		return $this->getCustomerNote();
+	}
+
+	function getCustomerNote() {
 		return $this->Note;
 	}
 
@@ -292,6 +304,10 @@ class OrderStatusLog_Submitted extends OrderStatusLog {
 	}
 
 	function HTMLRepresentation(){
+		return $this->getHTMLRepresentation();
+	}
+
+	function getHTMLRepresentation(){
 		if($this->OrderAsHTML) {
 			return $this->OrderAsHTML;
 		}
@@ -303,7 +319,7 @@ class OrderStatusLog_Submitted extends OrderStatusLog {
 		}
 	}
 
-	
+
 }
 class OrderStatusLog_Cancel extends OrderStatusLog {
 
@@ -311,7 +327,7 @@ class OrderStatusLog_Cancel extends OrderStatusLog {
 		"Title" => "Order Cancelled",
 		"EmailCustomer" => false,
 		"EmailSent" => false,
-		"InternalUseOnly" => false		
+		"InternalUseOnly" => false
 	);
 
 	public static $singular_name = "Cancelled Order";
@@ -473,9 +489,14 @@ class OrderStatusLog_DispatchPhysicalOrder extends OrderStatusLog_Dispatch {
 	*@return String
 	*@To do: move formatting to template
 	**/
-	function CustomerNote() {
+	function getCustomerNote() {
 		return $this->renderWith("LogDispatchPhysicalOrderCustomerNote");
 	}
+
+	function CustomerNote() {
+		return $this->getCustomerNote();
+	}
+
 }
 
 /**
@@ -530,7 +551,8 @@ class OrderStatusLog_PaymentCheck extends OrderStatusLog {
 		"PaymentConfirmedNice" => "Varchar"
 	);
 
-	function PaymentConfirmedNice() {if($this->PaymentConfirmed) {return _t("OrderStatusLog.YES", "yes");}return _t("OrderStatusLog.No", "no");}
+	function PaymentConfirmedNice() {return $this->getPaymentConfirmedNice();}
+	function getPaymentConfirmedNice() {if($this->PaymentConfirmed) {return _t("OrderStatusLog.YES", "yes");}return _t("OrderStatusLog.No", "no");}
 
 	public static $singular_name = "Payment Confirmation";
 		function i18n_singular_name() { return _t("OrderStatusLog.PAYMENTCONFIRMATION", "Payment Confirmation");}
@@ -561,7 +583,7 @@ class OrderStatusLog_PaymentCheck extends OrderStatusLog {
 	*
 	*@return String
 	**/
-	function CustomerNote() {
+	function getCustomerNote() {
 		if($this->Author()) {
 			if($this->PaymentConfirmed) {
 				return _t("OrderStatus.PAYMENTCONFIRMEDBY", "Payment Confirmed by: ").$this->Author()->getTitle()." | ".$this->Created;
@@ -570,6 +592,10 @@ class OrderStatusLog_PaymentCheck extends OrderStatusLog {
 				return _t("OrderStatus.PAYMENTDECLINEDBY", "Payment DECLINED by: ").$this->Author()->getTitle()." | ".$this->Created;
 			}
 		}
+	}
+
+	function CustomerNote(){
+		return $this->getCustomerNote();
 	}
 
 }

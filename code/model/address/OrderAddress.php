@@ -105,7 +105,7 @@ class OrderAddress extends DataObject {
 					$regionField = new HiddenField($name, '', 0);
 				}
 			}
-			
+
 		}
 		else {
 			//adding region field here as hidden field to make the code easier below...
@@ -135,7 +135,7 @@ class OrderAddress extends DataObject {
 
 	/**
   	 * Saves region - both shipping and billing fields are saved here for convenience sake (only one actually gets saved)
-  	 * NOTE: do not call this method SetCountry as this has a special meaning! * 
+  	 * NOTE: do not call this method SetCountry as this has a special meaning! *
   	 * @param Integer -  RegionID
   	 **/
 	public function SetRegionFields($regionID) {
@@ -146,7 +146,7 @@ class OrderAddress extends DataObject {
 
 	/**
   	 * Saves country - both shipping and billing fields are saved here for convenience sake (only one actually gets saved)
-  	 * NOTE: do not call this method SetCountry as this has a special meaning! 
+  	 * NOTE: do not call this method SetCountry as this has a special meaning!
   	 * @param String - CountryCode - e.g. NZ
   	 **/
 	public function SetCountryFields($countryCode) {
@@ -162,6 +162,8 @@ class OrderAddress extends DataObject {
 		$fieldLast = $this->$lastNameField;
 		return $fieldFirst.' '.$fieldLast;
 	}
+
+	public function FullName(){ return $this->getFullName();}
 
 	/**
 	 * Copies the last address used by the member.
