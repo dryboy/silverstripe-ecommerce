@@ -97,7 +97,15 @@ class OrderModifier extends OrderAttribute {
 	 **/
 	protected static $do_not_add_automatically = false;
 		static function set_do_not_add_automatically($b) {self::$do_not_add_automatically = $b;}
-		static function get_do_not_add_automatically() {return self::$do_not_add_automatically;}
+		static function get_do_not_add_automatically() {
+			if(function_exists("get_called_class")) {
+				$class = get_called_class();
+				return $class::$do_not_add_automatically;
+			}
+			else {
+				self::$do_not_add_automatically;
+			}
+		}
 
 	/**
 	 * $can_be_removed Identifies whether a modifier can be removed by the user.
@@ -105,7 +113,15 @@ class OrderModifier extends OrderAttribute {
 	 **/
 	protected static $can_be_removed = false;
 		static function set_can_be_removed($b) {self::$can_be_removed = $b;}
-		static function get_can_be_removed() {return $this->stat("can_be_removed");}
+		static function get_can_be_removed() {
+			if(function_exists("get_called_class")) {
+				$class = get_called_class();
+				return $class::$can_be_removed;
+			}
+			else {
+				self::$can_be_removed;
+			}
+		}
 
 	/**
 	 * we use this variable to make sure that the parent::runUpdate() is called in all child classes
