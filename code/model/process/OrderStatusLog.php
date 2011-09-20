@@ -196,7 +196,7 @@ class OrderStatusLog extends DataObject {
 	*
 	*@return String
 	**/
-	function Type() {return $this->Type();}
+	function Type() {return $this->getType();}
 	function getType() {
 		return $this->i18n_singular_name();
 	}
