@@ -710,7 +710,7 @@ class OrderStep_Paid extends OrderStep {
 			//LINE BELOW IS NOT REQUIRED
 			//OrderStatusLog::add_available_log_classes_array($className);
 			$header = _t("OrderStep.SUBMITORDER", "Order NOT Paid");
-			$msg = _t("OrderStep.ORDERNOTPAID", "This order can not be completed, because it has not been paid.");
+			$msg = _t("OrderStep.ORDERNOTPAID", "This order can not be completed, because it has not been paid. You can either create a payment or change the status of any existing payment to <i>success</i>.");
 			$fields->addFieldToTab("Root.Next", new HeaderField("NotPaidHeader", $header), "StatusID");
 			$fields->addFieldToTab("Root.Next", new LiteralField("NotPaidMessage", '<p>'.$msg.'</p>'), "StatusID");
 		}
