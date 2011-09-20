@@ -103,8 +103,8 @@ class OrderStep extends DataObject {
 	function ShowAsCompletedOrderNice() {return $this->getShowAsCompletedOrderNice();}
 	function getShowAsCompletedOrderNice() {if($this->ShowAsCompletedOrder) {return _t("OrderStep.YES", "Yes");}return _t("OrderStep.NO", "No");}
 
-	function HideStepFromCustomer() {return $this->getHideStepFromCustomer();}
-	function getHideStepFromCustomer() {if($this->HideStepFromCustomer) {return _t("OrderStep.YES", "Yes");}return _t("OrderStep.NO", "No");}
+	function HideStepFromCustomerNice() {return $this->getHideStepFromCustomerNice();}
+	function getHideStepFromCustomerNice() {if($this->HideStepFromCustomer) {return _t("OrderStep.YES", "Yes");}return _t("OrderStep.NO", "No");}
 
 	public static $singular_name = "Order Step";
 		function i18n_singular_name() { return _t("OrderStep.ORDERSTEP", "Order Step");}
