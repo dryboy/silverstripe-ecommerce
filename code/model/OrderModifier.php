@@ -100,7 +100,8 @@ class OrderModifier extends OrderAttribute {
 		static function get_do_not_add_automatically() {
 			if(function_exists("get_called_class")) {
 				$class = get_called_class();
-				return $class::$do_not_add_automatically;
+				self::$do_not_add_automatically;
+				//return $class::$do_not_add_automatically;
 			}
 			else {
 				self::$do_not_add_automatically;
@@ -116,7 +117,8 @@ class OrderModifier extends OrderAttribute {
 		static function get_can_be_removed() {
 			if(function_exists("get_called_class")) {
 				$class = get_called_class();
-				return $class::$can_be_removed;
+				self::$can_be_removed;
+				//return $class::$can_be_removed;
 			}
 			else {
 				self::$can_be_removed;
