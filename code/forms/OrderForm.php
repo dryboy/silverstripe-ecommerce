@@ -60,7 +60,7 @@ class OrderForm extends Form {
 
 		//  ________________  2) Log in / vs Create Account fields - RIGHT-HAND-SIDE fields
 
-		
+
 		$rightFields = new CompositeField();
 		$rightFields->setID('RightOrder');
 		if(!$member || ($member && (!$member->exists() || !$member->Password)) && !$member->IsAdmin()) {
@@ -95,7 +95,7 @@ class OrderForm extends Form {
 
 		//  ________________  3) Payment fields - BOTTOM FIELDS
 
-		
+
 		$bottomFields = new CompositeField();
 		$bottomFields->setID('BottomOrder');
 		$totalAsCurrencyObject = $order->TotalAsCurrencyObject(); //should instead be $totalobj = $order->dbObject('Total');
@@ -113,7 +113,7 @@ class OrderForm extends Form {
 
 		//  ________________  4) FINAL FIELDS
 
-		
+
 		$finalFields = new CompositeField();
 		$finalFields->setID('FinalFields');
 		$finalFields->push(new HeaderField(_t('OrderForm.COMPLETEORDER','Complete Order'), 3));
@@ -127,14 +127,14 @@ class OrderForm extends Form {
 
 		//  ________________  5) Put all the fields in one FieldSet
 
-		
+
 		$fields = new FieldSet($rightFields, $leftFields, $bottomFields, $finalFields);
 
 
 
 		//  ________________  6) Actions and required fields creation + Final Form construction
 
-		
+
 		$actions = new FieldSet(new FormAction('processOrder', _t('OrderForm.PROCESSORDER','Place order and make payment')));
 		$requiredFields = new OrderForm_Validator($requiredFields);
 		$this->extend('updateValidator',$requiredFields);
@@ -157,10 +157,12 @@ class OrderForm extends Form {
 			}
 		}
 		if ($member) {
+			//MEMBER ALSO HAS COUNTRY, SO WE FIX THIS HERE...
+			$member->Country = $billingAddress->Country;
 			$this->loadDataFrom($member);
 		}
 
-		
+
 		//allow updating via decoration
 		$this->extend('updateOrderForm',$this);
 
@@ -264,7 +266,7 @@ class OrderForm extends Form {
 			}
 		}
 
-		
+
 		//ORDER
 		//saving customer note, UseShippingAddress, country...
 		$form->saveInto($order);
@@ -547,7 +549,7 @@ class OrderForm_Cancel extends Form {
 				'Sorry, order could not be cancelled.'
 			),
 			'bad'
-		);		
+		);
 		Director::redirectBack();
 		return false;
 	}
