@@ -185,7 +185,8 @@ HTML;
 
 	public function UnitPrice() {return $this->getUnitPrice();}
 	public function getUnitPrice() {
-		user_error("OrderItem::UnitPrice() called. Please implement UnitPrice() and getUnitPrice on $this->class", E_USER_ERROR);
+		return 0;
+		//NOTE: user_error("OrderItem::UnitPrice() called. Please implement UnitPrice() and getUnitPrice on $this->class", E_USER_NOTICE);
 	}
 
 	/**

@@ -272,7 +272,6 @@ class OrderAddress extends DataObject {
 		return $prefix;
 	}
 
-
 	function onBeforeWrite() {
 		parent::onBeforeWrite();
 		if(!$this->OrderID && $order = ShoppingCart::current_order()) {

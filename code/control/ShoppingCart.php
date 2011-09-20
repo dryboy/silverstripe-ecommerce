@@ -97,7 +97,7 @@ class ShoppingCart extends Object{
 	 *@param DataObject $buyable - the buyable (generally a product) being added to the cart
 	 *@param Integer $quantity - number of items add.
 	 *@param $parameters - array of parameters to target a specific order item. eg: group=1, length=5
-	 *@return false | DataObject (OrderItem) 
+	 *@return false | DataObject (OrderItem)
 	 */
 	public function addBuyable($buyable, $quantity = 1, $parameters = array()){
 		$item = $this->prepareQuantityChange($mustBeExistingItem = false, $buyable, $quantity, $parameters);
@@ -115,17 +115,17 @@ class ShoppingCart extends Object{
 			}
 			$this->addMessage($msg,'good');
 			return $item;
-			
+
 		}
 		$this->addMessage(_t("ShoppingCart.ITEMCOULDNOTBEADDED", "Item could not be added."),'bad');
 	}
-	
+
 	/**
 	 * Sets quantity for an item in the cart.
 	 *@param DataObject $buyable - the buyable (generally a product) being added to the cart
 	 *@param Integer $quantity - number of items add.
 	 *@param Array $parameters - array of parameters to target a specific order item. eg: group=1, length=5
-	 *@return false | DataObject (OrderItem) 
+	 *@return false | DataObject (OrderItem)
 	 */
 	function setQuantity($buyable, $quantity, $parameters = array()) {
 		$item = $this->prepareQuantityChange($mustBeExistingItem = true, $buyable, $quantity, $parameters);
@@ -143,7 +143,7 @@ class ShoppingCart extends Object{
 	 *@param DataObject $buyable - the buyable (generally a product) being added to the cart
 	 *@param Integer $quantity - number of items add.
 	 *@param Array $parameters - array of parameters to target a specific order item. eg: group=1, length=5
-	 *@return false | DataObject (OrderItem) 
+	 *@return false | DataObject (OrderItem)
 	 */
 	public function decrementBuyable($buyable,$quantity = 1, $parameters = array()){
 		$item = $this->prepareQuantityChange($mustBeExistingItem = false, $buyable, $quantity, $parameters);
@@ -188,8 +188,8 @@ class ShoppingCart extends Object{
 	 *@param Boolean $mustBeExistingItems - if false, the Order Item get created if it does not exist - if TRUE the order item is searched for and an error shows if there is no Order item.
 	 *@param DataObject $buyable - the buyable (generally a product) being added to the cart
 	 *@param Integer $quantity - number of items add.
-	 *@param Array $parameters - array of parameters to target a specific order item. eg: group=1, length=5* 
-	 *@return boolean | DataObject ($orderItem) 
+	 *@param Array $parameters - array of parameters to target a specific order item. eg: group=1, length=5*
+	 *@return boolean | DataObject ($orderItem)
 	 */
 	protected function prepareQuantityChange($mustBeExistingItem = true, $buyable, $quantity = 1, $parameters = array()) {
 		if(!$buyable) {
@@ -210,13 +210,13 @@ class ShoppingCart extends Object{
 			$item->delete();
 			return false;
 		}
-		$quantity = intval($quantity);		
+		$quantity = intval($quantity);
 		if($quantity < 0 || (!$quantity && $quantity !== 0)) {
 			$this->addMessage(_t("ShoppingCart.INVALIDQUANTITY", "Invalid quantity."),'warning');
 			return false;
 		}
 		return $item;
-	} 
+	}
 
 	/**
 	 * Helper function for making / retrieving order items.
@@ -634,7 +634,7 @@ class ShoppingCart_Controller extends Controller{
 	}
 
 	/**
-	 * Removes all of a specific item AND return back 
+	 * Removes all of a specific item AND return back
 	 *@return Mixed - if the request is AJAX, it returns JSON - CartResponse::ReturnCartData(); If it is not AJAX it redirects back to requesting page.
 	 */
 	public function removeallitemandedit(){
@@ -699,7 +699,7 @@ class ShoppingCart_Controller extends Controller{
 	function clear() {
 		$this->cart->clear();
 		Director::redirectBack();
-		exit();
+		return;
 	}
 
 	function clearandlogout() {
@@ -708,7 +708,7 @@ class ShoppingCart_Controller extends Controller{
 			$m->logout();
 		}
 		Director::redirectBack();
-		exit();
+		return;
 	}
 
 	/**
@@ -740,7 +740,7 @@ class ShoppingCart_Controller extends Controller{
 			if(Buyable::is_buyable($className)) {
 				$obj = DataObject::get_by_id($className,intval($buyableID)); //TODO: possible unsafe class name being passed...do proper subclass check
 				if($obj->ClassName == $className) {
-					
+
 					return $obj;
 				}
 			}
