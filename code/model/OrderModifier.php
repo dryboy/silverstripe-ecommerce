@@ -148,7 +148,7 @@ class OrderModifier extends OrderAttribute {
 
 
 	public static function init_for_order($className) {
-		user_error("this function has been depreciated, instead, use $myModifier->init()", E_USER_ERROR);
+		user_error("the init_for_order method has been depreciated, instead, use \$myModifier->init()", E_USER_ERROR);
 		return false;
 	}
 
@@ -373,7 +373,7 @@ class OrderModifier extends OrderAttribute {
 // ######################################## ***  calculate database fields ( = protected function Live[field name]() { ....}
 
 	protected function LiveName() {
-		user_error("This function has be defined in ...".$this->ClassName, E_USER_NOTICE);
+		user_error("The \"LiveName\" method has be defined in ...".$this->ClassName, E_USER_NOTICE);
 		return self::$defaults["Name"];
 	}
 

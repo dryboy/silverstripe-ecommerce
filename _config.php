@@ -78,7 +78,7 @@ Buyable::add_class("Product");
 //ShoppingCart_Controller::set_response_class("EcommerceResponse");
 
 // * * * PRODUCTS
-//ProductsAndGroupsModelAdmin::set_managed_models(array(("Product", "ProductGroup");
+//ProductsAndGroupsModelAdmin::set_managed_models(array("Product", "ProductGroup"));
 //SS_Report::register("SideReport", "EcommerceSideReport_AllProducts");
 //SS_Report::register("SideReport", "EcommerceSideReport_FeaturedProducts");
 //SS_Report::register("SideReport", "EcommerceSideReport_NoImageProducts");
