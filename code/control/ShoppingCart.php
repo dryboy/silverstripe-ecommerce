@@ -210,7 +210,9 @@ class ShoppingCart extends Object{
 			return false;
 		}
 		if(!$buyable->canPurchase()) {
-			$item->delete();
+			if($item->ID) {
+				$item->delete();
+			}
 			return false;
 		}
 		$quantity = intval($quantity);
