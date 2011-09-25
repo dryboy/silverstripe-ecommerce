@@ -100,6 +100,10 @@ class ShoppingCart extends Object{
 	 *@return false | DataObject (OrderItem)
 	 */
 	public function addBuyable($buyable, $quantity = 1, $parameters = array()){
+		if(!$buyable->canPurchase()) {
+			$this->addMessage(_t("ShoppingCart.ITEMCOULDNOTBEADDED", "This item is not for sale."),'bad');
+			return false;
+		}
 		$item = $this->prepareQuantityChange($mustBeExistingItem = false, $buyable, $quantity, $parameters);
 		if($item){ //find existing order item or make one
 			$item->Quantity += $quantity;
@@ -115,7 +119,6 @@ class ShoppingCart extends Object{
 			}
 			$this->addMessage($msg,'good');
 			return $item;
-
 		}
 		$this->addMessage(_t("ShoppingCart.ITEMCOULDNOTBEADDED", "Item could not be added."),'bad');
 	}

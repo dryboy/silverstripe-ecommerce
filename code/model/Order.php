@@ -318,16 +318,8 @@ class Order extends DataObject {
 		if($this->StatusID) {
 			//do nothing
 		}
-		else {
-			$firstStep = DataObject::get_one("OrderStep");
-			if($firstStep) {
-				$this->StatusID = $firstStep->ID;
-				if($this->StatusID) {
-					//rerun with valid StatusID in place
-					return $this->validate();
-				}
-			}
-			return new ValidationResult(false, _t("Order.MUSTSETSTATUS", "You must set a status"));
+		elseif(DataObject::get_on("OrderStep")) {
+			//return new ValidationResult(false, _t("Order.MUSTSETSTATUS", "You must set a status.  This could not be set..."));
 		}
 		return parent::validate();
 	}
@@ -1850,8 +1842,15 @@ class Order extends DataObject {
 	 **/
 	function populateDefaults() {
 		parent::populateDefaults();
-		//@Session::start();
-		//$this->SessionID = Session_id();
+		if($this->StatusID) {
+			//do nothing
+		}
+		else {
+			$firstStep = DataObject::get_one("OrderStep");
+			if($firstStep) {
+				$this->StatusID = $firstStep->ID;
+			}
+		}
 	}
 
 	/**
