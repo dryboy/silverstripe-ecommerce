@@ -90,12 +90,12 @@ class ProductGroup extends Page {
 					new NumericField("NumberOfProductsPerPage", _t("ProductGroup.NUMBEROFPRODUCTS", "Number of products per page")),
 					new HeaderField("whatproductsshown", _t("ProductGroup.WHATPRODUCTSSHOWN", 'How should products be presented in the child groups?')),
 					new DropdownField(
-	  					'ChildGroupsPermission',
-	  					'Permission',
-	  					$this->dbObject('ChildGroupsPermission')->enumValues(),
-	  					'',
-	  					null,
-	  					_t("ProductGroup.DONOTSHOWPRODUCTS", 'Don\'t Show Any Products')
+						'ChildGroupsPermission',
+						'Permission',
+						$this->dbObject('ChildGroupsPermission')->enumValues(),
+						'',
+						null,
+						_t("ProductGroup.DONOTSHOWPRODUCTS", 'Don\'t Show Any Products')
 					)
 				)
 			);
@@ -113,7 +113,7 @@ class ProductGroup extends Page {
 	 * @return DataObjectSet | Null
 	 */
 	function ProductsShowable($extraFilter = '', $recursive = true){
-		$filter = ""; //
+		$filter = " AND \"ShowInSearch\" = 1"; //
 		$join = "";
 
 		if($extraFilter) {
@@ -170,6 +170,7 @@ class ProductGroup extends Page {
 		return $products;
 	}
 
+
 	/**
 	 *@return Integer
 	 **/
@@ -196,9 +197,12 @@ class ProductGroup extends Page {
 	 * Return children ProductGroup pages of this group.
 	 * @return DataObjectSet
 	 */
-	function ChildGroups($recursive = false) {
+	function ChildGroups($recursive = false, $filter = "") {
+		if($filter) {
+			$filter = " AND $filter";
+		}
 		if($recursive){
-			if($children = DataObject::get('ProductGroup', "\"ParentID\" = '$this->ID'")){
+			if($children = DataObject::get('ProductGroup', "\"ParentID\" = '$this->ID' $filter")){
 				$output = unserialize(serialize($children));
 				foreach($children as $group){
 					$output->merge($group->ChildGroups($recursive));
@@ -207,7 +211,7 @@ class ProductGroup extends Page {
 			}
 			return null;
 		}else{
-			return DataObject::get('ProductGroup', "\"ParentID\" = '$this->ID'");
+			return DataObject::get('ProductGroup', "\"ParentID\" = '$this->ID' $filter");
 		}
 	}
 
@@ -223,11 +227,12 @@ class ProductGroup extends Page {
 	 * Recursively generate a product menu.
 	 * @return DataObjectSet
 	 */
-	function GroupsMenu() {
+	function GroupsMenu($filter = "ShowInMenus = 1") {
 		if($parent = $this->Parent()) {
-			return $parent instanceof ProductGroup ? $parent->GroupsMenu() : $this->ChildGroups();
-		} else {
-			return $this->ChildGroups();
+			return $parent instanceof ProductGroup ? $parent->GroupsMenu() : $this->ChildGroups($filter);
+		}
+		else {
+			return $this->ChildGroups($filter);
 		}
 	}
 
