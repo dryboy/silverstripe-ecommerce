@@ -51,6 +51,10 @@ class Product extends Page {
 		'ID','Title','InternalItemID','Price'
 	);
 
+	public static $casting = array(
+		"CalculatedPrice" => "Currency"
+	);
+
 	public static $singular_name = "Product";
 		function i18n_singular_name() { return _t("Order.PRODUCT", "Product");}
 
@@ -66,6 +70,13 @@ class Product extends Page {
 	protected static $number_sold_calculation_type = "SUM"; //SUM or COUNT
 		static function set_number_sold_calculation_type($s){self::$number_sold_calculation_type = $s;}
 		static function get_number_sold_calculation_type(){return self::$number_sold_calculation_type;}
+
+	function CalculatedPrice() {return $this->getCalculatedPrice();}
+	function getCalculatedPrice() {
+		$price = $this->Price;
+		$this->extend('updateCalculatedPrice',$price);
+		return $price;
+	}
 
 	function getCMSFields() {
 		//prevent calling updateCMSFields extend function too early
@@ -347,9 +358,9 @@ class Product_OrderItem extends OrderItem {
 	function getUnitPrice() {
 		$unitprice = 0;
 		if($this->Product()) {
-			$unitprice = $this->Product()->Price;
-			$this->extend('updateUnitPrice',$unitprice);
+			$unitprice = $this->Product()->getCalculatedPrice();
 		}
+		$this->extend('updateUnitPrice',$unitprice);
 		return $unitprice;
 	}
 
