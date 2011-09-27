@@ -107,6 +107,13 @@ class EcommerceCountry extends EcommerceRegion {
 		return $countryCode;
 	}
 
+		public static function get_country_id() {
+			$countryID = 0;
+			if($country = self::get_country()) {
+				$countryID = DataObject::get_one("EcommerceCountry", "\"Code\" = '$country'");
+			}
+			return $countryID;
+		}
 
 	/**
 	 *
