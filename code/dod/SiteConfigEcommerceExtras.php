@@ -21,7 +21,10 @@ class SiteConfigEcommerceExtras extends DataObjectDecorator {
 				"DispatchEmailSubject" => "Varchar(255)",
 				"PostalCodeURL" => "Varchar(255)",
 				"PostalCodeLabel" => "Varchar(255)",
-				"NumberOfProductsPerPage" => "Int"
+				"NumberOfProductsPerPage" => "Int",
+				"ProductsHaveWeight" => "Boolean",
+				"ProductsHaveModelNames" => "Boolean",
+				"ProductsHaveQuantifiers" => "Boolean"
 			),
 			'has_one' => array(
 				"EmailLogo" => "Image"
@@ -36,13 +39,17 @@ class SiteConfigEcommerceExtras extends DataObjectDecorator {
 	function updateCMSFields(FieldSet &$fields) {
 		//new section
 		$shoptabs = new TabSet('Shop',
+			new Tab('General',
+				new CheckboxField("ShopClosed", "Shop closed")
+			),
 			new Tab('Products',
-				new CheckboxField("ShopClosed", "Shop closed"),
 				new NumericField("NumberOfProductsPerPage", "Numer of products per page")
 			),
 			new Tab('Checkout',
 				new TextField("PostalCodeURL", "Postal code link"),
-				new TextField("PostalCodeLabel", "Postal code label")
+				new CheckboxField("ProductsHaveWeight", "Enter weight for products"),
+				new CheckboxField("ProductsHaveModelNames", "Enter model names for products"),
+				new CheckboxField("ProductsHaveQuantifiers", "Enter quantifier for products (e.g. per year, each, per dozen, etc...)")
 			),
 			new Tab('Emails',
 				new EmailField("ReceiptEmail", "From email address for shop receipt (e.g. sales@myshop.com)"),

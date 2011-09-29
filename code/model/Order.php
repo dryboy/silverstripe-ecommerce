@@ -1399,20 +1399,21 @@ class Order extends DataObject {
 	function Title() {return $this->getTitle();}
 	function getTitle() {
 		if($this->ID) {
-			$v = $this->i18n_singular_name(). " #$this->ID - ".$this->dbObject('Created')->Nice();
+			$title = $this->i18n_singular_name(). " #$this->ID - ".$this->dbObject('Created')->Nice();
 			if($this->CancelledByID) {
-				$v .= " - "._t("Order.CANCELLED","CANCELLED");
+				$title .= " - "._t("Order.CANCELLED","CANCELLED");
 			}
 			elseif($this->MemberID && $this->Member()->exists() ) {
 				if($this->MemberID != Member::currentUserID()) {
-					$v .= " - ".$this->Member()->getName();
+					$title .= " - ".$this->Member()->getName();
 				}
 			}
 		}
 		else {
-			$v = _t("Order.NEW", "New")." ".$this->i18n_singular_name();
+			$title = _t("Order.NEW", "New")." ".$this->i18n_singular_name();
 		}
-		return $v;
+		$this->extend('updateTitle', $title);
+		return $title;
 	}
 
 

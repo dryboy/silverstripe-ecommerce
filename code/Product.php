@@ -25,6 +25,7 @@ class Product extends Page {
 		'Price' => 'Currency',
 		'Weight' => 'Decimal(9,4)',
 		'Model' => 'Varchar(30)',
+		'Quantifier' => 'Varchar(30)',
 		'FeaturedProduct' => 'Boolean',
 		'AllowPurchase' => 'Boolean',
 		'InternalItemID' => 'Varchar(30)', //ie SKU, ProductID etc (internal / existing recognition of product)
@@ -86,12 +87,22 @@ class Product extends Page {
 		if($siteTreeFieldExtensions) {
 			$this->enableCMSFieldsExtensions();
 		}
+		$sc = SiteConfig::current_site_config();
 		// Standard product detail fields
 		$fields->addFieldToTab('Root.Content.Images', new ImageField('Image', _t('Product.IMAGE', 'Product Image')));
 		$fields->addFieldToTab('Root.Content.Details',new CheckboxField('AllowPurchase', _t('Product.ALLOWPURCHASE', 'Allow product to be purchased'), 1));
 		$fields->addFieldToTab('Root.Content.Details',new CheckboxField('FeaturedProduct', _t('Product.FEATURED', 'Featured Product')));
 		$fields->addFieldToTab('Root.Content.Details',new NumericField('Price', _t('Product.PRICE', 'Price'), '', 12));
 		$fields->addFieldToTab('Root.Content.Details',new TextField('InternalItemID', _t('Product.CODE', 'Product Code'), '', 30));
+		if($sc->ProductsHaveWeight) {
+			$fields->addFieldToTab('Root.Content.Details',new NumericField('Weight', _t('Product.WEIGHT', 'Weight')));
+		}
+		if($sc->ProductsHaveModelNames) {
+			$fields->addFieldToTab('Root.Content.Details',new TextField('Model', _t('Product.MODEL', 'Model')));
+		}
+		if($sc->ProductsHaveQuantifiers) {
+			$fields->addFieldToTab('Root.Content.Details',new TextField('Quantifier', _t('Product.QUANTIFIER', 'Quantifier (e.g. per kilo, per month, per dozen, each)')));
+		}
 		if($this->ParentID && $parent = DataObject::get_by_id("ProductGroup", $this->ParentID)) {
 			if($parent->ProductsAlsoInOthersGroups) {
 				$fields->addFieldsToTab(
@@ -357,9 +368,7 @@ class Product_OrderItem extends OrderItem {
 	function UnitPrice() {return $this->getUnitPrice();}
 	function getUnitPrice() {
 		$unitprice = 0;
-		if($this->Product()) {
-			$unitprice = $this->Product()->getCalculatedPrice();
-		}
+		$unitprice = $this->Product()->getCalculatedPrice();
 		$this->extend('updateUnitPrice',$unitprice);
 		return $unitprice;
 	}
@@ -371,10 +380,8 @@ class Product_OrderItem extends OrderItem {
 	function TableTitle() {return $this->getTableTitle();}
 	function getTableTitle() {
 		$tabletitle = _t("Product.UNKNOWN", "Unknown Product");
-		if($this->Product()) {
-			$tabletitle = $this->Product()->Title;
-			$this->extend('updateTableTitle',$tabletitle);
-		}
+		$tabletitle = $this->Product()->Title;
+		$this->extend('updateTableTitle',$tabletitle);
 		return $tabletitle;
 	}
 
@@ -383,7 +390,7 @@ class Product_OrderItem extends OrderItem {
 	 **/
 	function TableSubTitle() {return $this->getTableSubTitle();}
 	function getTableSubTitle() {
-		$tablesubtitle = "";
+		$tablesubtitle = $this->Product()->Quantifier;
 		$this->extend('updateTableSubTitle',$tablesubtitle);
 		return $tablesubtitle;
 	}
