@@ -213,7 +213,7 @@ class Product extends Page {
 	 * @return Int
 	 **/
 	function QuantityDecimals(){
-		return 1;
+		return 0;
 	}
 
 
