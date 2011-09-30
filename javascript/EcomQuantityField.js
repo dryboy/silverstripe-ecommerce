@@ -34,13 +34,13 @@ EcomQuantityField = {
 				else {
 					jQuery(inputField).siblings(EcomQuantityField.removeSelector).click(
 						function() {
-							jQuery(inputField).val(parseInt(jQuery(inputField).val())-1).change();
+							jQuery(inputField).val(parseFloat(jQuery(inputField).val())-1).change();
 							return false;
 						}
 					);
 					jQuery(inputField).siblings(EcomQuantityField.addSelector).click(
 						function() {
-							jQuery(inputField).val(parseInt(jQuery(inputField).val())+1).change();
+							jQuery(inputField).val(parseFloat(jQuery(inputField).val())+1).change();
 							return false;
 						}
 					);
@@ -54,7 +54,7 @@ EcomQuantityField = {
 								this.value = 0;
 							}
 							else {
-								this.value = this.value.replace(/[^0-9]+/g, '');
+								this.value = this.value.replace(/[^0-9.]+/g, '');
 							}
 							var url = jQuery('base').attr('href') + URLSegment + '?quantity=' + this.value;
 							EcomCart.getChanges(url, null);

@@ -204,6 +204,19 @@ class Product extends Page {
 		return "/ecommerce/images/productPlaceHolderThumbnail.gif";
 	}
 
+
+	/**
+	 *@description: This is used when you add a product to your cart
+	 * if you set it to 1 then you can add 0.1 product to cart.
+	 * If you set it to -1 then you can add 10, 20, 30, etc.. products to cart.
+	 *
+	 * @return Int
+	 **/
+	function QuantityDecimals(){
+		return 1;
+	}
+
+
 }
 
 class Product_Controller extends Page_Controller {
@@ -237,7 +250,7 @@ class Product_Controller extends Page_Controller {
 
 	function addproductfromform($data,$form){
 		if(!$this->IsInCart()) {
-			$quantity = intval($data['Quantity']);
+			$quantity = round($data['Quantity'], $this->QuantityDecimals());
 			if(!$quantity) {
 				$quantity = 1;
 			}
@@ -265,6 +278,7 @@ class Product_Controller extends Page_Controller {
 			return new EcomQuantityField($this);
 		}
 	}
+
 
 
 }

@@ -104,8 +104,9 @@ class ShoppingCart extends Object{
 			$this->addMessage(_t("ShoppingCart.ITEMCOULDNOTBEADDED", "This item is not for sale."),'bad');
 			return false;
 		}
-		$item = $this->prepareQuantityChange($mustBeExistingItem = false, $buyable, $quantity, $parameters);
-		if($item){ //find existing order item or make one
+		$item = $this->prepareOrderItem($mustBeExistingItem = false, $buyable, $parameters);
+		$quantity = $this->prepareQuantity($quantity, $buyable);
+		if($item && $quantity){ //find existing order item or make one
 			$item->Quantity += $quantity;
 			$item->write();
 			$this->currentOrder()->Attributes()->add($item); //save to current order
@@ -131,7 +132,8 @@ class ShoppingCart extends Object{
 	 *@return false | DataObject (OrderItem)
 	 */
 	function setQuantity($buyable, $quantity, $parameters = array()) {
-		$item = $this->prepareQuantityChange($mustBeExistingItem = true, $buyable, $quantity, $parameters);
+		$item = $this->prepareOrderItem($mustBeExistingItem = true, $buyable, $parameters);
+		$quantity = $this->prepareQuantity($quantity, $buyable);
 		if($item) {
 			$item->Quantity = $quantity; //remove quantity
 			$item->write();
@@ -149,7 +151,8 @@ class ShoppingCart extends Object{
 	 *@return false | DataObject (OrderItem)
 	 */
 	public function decrementBuyable($buyable,$quantity = 1, $parameters = array()){
-		$item = $this->prepareQuantityChange($mustBeExistingItem = false, $buyable, $quantity, $parameters);
+		$item = $this->prepareOrderItem($mustBeExistingItem = false, $buyable, $parameters);
+		$quantity = $this->prepareQuantity($quantity, $buyable);
 		if($item) {
 			$item->Quantity -= $quantity; //remove quantity
 			if($item->Quantity < 0 ) {
@@ -175,7 +178,7 @@ class ShoppingCart extends Object{
 	 *@return boolean - successfully removed
 	 */
 	function deleteBuyable($buyable, $parameters = array()) {
-		$item = $this->prepareQuantityChange($mustBeExistingItem = true, $buyable, $quantity = 1, $parameters);
+		$item = $this->prepareOrderItem($mustBeExistingItem = true, $buyable, $parameters);
 		if($item) {
 			$this->currentOrder()->Attributes()->remove($item);
 			$item->delete();
@@ -194,7 +197,7 @@ class ShoppingCart extends Object{
 	 *@param Array $parameters - array of parameters to target a specific order item. eg: group=1, length=5*
 	 *@return boolean | DataObject ($orderItem)
 	 */
-	protected function prepareQuantityChange($mustBeExistingItem = true, $buyable, $quantity = 1, $parameters = array()) {
+	protected function prepareOrderItem($mustBeExistingItem = true, $buyable, $parameters = array()) {
 		if(!$buyable) {
 			user_error("No buyable was provided", E_USER_WARNING);
 		}
@@ -215,12 +218,16 @@ class ShoppingCart extends Object{
 			}
 			return false;
 		}
-		$quantity = intval($quantity);
+		return $item;
+	}
+
+	protected function prepareQuantity($quantity, $buyable) {
+		$quantity = round($quantity, $buyable->QuantityDecimals());
 		if($quantity < 0 || (!$quantity && $quantity !== 0)) {
 			$this->addMessage(_t("ShoppingCart.INVALIDQUANTITY", "Invalid quantity."),'warning');
 			return false;
 		}
-		return $item;
+		return $quantity;
 	}
 
 	/**
