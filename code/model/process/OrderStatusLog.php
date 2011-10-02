@@ -313,9 +313,8 @@ class OrderStatusLog_Submitted extends OrderStatusLog {
 			return $this->OrderAsJSON;
 		}
 	}
-
-
 }
+
 class OrderStatusLog_Cancel extends OrderStatusLog {
 
 	public static $defaults = array(
