@@ -91,7 +91,6 @@ class ShoppingCart extends Object{
 	public static function current_order() {
 		return self::singleton()->currentOrder();
 	}
-
 	/**
 	 * Adds any number of items to the cart.
 	 *@param DataObject $buyable - the buyable (generally a product) being added to the cart
@@ -378,7 +377,7 @@ class ShoppingCart extends Object{
 	/**
 	 * Gets or creates the current order.
 	 */
-	protected function currentOrder(){
+	public function currentOrder(){
 		if (!$this->order) {
 			//TODO: try to retrieve incomplete member order
 			$this->order = DataObject::get_by_id('Order',intval(Session::get(self::$session_variable.".ID"))); //find order by id saved to session (allows logging out and retaining cart contents)
