@@ -11,7 +11,7 @@
 	</p>
 <% end_if %>
 
-<% if OrderConfirmationPageLink %>
+<% if MemberForm %>
 	<div id="MemberForm" class="typography">
 		$MemberForm
 	</div>
