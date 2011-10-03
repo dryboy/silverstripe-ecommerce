@@ -45,11 +45,18 @@ class Product extends Page {
 	);
 
 	public static $summary_fields = array(
-		'ID','InternalItemID','Title','Price','NumberSold'
+		'ID',
+		'InternalItemID',
+		'Title',
+		'Price',
+		'NumberSold'
 	);
 
 	public static $searchable_fields = array(
-		'ID','Title','InternalItemID','Price'
+		'ID',
+		'Title',
+		'InternalItemID',
+		'Price'
 	);
 
 	public static $casting = array(
@@ -104,7 +111,7 @@ class Product extends Page {
 			$fields->addFieldToTab('Root.Content.Details',new TextField('Quantifier', _t('Product.QUANTIFIER', 'Quantifier (e.g. per kilo, per month, per dozen, each)')));
 		}
 		if($this->ParentID && $parent = DataObject::get_by_id("ProductGroup", $this->ParentID)) {
-			if($parent->ProductsAlsoInOthersGroups) {
+			if($parent->MyProductsAlsoInOthersGroups()) {
 				$fields->addFieldsToTab(
 					'Root.Content.AlsoSeenHere',
 					array(

@@ -1,4 +1,4 @@
-<li class="productItem $FirstLast item$Pos">
+<li class="productItem $FirstLast item$Pos<% if FeaturedProduct %> featured<% end_if %>">
 	<div class="productImage">
 	<% if Image %>
 		<a href="$Link"><img src="$Image.Thumbnail.URL" alt="<% sprintf(_t("Product.IMAGE","%s image"),$Title) %>" /></a>

@@ -14,93 +14,83 @@
 class ProductGroup extends Page {
 
 	public static $db = array(
-		'ChildGroupsPermission' => "Enum('Show Only Featured Products,Show All Products')",
+		"LevelOfProductsToShow" => "Int",
 		"NumberOfProductsPerPage" => "Int",
+		"DefaultSortOrder" => "Varchar(50)",
 		"ProductsAlsoInOthersGroups" => "Boolean"
 	);
-
-	public static $has_one = array();
-
-	public static $has_many = array();
-
-	public static $many_many = array();
 
 	public static $belongs_many_many = array(
 		'Products' => 'Product'
 	);
 
-	public static $defaults = array();
+	public static $defaults = array(
+		"DefaultSortOrder" => "default",
+		"LevelOfProductsToShow" => 99,
+		"ProductsAlsoInOthersGroups" => 0
+	);
 
 	public static $default_child = 'Product';
 
 	public static $icon = 'ecommerce/images/icons/productgroup';
 
-	protected static $include_child_groups = true;
-		static function set_include_child_groups($b = true){self::$include_child_groups = $b;}
-		static function get_include_child_groups(){return self::$include_child_groups;}
-
-	protected static $must_have_price = true;
-		static function set_must_have_price($b = true){user_error("ProductGroup::\$must_have_price has been depreciated, use ProductGroup::\$only_show_products_that_can_purchase", E_USER_NOTICE);}
-		static function get_must_have_price(){user_error("ProductGroup::\$must_have_price has been depreciated, use ProductGroup::\$only_show_products_that_can_purchase", E_USER_NOTICE);}
-
-	protected static $only_show_products_that_can_purchase = false;
-		static function set_only_show_products_that_can_purchase($b = true){self::$only_show_products_that_can_purchase = $b;}
-		static function get_only_show_products_that_can_purchase(){return self::$only_show_products_that_can_purchase;}
-
 	protected static $sort_options = array(
+			'default' => array("Title" => 'Default Order', "SQL" => "\"Sort\" ASC, \"Title\" ASC"),
 			'title' => array("Title" => 'Alphabetical', "SQL" => "\"Title\" ASC"),
-			'price' => array("Title" => 'Lowest Price', "SQL" => "\"Price\" ASC"),
-			//'numbersold' => array("Title" => 'Most Popular', "SQL" => "\"NumberSold\" DESC")
-			//'Featured' => 'Featured',
+			'price' => array("Title" => 'Lowest Price', "SQL" => "\"Price\" ASC, \"Title\" ASC"),
 		);
 		static function add_sort_option($key, $title, $sql){self::$sort_options[$key] = array("Title" => $title, "SQL" => $sql);}
 		static function remove_sort_option($key){unset(self::$sort_options[$key]);}
 		static function set_sort_options(array $a){self::$sort_options = $a;}
 		static function get_sort_options(){return self::$sort_options;}
-		protected function getSortOptionSQL($key){ // NOT STATIC
-			if(isset(self::$sort_options[$key])) {
+		//NON-STATIC
+		protected function getSortOptionsForDropdown(){
+			$array = array();
+			if(is_array(self::$sort_options) && count(self::$sort_options)) {
+				foreach(self::$sort_options as $key => $sort_option) {
+					$array[$key] = $sort_option["Title"];
+				}
+			}
+			return $array;
+		}
+		protected function getSortOptionSQL($key = ""){ // NOT STATIC
+			if($key && isset(self::$sort_options[$key])) {
 				return self::$sort_options[$key]["SQL"];
 			}
+			elseif(is_array(self::$sort_options) && count(self::$sort_options)) {
+				$firstItem = array_shift(self::$sort_options);
+				return $firstItem["SQL"];
+			}
 			else {
-				return self::$sort_options[self::get_sort_options_default()]["SQL"];
+				return "\"Sort\" ASC";
 			}
 		}
 
-	protected static $sort_options_default = "title";
-		static function set_sort_options_default($s){self::$sort_options_default = $s; if(!isset(self::$sort_options[$s])) {user_error("ProductGroup::set_sort_options_default got the parameter $s , however, this is not an existing sort_options key;", E_USER_NOTICE);}}
-		static function get_sort_options_default(){return self::$sort_options_default;}
+	protected $standardFilter = " AND \"ShowInSearch\" = 1";
+	public function getStandardFilter(){return $this->standardFilter;}
 
-	protected static $featured_products_permissions = array(
-		'Show Only Featured Products',
-		'Show All Products'
+	protected $showProductLevels = array(
+		0 => "None",
+		1 => "Direct Child Products",
+		2 => "Direct Child Products + Grand Child Products",
+		3 => "Direct Child Products + Grand Child Products + Great Grand Child Products",
+		4 => "Direct Child Products + Grand Child Products + Great Grand Child Products + Great Great Grand Child Products",
+		99 => "All Child Products"
 	);
-
-	protected static $non_featured_products_permissions = array(
-		'Show All Products'
-	);
-
 
 	function getCMSFields() {
 		$fields = parent::getCMSFields();
-		if(self::$include_child_groups === 'custom'){
-			$fields->addFieldToTab(
-				'Root.Content',
-				new Tab(
-					'Products',
-					new NumericField("NumberOfProductsPerPage", _t("ProductGroup.NUMBEROFPRODUCTS", "Number of products per page")),
-					new HeaderField("whatproductsshown", _t("ProductGroup.WHATPRODUCTSSHOWN", 'How should products be presented in the child groups?')),
-					new DropdownField(
-						'ChildGroupsPermission',
-						'Permission',
-						$this->dbObject('ChildGroupsPermission')->enumValues(),
-						'',
-						null,
-						_t("ProductGroup.DONOTSHOWPRODUCTS", 'Don\'t Show Any Products')
-					)
-				)
-			);
-		}
-		$fields->addFieldToTab("Root.Content.Products", new CheckboxField("ProductsAlsoInOthersGroups", _t("ProductGroup.PRODUCTSALSOINOTHERSGROUPS", "Also allow the products for this product group to show in other groups (see product pages for actual selection).")));
+		$fields->addFieldToTab(
+			'Root.Content',
+			new Tab(
+				'Products',
+				new DropdownField("LevelOfProductsToShow", _t("ProductGroup.PRODUCTSTOSHOW", "Products to show ..."), $this->showProductLevels),
+				new HeaderField("whatproductsshown", _t("ProductGroup.WHATPRODUCTSSHOWN", _t("ProductGroup.OPTIONSSELECTEDBELOWAPPLYTOCHILDGROUPS", "Options selected below apply to child product group pages as well as this product group page."))),
+				new NumericField("NumberOfProductsPerPage", _t("ProductGroup.PRODUCTSPERPAGE", "Number of products per page")),
+				new DropdownField("DefaultSortOrder", _t("ProductGroup.DEFAULTSORTORDER", "Default Sort Order"), $this->getSortOptionsForDropdown()),
+				new CheckboxField("ProductsAlsoInOthersGroups", _t("ProductGroup.PRODUCTSALSOINOTHERSGROUPS", "Also allow the products for this product group to show in other groups (see product pages for actual selection)."))
+			)
+		);
 		return $fields;
 	}
 
@@ -109,82 +99,100 @@ class ProductGroup extends Page {
 	 * Retrieve a set of products, based on the given parameters. Checks get query for sorting and pagination.
 	 *
 	 * @param string $extraFilter Additional SQL filters to apply to the Product retrieval
-	 * @param array $permissions
+	 * @param boolean $recursive
 	 * @return DataObjectSet | Null
 	 */
 	function ProductsShowable($extraFilter = '', $recursive = true){
-		$filter = " AND \"ShowInSearch\" = 1"; //
+				//GROUPS FILTER
+		if($this->LevelOfProductsToShow == 0) {
+			return null;
+		}
+
+		// STANDARD FILTER
+		$filter = $this->getStandardFilter(); //
 		$join = "";
 
+		// EXTRA FILTER
 		if($extraFilter) {
 			$filter.= " AND $extraFilter";
 		}
-		$limit = (isset($_GET['start']) && (int)$_GET['start'] > 0) ? (int)$_GET['start'] : "0";
-		$limit .= ", ".$this->ProductsPerPage();
-		if(!isset($_GET['sortby'])) {
-			$_GET['sortby'] = "";
-		}
-		$sort = $this->getSortOptionSQL($_GET['sortby']);
+
+		//PARENT ID
 		$groupIDs = array();
 		$groupIDs[$this->ID] = $this->ID;
-		if(self::$include_child_groups) {
-			$childGroups = $this->ChildGroups(true);
+		if($this->LevelOfProductsToShow > 1) {
+			$childGroups = $this->ChildGroups($this->LevelOfProductsToShow);
 			if($childGroups) {
 				$groupIDs = array_merge($groupIDs,$childGroups->map('ID','ID'));
 			}
 		}
+
+		//OTHER GROUPS MANY MANY
 		$join = $this->getManyManyJoin('Products','Product');
 		$multiCategoryFilter = $this->getManyManyFilter('Products','Product');
+
+		// GET PRODUCTS
 		$where = "(\"ParentID\" IN (".implode(",", $groupIDs).") OR $multiCategoryFilter) $filter";
-		$products = DataObject::get('Product',$where,$sort,$join,$limit);
-		if($products && $products instanceOf DataObjectSet) {
-			$products->removeDuplicates();
-		}
-		//FIXME: this removing does not cater for pagination...so you end up with half empty, or fully empty pages in some cases.
-		$repaginate = false;
-		if(self::get_only_show_products_that_can_purchase()) {
-			if($products) {
-				foreach($products as $product) {
+		$allProducts = DataObject::get('Product',$where,null,$join);
+
+		//REMOVE DUPLICATES AND NOT canPurcahse
+		if($allProducts && $allProducts instanceOf DataObjectSet) {
+			$allProducts->removeDuplicates();
+			$siteConfig = SiteConfig::current_site_config();
+			if($siteConfig->OnlyShowProductsThatCanBePurchased) {
+				foreach($allProducts as $product) {
 					if(!$product->canPurchase()) {
-						$products->remove($product);
-						$repaginate = true;
+						$allProducts->remove($product);
 					}
 				}
 			}
 		}
-		//untested
-		if($repaginate && $products) {
-			$stage = '';
-			if(Versioned::current_stage() == "Live") {
-				$stage = "_Live";
+
+
+		//LIMIT
+		if($allProducts) {
+			$totalCount = $allProducts->Count();
+			if($totalCount > 0) {
+				//SORT BY
+				if(!isset($_GET['sortby'])) {
+					$sortKey = $this->MyDefaultSortOrder();
+				}
+				else {
+					$sortKey = Convert::raw2sqL($_GET['sortby']);
+				}
+				$sort = $this->getSortOptionSQL($sortKey);
+
+				$limit = (isset($_GET['start']) && (int)$_GET['start'] > 0) ? (int)$_GET['start'] : "0";
+				$limit .= ", ".$this->MyNumberOfProductsPerPage();
+				$stage = '';
+				if(Versioned::current_stage() == "Live") {
+					$stage = "_Live";
+				}
+				$whereForPageOnly = "\"Product$stage\".\"ID\" IN (".implode(",", $allProducts->map("ID", "ID")).")";
+				$products = DataObject::get('Product',$whereForPageOnly,$sort, null,$limit);
+				$products->TotalCount = $totalCount;
+				return $products;
 			}
-			$whereForPageOnly = "\"Product$stage\".\"ID\" IN (".implode(",", $products->map("ID", "ID")).")";
-			$products = DataObject::get('Product',$whereForPageOnly,null, null,$limit);
 		}
-		 //add total count to returned data for 'showing x to y of z products'
-		 //this might not always be accurate!
-		$allproducts = DataObject::get('Product',$where,"",$join);
-		if($allproducts) {
-			$products->TotalCount = $allproducts->Count();
-		}
-		return $products;
+		return null;
 	}
 
 
 	/**
 	 *@return Integer
 	 **/
-	function ProductsPerPage() {
+	function ProductsPerPage() {return $this->MyNumberOfProductsPerPage();}
+	function MyNumberOfProductsPerPage() {
 		$productsPagePage = 0;
 		if($this->NumberOfProductsPerPage) {
 			$productsPagePage = $this->NumberOfProductsPerPage;
 		}
 		else {
 			if($parent = $this->ParentGroup()) {
-				$productsPagePage = $parent->ProductsPerPage();
+				$productsPagePage = $parent->MyNumberOfProductsPerPage();
 			}
 			else {
-				$siteConfig = DataObject::get_one("SiteConfig");
+				$siteConfig = SiteConfig::current_site_config();
 				if($siteConfig) {
 					$productsPagePage = $siteConfig->NumberOfProductsPerPage;
 				}
@@ -192,26 +200,61 @@ class ProductGroup extends Page {
 		}
 		return $productsPagePage;
 	}
+	/**
+	 *@return String
+	 **/
+	function MyDefaultSortOrder() {
+		$defaultSortOrder = "";
+		if($this->DefaultSortOrder) {
+			$defaultSortOrder = $this->DefaultSortOrder;
+		}
+		else {
+			if($parent = $this->ParentGroup()) {
+				$defaultSortOrder = $parent->MyDefaultSortOrder();
+			}
+		}
+		return $defaultSortOrder;
+	}
+
+	/**
+	 *@return Boolean
+	 **/
+	function MyProductsAlsoInOthersGroups() {
+		$alsoInOtherGroups = self::$defaults["ProductsAlsoInOthersGroups"];
+		if($this->ProductsAlsoInOthersGroups) {
+			$alsoInOtherGroups = $this->ProductsAlsoInOthersGroups;
+		}
+		else {
+			if($parent = $this->ParentGroup()) {
+				$alsoInOtherGroups = $parent->MyProductsAlsoInOthersGroups();
+			}
+		}
+		return $alsoInOtherGroups;
+	}
 
 	/**
 	 * Return children ProductGroup pages of this group.
 	 * @return DataObjectSet
 	 */
-	function ChildGroups($recursive = false, $filter = "") {
+	function ChildGroups($maxRecursiveLevel = 99, $filter = "", $numberOfRecursions = 1) {
+		$numberOfRecursions++;
+		$filterWithAND = '';
 		if($filter) {
-			$filter = " AND $filter";
+			$filterWithAND = " AND $filter";
 		}
-		if($recursive){
-			if($children = DataObject::get('ProductGroup', "\"ParentID\" = '$this->ID' $filter")){
+		if($numberOfRecursions < $maxRecursiveLevel){
+			if($children = DataObject::get('ProductGroup', "\"ParentID\" = '$this->ID' $filterWithAND")){
+				//what is this serialize stuff for?????
 				$output = unserialize(serialize($children));
 				foreach($children as $group){
-					$output->merge($group->ChildGroups($recursive));
+					$output->merge($group->ChildGroups($maxRecursiveLevel, $filter, $numberOfRecursions));
 				}
 				return $output;
 			}
 			return null;
-		}else{
-			return DataObject::get('ProductGroup', "\"ParentID\" = '$this->ID' $filter");
+		}
+		else{
+			return DataObject::get('ProductGroup', "\"ParentID\" = '$this->ID' $filterWithAND");
 		}
 	}
 
@@ -243,6 +286,7 @@ class ProductGroup_Controller extends Page_Controller {
 	function init() {
 		parent::init();
 		Requirements::themedCSS('Products');
+		Requirements::themedCSS('ProductGroup');
 	}
 
 	/**
@@ -280,7 +324,7 @@ class ProductGroup_Controller extends Page_Controller {
 	 */
 	function SortLinks(){
 		if(count(ProductGroup::get_sort_options()) <= 0) return null;
-		$sort = (isset($_GET['sortby'])) ? Convert::raw2sql($_GET['sortby']) : self::get_sort_options_default();
+		$sort = (isset($_GET['sortby'])) ? Convert::raw2sql($_GET['sortby']) : $this->MyDefaultSortOrder();
 		$dos = new DataObjectSet();
 		foreach(ProductGroup::get_sort_options() as $key => $array){
 			$current = ($key == $sort) ? 'current' : false;

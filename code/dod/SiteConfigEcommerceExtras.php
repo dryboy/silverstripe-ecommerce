@@ -22,6 +22,7 @@ class SiteConfigEcommerceExtras extends DataObjectDecorator {
 				"PostalCodeURL" => "Varchar(255)",
 				"PostalCodeLabel" => "Varchar(255)",
 				"NumberOfProductsPerPage" => "Int",
+				"OnlyShowProductsThatCanBePurchased" => "Int",
 				"ProductsHaveWeight" => "Boolean",
 				"ProductsHaveModelNames" => "Boolean",
 				"ProductsHaveQuantifiers" => "Boolean"
@@ -43,7 +44,8 @@ class SiteConfigEcommerceExtras extends DataObjectDecorator {
 				new CheckboxField("ShopClosed", "Shop closed")
 			),
 			new Tab('Products',
-				new NumericField("NumberOfProductsPerPage", "Numer of products per page")
+				new NumericField("NumberOfProductsPerPage", "Numer of products per page"),
+				new CheckboxField("OnlyShowProductsThatCanBePurchased", "Only show products that can be purchased")
 			),
 			new Tab('Checkout',
 				new TextField("PostalCodeURL", "Postal code link"),
