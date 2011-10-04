@@ -14,7 +14,7 @@
 	<% control CustomerViewableOrderStatusLogs %>
 		<tr>
 			<th class="left" scope="row">$Title</th>
-			<td class="left" colspan="5"><% if CustomerNote %>$CustomerNote<% else %>no further information<% end_if %></td>
+			<td class="left" colspan="4"><% if CustomerNote %>$CustomerNote<% else %>no further information<% end_if %></td>
 		</tr>
 	<% end_control %>
 <% end_if %>
