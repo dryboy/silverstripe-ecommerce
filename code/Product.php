@@ -389,8 +389,10 @@ class Product_OrderItem extends OrderItem {
 	function UnitPrice() {return $this->getUnitPrice();}
 	function getUnitPrice() {
 		$unitprice = 0;
-		$unitprice = $this->Product()->getCalculatedPrice();
-		$this->extend('updateUnitPrice',$unitprice);
+		if($product = $this->Product())
+			$unitprice = $product->getCalculatedPrice();
+			$this->extend('updateUnitPrice',$unitprice);
+		}
 		return $unitprice;
 	}
 
