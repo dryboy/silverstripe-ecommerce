@@ -403,8 +403,10 @@ class Product_OrderItem extends OrderItem {
 	function TableTitle() {return $this->getTableTitle();}
 	function getTableTitle() {
 		$tabletitle = _t("Product.UNKNOWN", "Unknown Product");
-		$tabletitle = $this->Product()->Title;
-		$this->extend('updateTableTitle',$tabletitle);
+		if($product = $this->Product()) {
+			$tabletitle = $product->Title;
+			$this->extend('updateTableTitle',$tabletitle);
+		}
 		return $tabletitle;
 	}
 
