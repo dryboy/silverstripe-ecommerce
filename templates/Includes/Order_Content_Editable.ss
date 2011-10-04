@@ -10,6 +10,14 @@
 		</tr>
 	</thead>
 	<tfoot>
+<% if CustomerViewableOrderStatusLogs %>
+	<% control CustomerViewableOrderStatusLogs %>
+		<tr>
+			<th class="left" scope="row">$Title</th>
+			<td class="left" colspan="5"><% if CustomerNote %>$CustomerNote<% else %>no further information<% end_if %></td>
+		</tr>
+	<% end_control %>
+<% end_if %>
 		<tr class="cartMessage">
 			<td colspan="5" scope="row" class="center $CartStatusClass" id="$TableMessageID">$CartStatusMessage</td>
 		</tr>
@@ -28,7 +36,7 @@
 				<% else %>
 					$TableTitle
 				<% end_if %>
-				<% if TableSubTitle %><div class="tableSubTitle">$TableSubTitle</div ><% end_if %>				
+				<% if TableSubTitle %><div class="tableSubTitle">$TableSubTitle</div ><% end_if %>
 			</td>
 			<td class="center quantity">
 				$QuantityField
@@ -87,5 +95,6 @@
 	</tbody>
 </table>
 
+<% include Order_OrderStatusLogs_PreSubmit %>
 
 <% include ShoppingCartRequirements %>

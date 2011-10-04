@@ -15,7 +15,7 @@
 			<a href="{$Link}orderstep/ordermodifiers/#OrderModifiersOuter">continue</a>
 		</div>
 		<% end_if %>
-	</div>		
+	</div>
 	<% end_if %>
 
 
@@ -26,7 +26,7 @@
 		<div class="orderStepPrevNextHolder prev">
 			<a href="{$Link}orderstep/orderitems/#OrderItemsOuter">go back</a>
 		</div>
-			<% end_if %>		
+			<% end_if %>
 		<% if ModifierForms %><% control ModifierForms %><div class="modifierFormInner">$Me</div><% end_control %><% end_if %>
 			<% if HasOrderSteps %>
 		<div class="orderStepPrevNextHolder next">
@@ -43,7 +43,7 @@
 		<div class="orderStepPrevNextHolder prev">
 			<a href="{$Link}orderstep/ordermodifiers/#OrderModifiersOuter">go back</a>
 		</div>
-		<% control Order %><% include Order %><% end_control %>
+		<% control Order %><% include Order_Content %><% end_control %>
 		<div class="orderStepPrevNextHolder next">
 			<a href="{$Link}orderstep/orderformandpayment/#OrderFormAndPaymentOuter">continue</a>
 		</div>
@@ -56,12 +56,12 @@
 	<div id="OrderFormAndPaymentOuter" class="orderStep">
 		<% if HasOrderSteps %>
 		<div class="orderStepPrevNextHolder prev">
-			<a href="{$Link}orderstep/ordermodifiers/#OrderModifiersOuter">go back</a>
+			<a href="{$Link}orderstep/orderconfirmation/#OrderConfirmationOuter">go back</a>
 		</div>
 		<% end_if %>
 		$OrderForm
 	</div>
-	
+
 	<% end_if %>
 
 <% end_if %>
