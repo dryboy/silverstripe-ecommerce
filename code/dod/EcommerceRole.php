@@ -56,7 +56,7 @@ class EcommerceRole extends DataObjectDecorator {
 	/**
 	 *@return DataObject (Group)
 	 **/
-	public function get_customer_group() {
+	public static function get_customer_group() {
 		return DataObject::get_one("Group", "\"Code\" = '".self::get_customer_group_code()."' OR \"Title\" = '".self::get_customer_group_name()."'");
 	}
 
