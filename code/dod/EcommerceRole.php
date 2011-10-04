@@ -60,6 +60,7 @@ class EcommerceRole extends DataObjectDecorator {
 		return DataObject::get_one("Group", "\"Code\" = '".self::get_customer_group_code()."' OR \"Title\" = '".self::get_customer_group_name()."'");
 	}
 
+
 /*******************************************************
    * SHOP ADMIN
 *******************************************************/
@@ -85,6 +86,14 @@ class EcommerceRole extends DataObjectDecorator {
 	protected static $admin_permission_code = "SHOP_ADMIN";
 		static function set_admin_permission_code(string $s) {self::$admin_permission_code = $s;}
 		static function get_admin_permission_code() {return ereg_replace("[^A-Za-z0-9]", "", self::$admin_permission_code);}
+
+	/**
+	 *@return DataObject (Group)
+	 **/
+	public static function get_admin_group() {
+		return DataObject::get_one("Group", "\"Code\" = '".self::get_admin_group_code()."' OR \"Title\" = '".self::get_admin_group_name()."'");
+	}
+
 
 	protected static function add_members_to_customer_group() {
 		$gp = DataObject::get_one("Group", "\"Title\" = '".self::get_customer_group_name()."'");
