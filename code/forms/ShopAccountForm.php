@@ -17,7 +17,7 @@ class ShopAccountForm extends Form {
 		$member = Member::currentUser();
 		$requiredFields = null;
 		if($member && $member->exists()) {
-			$fields = $member->getEcommerceFields();
+			$fields = $member->getEcommerceFields(true);
 			$fields->push(new HeaderField('Login Details',_t('Account.LOGINDETAILS','Login Details'), 3));
 			$logoutLink = ShoppingCart_Controller::clear_cart_and_logout_link();
 			$fields->push(new LiteralField('LogoutNote', "<p class=\"message warning\">" . _t("Account.LOGGEDIN","You are currently logged in as ") . $member->FirstName . ' ' . $member->Surname . '. <a href="'.$logoutLink.'">'._t('Account.LOGOUT','Log out and clear your cart.')."</a></p>"));
