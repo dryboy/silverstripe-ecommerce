@@ -1,7 +1,7 @@
 <?php
 /**
  * @description:
- * The Account Page allows the user to update their details. 
+ * The Account Page allows the user to update their details.
  * You do not need to be logged in to the account page in order to view it... If you are not logged in
  * then the account page can be a page to create an account.
 
@@ -68,6 +68,30 @@ class AccountPage_Controller extends Page_Controller {
 		return new ShopAccountForm($this, 'MemberForm');
 	}
 
+	protected $total, $paid, $outstanding;
 
+	function PastOrders(){
+		$pastOrders = DataObject::get("Order", "\"Order\".\"MemberID\" = ".Member::CurrentMember()->ID, "\"Created\" ASC", "INNER JOIN OrderAttribute ON OrderAttribute.OrderID = \"Order\".\"ID\" INNER JOIN OrderItem ON OrderItem.ID = OrderAttribute.ID");
+		$this->total = 0;
+		$this->paid = 0;
+		$this->outstanding = 0;
+		foreach($pastOrders as $order) {
+			$this->total += $order->Total;
+			$this->paid += $order->TotalPaid;
+			$this->outstanding += $order->TotalOutstanding;
+
+		}
+		return $pastOrders;
+	}
+
+	function RunningTotal(){
+		return DBField::create("Currency", $this->total, "total")->Nice();
+	}
+	function RunningPaid(){
+		return DBField::create("Currency", $this->paid, "paid")->Nice();
+	}
+	function RunningOutstanding(){
+		return DBField::create("Currency", $this->outstanding, "outstanding")->Nice();
+	}
 
 }

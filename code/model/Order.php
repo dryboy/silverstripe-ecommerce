@@ -78,6 +78,7 @@ class Order extends DataObject {
 		'Country' => 'Varchar', //This is the applicable country for the order - for tax purposes, etc....
 		'FullNameCountry' => 'Varchar',
 		'IsSubmitted' => 'Boolean',
+		'CustomerStatus' => 'Varchar',
 		'CanHaveShippingAddress' => 'Boolean',
 	);
 
@@ -1679,6 +1680,22 @@ class Order extends DataObject {
 		else {
 			return false;
 		}
+	}
+
+	/**
+	 * Casted variable - has the order been submitted?
+	 *
+	 *@return Text
+	 **/
+	function CustomerStatus(){return $this->getCustomerStatus();}
+	function getCustomerStatus($withDetail = true) {
+		if($this->MyStep()->ShowAsUncompletedOrder) { $v =  "Uncompleted";}
+		elseif($this->MyStep()->ShowAsInProcessOrder) { $v = "In Process";}
+		elseif($this->MyStep()->ShowAsCompletedOrder) { $v = "Completed";}
+		if(!$this->HideStepFromCustomer && $withDetail) {
+			$v .= ' ('.$this->MyStep()->Name.')';
+		}
+		return $v;
 	}
 
 
