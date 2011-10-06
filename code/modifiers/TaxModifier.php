@@ -36,6 +36,13 @@ class TaxModifier extends OrderModifier {
 	);
 
 // ######################################## *** cms variables + functions (e.g. getCMSFields, $searchableFields)
+
+	function getCMSFields() {
+		$fields = parent::getCMSFields();
+		//TO BE COMPLETED...
+		return $fields;
+	}
+
 // ######################################## *** other (non) static variables (e.g. protected static $special_name_for_something, protected $order)
 
 	protected static $names_by_country;

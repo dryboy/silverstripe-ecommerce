@@ -418,6 +418,7 @@ class OrderStatusLog_DispatchPhysicalOrder extends OrderStatusLog_Dispatch {
 
 	public static $summary_fields = array(
 		"DispatchedOn" => "Date",
+		"DispatchedBy" => "Dispatched By",
 		"OrderID" => "Order ID",
 		"EmailCustomerNice" => "Customer Emailed",
 		"EmailSentNice" => "Email Sent"
@@ -456,12 +457,6 @@ class OrderStatusLog_DispatchPhysicalOrder extends OrderStatusLog_Dispatch {
 		$fields = parent::getCMSFields();
 		$fields->replaceField("EmailSent", $fields->dataFieldByName("EmailSent")->performReadonlyTransformation());
 		$fields->replaceField("DispatchedOn", new TextField("DispatchedOn", "Dispatched on (Year - month - date): "));
-		return $fields;
-	}
-
-	function scaffoldSearchFields(){
-		$fields = parent::scaffoldSearchFields();
-		$fields->replaceField("OrderID", new NumericField("OrderID", "Order Number"));
 		return $fields;
 	}
 
@@ -538,6 +533,7 @@ class OrderStatusLog_PaymentCheck extends OrderStatusLog {
 
 	public static $summary_fields = array(
 		"Created" => "Date",
+		"Author.Title" => "Checked by",
 		"PaymentConfirmedNice" => "Payment Confirmed"
 	);
 
@@ -560,16 +556,6 @@ class OrderStatusLog_PaymentCheck extends OrderStatusLog {
 		$fields->removeByName("Note");
 		$fields->addFieldsToTab('Root.Main', new CheckboxField("PaymentConfirmed", _t("OrderStatusLog.CONFIRMED", "Payment is confirmed")));
 		return $fields;
-	}
-
-	function scaffoldSearchFields(){
-		$fields = parent::scaffoldSearchFields();
-		$fields->replaceField("OrderID", new NumericField("OrderID", "Order Number"));
-		return $fields;
-	}
-
-	function onBeforeWrite() {
-		parent::onBeforeWrite();
 	}
 
 

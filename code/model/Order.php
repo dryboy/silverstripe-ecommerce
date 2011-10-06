@@ -78,8 +78,10 @@ class Order extends DataObject {
 		'Country' => 'Varchar', //This is the applicable country for the order - for tax purposes, etc....
 		'FullNameCountry' => 'Varchar',
 		'IsSubmitted' => 'Boolean',
-		'CanHaveShippingAddress' => 'Boolean'
+		'CanHaveShippingAddress' => 'Boolean',
 	);
+
+	function OrderModifiers() {return DataObject::get("OrderModifier", "OrderID = ".$this->ID); }
 
 	public static $create_table_options = array(
 		'MySQLDatabase' => 'ENGINE=InnoDB'
@@ -330,181 +332,212 @@ class Order extends DataObject {
 	 **/
 	function getCMSFields(){
 		$fields = parent::getCMSFields();
-		$submitted = (bool)$this->IsSubmitted();
-		if($submitted) {
-			$this->tryToFinaliseOrder();
-		}
-		if($submitted) {
-			$this->fieldsAndTabsToBeRemoved[] = "CustomerOrderNote";
-		}
-		else {
-			$this->fieldsAndTabsToBeRemoved[] = "Emails";
-		}
-		foreach($this->fieldsAndTabsToBeRemoved as $field) {
-			$fields->removeByName($field);
-		}
-		//$fields->insertBefore(new LiteralField('Title',"<h2>".$this->Title()."</h2>"),'Root');
-		$fields->addFieldToTab(
-			"Root",
-			new Tab(
-				"Next",
-				new HeaderField($name = "MyOrderStepHeader", "Current Status"),
-				$this->OrderStepField(),
-				new HeaderField($name = "NextStepHeader", "Action Next Step"),
-				//SEE: $this->MyStep()->addOrderStepFields($fields, $this); BELOW
-				new DropdownField("StatusID", "Change Status Manually (not recommended)", DataObject::get("OrderStep")->toDropDownMap())
-			),
-			"Emails"
-		);
-		if($submitted) {
-			$htmlSummary = $this->renderWith("Order");
-			$fields->addFieldToTab('Root.Main', new LiteralField('MainDetails', $htmlSummary));
-			$paymentsTable = new HasManyComplexTableField(
-				$this,
-				"Payments", //$name
-				"Payment", //$sourceClass =
-				null, //$fieldList =
-				null, //$detailedFormFields =
-				"\"OrderID\" = ".$this->ID."", //$sourceFilter =
-				"\"Created\" ASC", //$sourceSort =
-				null //$sourceJoin =
-			);
-			$paymentsTable->setPageSize(100);
-			if($this->IsPaid()){
-				$paymentsTable->setPermissions(array('export', 'show'));
+		if($this->ID) {
+			$submitted = (bool)$this->IsSubmitted();
+			if($submitted) {
+				$this->tryToFinaliseOrder();
+			}
+			if($submitted) {
+				$this->fieldsAndTabsToBeRemoved[] = "CustomerOrderNote";
 			}
 			else {
-				$paymentsTable->setPermissions(array('edit', 'delete', 'export', 'add', 'show'));
+				$this->fieldsAndTabsToBeRemoved[] = "Emails";
 			}
-			$paymentsTable->setShowPagination(false);
-			$paymentsTable->setRelationAutoSetting(true);
-			$fields->addFieldToTab('Root.Payments',$paymentsTable);
-			if($member = $this->Member()) {
-				$fields->addFieldToTab('Root.Customer', new LiteralField("MemberDetails", $member->getEcommerceFieldsForCMSAsString()));
+			foreach($this->fieldsAndTabsToBeRemoved as $field) {
+				$fields->removeByName($field);
 			}
-
-
-			$cancelledField = $fields->dataFieldByName("CancelledByID");
-			$fields->removeByName("CancelledByID");
-			$fields->addFieldToTab("Root.Cancellation", $cancelledField);
-			$oldOrderStatusLogs = new ComplexTableField(
-				$this,
-				$name ="OldOrderStatusLogs",
-				$sourceClass = "OrderStatusLog",
-				$fieldList = null,
-				$detailFormFields = null,
-				$sourceFilter = "\"OrderID\" = ".$this->ID,
-				$sourceSort = "",
-				$sourceJoin = ""
+			//$fields->insertBefore(new LiteralField('Title',"<h2>".$this->Title()."</h2>"),'Root');
+			$fields->addFieldToTab(
+				"Root",
+				new Tab(
+					"Next",
+					new HeaderField($name = "MyOrderStepHeader", "Current Status"),
+					$this->OrderStepField(),
+					new HeaderField($name = "NextStepHeader", "Action Next Step"),
+					//SEE: $this->MyStep()->addOrderStepFields($fields, $this); BELOW
+					new DropdownField("StatusID", "Change Status Manually (not recommended)", DataObject::get("OrderStep")->toDropDownMap())
+				)
 			);
-			$oldOrderStatusLogs->setPermissions(array("show"));
-			$fields->addFieldsToTab('Root.Log', $oldOrderStatusLogs);
-		}
-		else {
-			$fields->addFieldToTab('Root.Main', new LiteralField('MainDetails', _t("Order.NODETAILSSHOWN", '<p>No details are shown here as this order has not been submitted yet. Once you change the status of the order more options will be available.</p>')));
-			$orderItemsTable = new HasManyComplexTableField(
-				$this, //$controller
-				"Attributes", //$name =
-				"OrderItem", //$sourceClass =
-				null, //$fieldList =
-				null, //$detailedFormFields =
-				"\"OrderID\" = ".$this->ID."", //$sourceFilter =
-				"\"Created\" ASC", //$sourceSort =
-				null //$sourceJoin =
-			);
-			$orderItemsTable->setPermissions(array('edit', 'delete', 'export', 'add', 'inlineadd', "show"));
-			$orderItemsTable->setShowPagination(false);
-			$orderItemsTable->setRelationAutoSetting(true);
-			$orderItemsTable->addSummary(
-				"Total",
-				array("Total" => array("sum","Currency->Nice"))
-			);
-			$fields->addFieldToTab('Root.Items',$orderItemsTable);
-			$modifierTable = new TableListField(
-				"OrderModifiers", //$name
-				"OrderModifier", //$sourceClass =
-				OrderModifier::$summary_fields, //$fieldList =
-				"\"OrderID\" = ".$this->ID."" //$sourceFilter =
-			);
-			$modifierTable->setPermissions(array('edit', 'delete', 'export', 'add', 'show'));
-			$modifierTable->setPageSize(100);
-			$fields->addFieldToTab('Root.Extras',$modifierTable);
-
-			//MEMBER STUFF
-			$array = array();
-			if($this->MemberID) {
-				$array[0] =  "Remove Customer";
-				$array[$this->MemberID] =  "Leave with current customer: ".$this->Member()->getTitle();
-			}
-			else {
-				$array[0] =  " -- Select Customer -- ";
-				$currentMember = Member::currentUser();
-				$currentMemberID = $currentMember->ID;
-				$array[$currentMemberID] = "Assign this order to me: ".Member::currentUser()->getTitle();
-			}
-			$group = DataObject::get_one("Group", "\"Code\" = '".EcommerceRole::get_customer_group_code()."'");
-			if($group) {
-				$members = $group->Members();
-				if($members) {
-					$membersArray = $members->toDropDownMap($index = 'ID', $titleField = 'Title', $emptyString = "---- select an existing customer ---", $sort = true);
-					$array = array_merge($array, $membersArray);
-				}
-			}
-			$fields->addFieldToTab("Root.Main", new DropdownField("MemberID", "Select Cutomer", $array),"CustomerOrderNote");
-		}
-
-		$fields->addFieldToTab('Root.Addresses',new HeaderField("BillingAddressHeader", "Billing Address"));
-		$billingAddress = new HasOneComplexTableField(
-			$this, //$controller
-			"BillingAddress", //$name =
-			"BillingAddress", //$sourceClass =
-			null, //$fieldList =
-			null, //$detailedFormFields =
-			"\"OrderID\" = ".$this->ID."", //$sourceFilter =
-			"\"Created\" ASC", //$sourceSort =
-			null //$sourceJoin =
-		);
-		if(!$this->BillingAddressID) {
-			$billingAddress->setPermissions(array('edit', 'export', 'add', 'inlineadd', 'show'));
-		}
-		elseif($this->canEdit()) {
-			$billingAddress->setPermissions(array('edit', 'export', 'show'));
-		}
-		else {
-			$billingAddress->setPermissions(array( 'export',  'show'));
-		}
-		//$billingAddress->setShowPagination(false);
-		$fields->addFieldToTab('Root.Addresses',$billingAddress);
-
-		if(OrderAddress::get_use_separate_shipping_address()) {
-			$fields->addFieldToTab('Root.Addresses',new HeaderField("ShippingAddressHeader", "Shipping Address"));
-			$fields->addFieldToTab('Root.Addresses',new CheckboxField("UseShippingAddress", "Use separate shipping address"));
-			if($this->UseShippingAddress) {
-				$shippingAddress = new HasOneComplexTableField(
-					$this, //$controller
-					"ShippingAddress", //$name =
-					"ShippingAddress", //$sourceClass =
+			if($submitted) {
+				$htmlSummary = $this->renderWith("Order");
+				$fields->addFieldToTab('Root.Main', new LiteralField('MainDetails', $htmlSummary));
+				$paymentsTable = new HasManyComplexTableField(
+					$this,
+					"Payments", //$name
+					"Payment", //$sourceClass =
 					null, //$fieldList =
 					null, //$detailedFormFields =
 					"\"OrderID\" = ".$this->ID."", //$sourceFilter =
 					"\"Created\" ASC", //$sourceSort =
 					null //$sourceJoin =
 				);
-				if(!$this->ShippingAddressID) {
-					$shippingAddress->setPermissions(array('edit', 'export', 'add', 'inlineadd', 'show'));
-				}
-				elseif($this->canEdit()) {
-					$shippingAddress->setPermissions(array('edit', 'export', 'show'));
+				$paymentsTable->setPageSize(100);
+				if($this->IsPaid()){
+					$paymentsTable->setPermissions(array('export', 'show'));
 				}
 				else {
-					$shippingAddress->setPermissions(array( 'export',  'show'));
+					$paymentsTable->setPermissions(array('edit', 'delete', 'export', 'add', 'show'));
 				}
-				$fields->addFieldToTab('Root.Addresses',$shippingAddress);
+				$paymentsTable->setShowPagination(false);
+				$paymentsTable->setRelationAutoSetting(true);
+				$fields->addFieldToTab('Root.Payments',$paymentsTable);
+				if($member = $this->Member()) {
+					$fields->addFieldToTab('Root.Customer', new LiteralField("MemberDetails", $member->getEcommerceFieldsForCMSAsString()));
+				}
+
+
+				$cancelledField = $fields->dataFieldByName("CancelledByID");
+				$fields->removeByName("CancelledByID");
+				$fields->addFieldToTab("Root.Cancellation", $cancelledField);
+				$oldOrderStatusLogs = new ComplexTableField(
+					$this,
+					$name ="OldOrderStatusLogs",
+					$sourceClass = "OrderStatusLog",
+					$fieldList = null,
+					$detailFormFields = null,
+					$sourceFilter = "\"OrderID\" = ".$this->ID,
+					$sourceSort = "",
+					$sourceJoin = ""
+				);
+				$oldOrderStatusLogs->setPermissions(array("show"));
+				$fields->addFieldsToTab('Root.Log', $oldOrderStatusLogs);
+			}
+			else {
+				$fields->addFieldToTab('Root.Main', new LiteralField('MainDetails', _t("Order.NODETAILSSHOWN", '<p>No details are shown here as this order has not been submitted yet. Once you change the status of the order more options will be available.</p>')));
+				$orderItemsTable = new HasManyComplexTableField(
+					$this, //$controller
+					"Attributes", //$name =
+					"OrderItem", //$sourceClass =
+					null, //$fieldList =
+					null, //$detailedFormFields =
+					"\"OrderID\" = ".$this->ID."", //$sourceFilter =
+					"\"Created\" ASC", //$sourceSort =
+					null //$sourceJoin =
+				);
+				$orderItemsTable->setPermissions(array('edit', 'delete', 'export', 'add', 'inlineadd', "show"));
+				$orderItemsTable->setShowPagination(false);
+				$orderItemsTable->setRelationAutoSetting(true);
+				$orderItemsTable->addSummary(
+					"Total",
+					array("Total" => array("sum","Currency->Nice"))
+				);
+				$fields->addFieldToTab('Root.Items',$orderItemsTable);
+				$modifierTable = new ComplexTableField(
+					$this, //$controller
+					"OrderModifiers", //$name =
+					"OrderModifier", //$sourceClass =
+					null, //$fieldList =
+					null, //$detailedFormFields =
+					"\"OrderID\" = ".$this->ID."", //$sourceFilter =
+					"\"Created\" ASC", //$sourceSort =
+					null //$sourceJoin
+				);
+				$modifierTable->setPermissions(array('edit', 'delete', 'export', 'show'));
+				$modifierTable->setPageSize(100);
+				$fields->addFieldToTab('Root.Extras',$modifierTable);
+
+				//MEMBER STUFF
+				$array = array();
+				if($this->MemberID) {
+					$array[0] =  "Remove Customer";
+					$array[$this->MemberID] =  "Leave with current customer: ".$this->Member()->getTitle();
+				}
+				else {
+					$array[0] =  " -- Select Customer -- ";
+					$currentMember = Member::currentUser();
+					$currentMemberID = $currentMember->ID;
+					$array[$currentMemberID] = "Assign this order to me: ".Member::currentUser()->getTitle();
+				}
+				$group = DataObject::get_one("Group", "\"Code\" = '".EcommerceRole::get_customer_group_code()."'");
+				if($group) {
+					$members = $group->Members();
+					if($members) {
+						$membersArray = $members->toDropDownMap($index = 'ID', $titleField = 'Title', $emptyString = "---- select an existing customer ---", $sort = true);
+						$array = array_merge($array, $membersArray);
+					}
+				}
+				$fields->addFieldToTab("Root.Main", new DropdownField("MemberID", "Select Cutomer", $array),"CustomerOrderNote");
+			}
+			$fields->addFieldToTab('Root.Addresses',new HeaderField("BillingAddressHeader", "Billing Address"));
+
+			$billingAddressObject = $this->CreateOrReturnExistingAddress("BillingAddress");
+			if($billingAddressObject && !$billingAddressObject->ID) {
+				$billingAddressObject->write();
+				$this->BillingAddressID = $billingAddressObject->ID;
+				$this->write();
+			}
+			elseif($billingAddressObject && ($billingAddressObject->ID != $this->BillingAddressID)) {
+				$this->BillingAddressID = $billingAddressObject->ID;
+				$this->write();
+			}
+			$billingAddressField = new HasOneComplexTableField(
+				$this, //$controller
+				"BillingAddress", //$name =
+				"BillingAddress", //$sourceClass =
+				null, //$fieldList =
+				null, //$detailedFormFields =
+				"\"OrderID\" = ".$this->ID, //$sourceFilter =
+				"\"Created\" ASC", //$sourceSort =
+				null //"INNER JOIN \"Order\" ON \"Order\".\"BillingAddressID\" = \"BillingAddress\".\"ID\"" //$sourceJoin =
+			);
+			if(!$this->BillingAddressID) {
+				$billingAddressField->setPermissions(array('edit', 'add', 'inlineadd', 'show'));
+			}
+			elseif($this->canEdit()) {
+				$billingAddressField->setPermissions(array('edit', 'show'));
+			}
+			else {
+				$billingAddressField->setPermissions(array( 'export',  'show'));
+			}
+			//DO NOT ADD!
+			//$billingAddressField->setRelationAutoSetting(true);
+			//$billingAddress->setShowPagination(false);
+			$fields->addFieldToTab('Root.Addresses',$billingAddressField);
+
+			if(OrderAddress::get_use_separate_shipping_address()) {
+				$fields->addFieldToTab('Root.Addresses',new HeaderField("ShippingAddressHeader", "Shipping Address"));
+				$fields->addFieldToTab('Root.Addresses',new CheckboxField("UseShippingAddress", "Use separate shipping address"));
+				if($this->UseShippingAddress) {
+					$shippinggAddressObject = $this->CreateOrReturnExistingAddress("ShippingAddress");
+					if($shippinggAddressObject && !$shippinggAddressObject->ID) {
+						$shippinggAddressObject->write();
+						$this->ShippinggAddressID = $shippinggAddressObject->ID;
+						$this->write();
+					}
+					elseif($shippinggAddressObject && ($shippinggAddressObject->ID != $this->ShippingAddressID)) {
+						$this->ShippingAddressID = $shippinggAddressObject->ID;
+						$this->write();
+					}
+					$shippingAddressField = new HasOneComplexTableField(
+						$this, //$controller
+						"ShippingAddress", //$name =
+						"ShippingAddress", //$sourceClass =
+						null, //$fieldList =
+						null, //$detailedFormFields =
+						"\"OrderID\" = ".$this->ID."", //$sourceFilter =
+						"\"Created\" ASC", //$sourceSort =
+						null //"INNER JOIN \"Order\" ON \"Order\".\"ShippingAddressID\" = \"ShippingAddress\".\"ID\"" //$sourceJoin =
+					);
+					if(!$this->ShippingAddressID) {
+						$shippingAddressField->setPermissions(array('edit', 'add', 'inlineadd', 'show'));
+					}
+					elseif($this->canEdit()) {
+						$shippingAddressField->setPermissions(array('edit', 'show'));
+					}
+					else {
+						$shippingAddressField->setPermissions(array( 'export',  'show'));
+					}
+					//DO NOT ADD
+					//$shippingAddress->setRelationAutoSetting(true);
+					$fields->addFieldToTab('Root.Addresses',$shippingAddressField);
+				}
+				$this->MyStep()->addOrderStepFields($fields, $this);
 			}
 		}
-
-		$this->MyStep()->addOrderStepFields($fields, $this);
-
+		else {
+			$fields->removeByName("Main");
+			$fields->addFieldToTab("Root.Next", new LiteralField("VeryFirstStep", "<p>The first step in creating an order is to save (<i>add</i>) it.</p>"));
+		}
 		$this->extend('updateCMSFields',$fields);
 		return $fields;
 	}
@@ -1667,7 +1700,7 @@ class Order extends DataObject {
 	 *@return String(URLSegment)
 	 */
 	function Link() {
-		if(!$this->IsSubmitted()) {
+		if($this->canEdit()) {
 			//make sure to get a Cart page and not some other extension of Cart Page
 			$page = DataObject::get_one("CartPage", "\"ClassName\" = 'CartPage'");
 		}
@@ -1881,10 +1914,13 @@ class Order extends DataObject {
 			$this->init();
 		}
 		if(EcommerceRole::current_member_is_shop_admin()) {
-			if(isset($_REQUEST["SubmitNow"])) {
-				$this->tryToFinaliseOrder();
-				//just in case it writes again...
-				unset($_REQUEST["SubmitNow"]);
+			if(!$this->IsSubmitted()) {
+				if(isset($_REQUEST["SubmitOrderViaCMS"])) {
+					$this->calculateModifiers();
+					$this->tryToFinaliseOrder();
+					//just in case it writes again...
+					unset($_REQUEST["SubmitOrderViaCMS"]);
+				}
 			}
 		}
 	}

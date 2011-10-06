@@ -74,6 +74,7 @@ class OrderItem extends OrderAttribute {
 		$fields = parent::getCMSFields();
 		$fields->removeByName("Version");
 		$fields->removeByName("Sort");
+		$fields->removeByName("GroupSort");
 		$fields->removeByName("OrderAttribute_GroupID");
 		$buyables = Buyable::get_array_of_buyables();
 		$classNameArray = array();
@@ -83,7 +84,12 @@ class OrderItem extends OrderAttribute {
 				$classNameArray[$buyable.Buyable::get_order_item_class_name_post_fix()] = $buyable;
 				$newObjects = DataObject::get($buyable);
 				if($newObjects) {
-					$buyablesArray = array_merge($buyablesArray, $newObjects->toDropDownMap());
+					foreach($newObjects as $object) {
+						if(!$object->canPurchase()) {
+							$newObjects->remove($object);
+						}
+					}
+					$buyablesArray = $buyablesArray + $newObjects->toDropDownMap();
 				}
 			}
 		}
@@ -93,6 +99,13 @@ class OrderItem extends OrderAttribute {
 		}
 		$fields->replaceField("OrderID", new NumericField("OrderID", "Order Number"));
 		return $fields;
+	}
+
+	/**
+	 *@return Boolean
+	 **/
+	function canDelete($member = null) {
+		return $this->canEdit($member);
 	}
 
 	/**

@@ -100,8 +100,13 @@ Buyable::add_class("Product");
 // * * * PROCESS
 //OrderStep::set_order_steps_to_include(array("OrderStep_Created", "OrderStep_Submitted","OrderStep_SentInvoice", "OrderStep_Confirmed","OrderStep_Archived"));
 
-// * * * LOGS
+// * * * PROCESS: LOGS AND STATUS
 //OrderStatusLog::set_available_log_classes_array(array("OrderStatusLog_PaymentCheck"));
+//OrderStatusLog::set_order_status_log_class_used_for_submitting_order("OrderStatusLog_PaymentCheck");
+//OrderStep::set_order_steps_to_include(array("OrderStep_Created","OrderStep_Submitted","OrderStep_SentInvoice","OrderStep_Paid","OrderStep_Sent","OrderStep_Archived"));
+//OrderStep::add_order_step_to_include("OrderStep_MyOrderStep", $placeAfter = "OrderStep_Submitted");
+//OrderStep::remove_order_step_to_include("OrderStep_SentInvoice");
+
 
 // * * * SALES
 //SalesAdmin::add_managed_model("MyOtherLogThing")

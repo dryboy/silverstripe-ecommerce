@@ -493,9 +493,35 @@ class OrderStep_Created extends OrderStep {
 	}
 
 
+
 	function addOrderStepFields(&$fields, $order) {
+		if(!$order->IsSubmitted()) {
+			//LINE BELOW IS NOT REQUIRED
+			//OrderStatusLog::add_available_log_classes_array($className);
+			$header = _t("OrderStep.SUBMITORDER", "Submit Order");
+			$msg = _t("OrderStep.MUSTDOSUBMITRECORD", "<p>Tick the box below to submit this order.</p>");
+			$problems = array();
+			if(!$order->Items()) {
+				$problems[] = "There are no items associated with this order.";
+			}
+			if(!$order->MemberID) {
+				$problems[] = "There is no customer associated with this order.";
+			}
+			if(!$order->BillingAddressID) {
+				$problems[] = "There is no billing address associated with this order.";
+			}
+			if(count($problems)) {
+				$msg = "<p>You can not submit this order because:</p> <ul><li>".implode("</li><li>", $problems)."</li></ul>";
+			}
+			$fields->addFieldToTab("Root.Next", new HeaderField("CreateSubmitRecordHeader", $header, 3));
+			$fields->addFieldToTab("Root.Next", new LiteralField("CreateSubmitRecordMessage", $msg));
+			if(!$problems) {
+				$fields->addFieldToTab("Root.Next", new CheckboxField("SubmitOrderViaCMS", "Submit Now"));
+			}
+		}
 		return $fields;
 	}
+
 
 
 }
@@ -524,7 +550,7 @@ class OrderStep_Submitted extends OrderStep {
 
 	public function getCMSFields() {
 		$fields = parent::getCMSFields();
-		$fields->addFieldToTab("Root.Main", new HeaderField("HOWTOSAVESUBMITTEDORDER", _t("OrderStep.HOWTOSAVESUBMITTEDORDER", "How would you like to make a backup of your order at the moment it is submitted?"), 1), "SaveOrderAsHTML");
+		$fields->addFieldToTab("Root.Main", new HeaderField("HOWTOSAVESUBMITTEDORDER", _t("OrderStep.HOWTOSAVESUBMITTEDORDER", "How would you like to make a backup of your order at the moment it is submitted?"), 3), "SaveOrderAsHTML");
 		return $fields;
 	}
 
@@ -581,32 +607,6 @@ class OrderStep_Submitted extends OrderStep {
 	}
 
 
-	function addOrderStepFields(&$fields, $order) {
-		if(!$order->IsSubmitted()) {
-			//LINE BELOW IS NOT REQUIRED
-			//OrderStatusLog::add_available_log_classes_array($className);
-			$header = _t("OrderStep.SUBMITORDER", "Submit Order");
-			$msg = _t("OrderStep.MUSTDOSUBMITRECORD", "Tick the box below to submit this order.");
-			$problems = array();
-			if(!$order->Items()) {
-				$problems[] = "There are no items associated with this order.";
-			}
-			$problems = array();
-			if(!$order->MemberID) {
-				$problems[] = "There is no customer associated with this order.";
-			}
-			if(count($problems)) {
-				$msg = "You can not submit this order because <ul><li>".implode("</li><li>", $problems)."</li></ul>";
-			}
-			$fields->addFieldToTab("Root.Next", new HeaderField("CreateSubmitRecordHeader", $header), "CustomerOrderNote");
-			$fields->addFieldToTab("Root.Next", new LiteralField("CreateSubmitRecordMessage", '<p>'.$msg.'</p>'), "CustomerOrderNote");
-			if(!$problems) {
-				$fields->addFieldToTab("Root.Next", new CheckboxField("SubmitNow", "Submit Now"), "CustomerOrderNote");
-			}
-		}
-		return $fields;
-	}
-
 
 }
 
@@ -631,7 +631,7 @@ class OrderStep_SentInvoice extends OrderStep {
 
 	public function getCMSFields() {
 		$fields = parent::getCMSFields();
-		$fields->addFieldToTab("Root.Main", new HeaderField("ACTUALLYSENDINVOICE", _t("OrderStep.ACTUALLYSENDINVOICE", "Actually send the invoice?"), 1), "SendInvoiceToCustomer");
+		$fields->addFieldToTab("Root.Main", new HeaderField("ACTUALLYSENDINVOICE", _t("OrderStep.ACTUALLYSENDINVOICE", "Actually send the invoice?"), 3), "SendInvoiceToCustomer");
 		return $fields;
 	}
 
@@ -711,7 +711,7 @@ class OrderStep_Paid extends OrderStep {
 			//OrderStatusLog::add_available_log_classes_array($className);
 			$header = _t("OrderStep.SUBMITORDER", "Order NOT Paid");
 			$msg = _t("OrderStep.ORDERNOTPAID", "This order can not be completed, because it has not been paid. You can either create a payment or change the status of any existing payment to <i>success</i>.");
-			$fields->addFieldToTab("Root.Next", new HeaderField("NotPaidHeader", $header), "StatusID");
+			$fields->addFieldToTab("Root.Next", new HeaderField("NotPaidHeader", $header, 3), "StatusID");
 			$fields->addFieldToTab("Root.Next", new LiteralField("NotPaidMessage", '<p>'.$msg.'</p>'), "StatusID");
 		}
 		return $fields;
@@ -784,7 +784,7 @@ class OrderStep_SentReceipt extends OrderStep {
 
 	public function getCMSFields() {
 		$fields = parent::getCMSFields();
-		$fields->addFieldToTab("Root.Main", new HeaderField("ACTUALLYSENDRECEIPT", _t("OrderStep.ACTUALLYSENDRECEIPT", "Actually send the receipt?"), 1), "SendReceiptToCustomer");
+		$fields->addFieldToTab("Root.Main", new HeaderField("ACTUALLYSENDRECEIPT", _t("OrderStep.ACTUALLYSENDRECEIPT", "Actually send the receipt?"), 3), "SendReceiptToCustomer");
 		return $fields;
 	}
 

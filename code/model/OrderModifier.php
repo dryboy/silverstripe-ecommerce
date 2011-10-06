@@ -74,6 +74,25 @@ class OrderModifier extends OrderAttribute {
 
 	function getCMSFields(){
 		$fields = parent::getCMSFields();
+		$fields->removeByName("Sort");
+		$fields->removeByName("GroupSort");
+		$fields->replaceField("Name", new ReadonlyField("Name"));
+		$fields->removeByName("TableValue");
+		$fields->removeByName("CalculationValue");
+		$fields->removeByName("HasBeenRemoved");
+		$fields->addFieldToTab(
+			"Root",
+			new Tab(
+				"Debug",
+				new ReadonlyField("ClassName", "Type", $this->ClassName),
+				new ReadonlyField("CreatedShown", "Created", $this->Created),
+				new ReadonlyField("LastEditedShown", "Last Edited", $this->LastEdited),
+				new ReadonlyField("TableValueShown", "Table Value", $this->TableValue),
+				new ReadonlyField("CalculationValueShown", "Raw Value", $this->CalculationValue)
+			)
+		);
+		$fields->addFieldToTab("Root.Status", new CheckboxField("HasBeenRemoved", "Has been removed"));
+		$fields->removeByName("OrderAttribute_GroupID");
 		return $fields;
 	}
 

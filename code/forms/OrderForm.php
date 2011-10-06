@@ -468,11 +468,12 @@ class OrderForm_Payment extends Form {
 
 	function dopayment($data, $form) {
 		$SQLData = Convert::raw2sql($data);
-		$member = Member::currentUser();
-		if($member && $orderID = intval($SQLData['OrderID'])) {
-			$order = Order::get_by_id_and_member_id($orderID, $member->ID);
-			if($order && $order->canPay()) {
-				return EcommercePayment::process_payment_form_and_return_next_step($order, $form, $data);
+		if(isset($SQLData['OrderID'])) {
+			if($orderID = intval($SQLData['OrderID'])) {
+				$order = Order::get_by_id_if_can_view($orderID);
+				if($order && $order->canPay()) {
+					return EcommercePayment::process_payment_form_and_return_next_step($order, $form, $data);
+				}
 			}
 		}
 		$form->sessionMessage(

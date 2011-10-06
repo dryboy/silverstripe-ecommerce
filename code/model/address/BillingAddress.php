@@ -88,6 +88,18 @@ class BillingAddress extends OrderAddress {
 	}
 
 	/**
+	 *
+	 *@return FieldSet
+	 **/
+	function getCMSFields() {
+		$fields = parent::getCMSFields();
+		$fields->replaceField("Email", new EmailField("Email"));
+		$fields->replaceField("RegionID", $this->getRegionField("RegionID"));
+		$fields->replaceField("Country", $this->getCountryField("Country"));
+		return $fields;
+	}
+
+	/**
 	 *@return Fieldset
 	 **/
 	public function getFields() {

@@ -14,9 +14,6 @@ class SubTotalModifier extends OrderModifier {
 
 // ######################################## *** model defining static variables (e.g. $db, $has_one)
 
-	public static $defaults = array(
-		"Type" => "NoChange"
-	);
 
 // ######################################## *** cms variables + functions (e.g. getCMSFields, $searchableFields)
 // ######################################## *** other (non) static variables (e.g. protected static $special_name_for_something, protected $order)
