@@ -43,7 +43,7 @@ class SalesAdmin extends ModelAdmin{
 		Requirements::themedCSS("OrderReport"); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
 		Requirements::themedCSS("OrderReport_Print", "print"); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
 		Requirements::javascript("ecommerce/javascript/EcomModelAdminExtensions.js"); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
-		Requirements::themedCSS("OrderStepField"); // LEAVE HERE 
+		Requirements::themedCSS("OrderStepField"); // LEAVE HERE
 	}
 
 
@@ -65,7 +65,7 @@ class SalesAdmin_RecordController extends ModelAdminEcommerceClass_RecordControl
 		if($this->parentController) {
 			$currRecordURL = $this->parentController->Link(Controller::join_links($this->currentRecord->ID, "edit"));
 			$form->Actions()->insertFirst(new FormAction("goCurr", "Refresh Record"));
-			$form->Fields()->push(new HiddenField("currRecordURL", null, $currRecordURL));			
+			$form->Fields()->push(new HiddenField("currRecordURL", null, $currRecordURL));
 		}
 		return $form;
 	}

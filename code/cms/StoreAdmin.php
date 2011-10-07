@@ -16,7 +16,7 @@ class StoreAdmin extends ModelAdmin{
 
 	public static $menu_title = 'Shop';
 
-	public static $menu_priority = 1;
+	public static $menu_priority = 3;
 
 	//static $url_priority = 50;
 
