@@ -348,16 +348,15 @@ class Order extends DataObject {
 				$fields->removeByName($field);
 			}
 			//$fields->insertBefore(new LiteralField('Title',"<h2>".$this->Title()."</h2>"),'Root');
-			$fields->addFieldToTab(
-				"Root",
+			$fields->insertAfter(
 				new Tab(
 					"Next",
 					new HeaderField($name = "MyOrderStepHeader", "Current Status"),
 					$this->OrderStepField(),
-					new HeaderField($name = "NextStepHeader", "Action Next Step"),
+					new HeaderField($name = "NextStepHeader", "Action Next Step")
 					//SEE: $this->MyStep()->addOrderStepFields($fields, $this); BELOW
-					new DropdownField("StatusID", "Change Status Manually (not recommended)", DataObject::get("OrderStep")->toDropDownMap())
-				)
+				),
+				"Main"
 			);
 			if($submitted) {
 				$htmlSummary = $this->renderWith("Order");
@@ -532,8 +531,10 @@ class Order extends DataObject {
 					//$shippingAddress->setRelationAutoSetting(true);
 					$fields->addFieldToTab('Root.Addresses',$shippingAddressField);
 				}
-				$this->MyStep()->addOrderStepFields($fields, $this);
 			}
+			$this->MyStep()->addOrderStepFields($fields, $this);
+			$fields->addFieldToTab("Root.Next", new HeaderField("ActionNextStepManually", "Manual Status Change", 3));
+			$fields->addFieldToTab("Root.Next", new DropdownField("StatusID", "Override Status Manually", DataObject::get("OrderStep")->toDropDownMap()));
 		}
 		else {
 			$fields->removeByName("Main");
