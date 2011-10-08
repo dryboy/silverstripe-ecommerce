@@ -19,8 +19,8 @@ class CartPage extends Page{
 	public static $icon = 'ecommerce/images/icons/CartPage';
 
 	public static $db = array(
-		'ProceedToCheckoutMessage' => 'Varchar(100)',
-		'ContinueShoppingMessage' => 'Varchar(100)',
+		'ProceedToCheckoutLabel' => 'Varchar(100)',
+		'ContinueShoppingLabel' => 'Varchar(100)',
 		'StartNewOrderLinkLabel' => 'Varchar(100)'
 	);
 
@@ -30,8 +30,8 @@ class CartPage extends Page{
 	);
 
 	public static $defaults = array(
-		'ProceedToCheckoutMessage' => '"Proceed to checkout"',
-		'ContinueShoppingMessage' => 'Continue Shopping',
+		'ProceedToCheckoutLabel' => 'Proceed to checkout',
+		'ContinueShoppingLabel' => 'Continue Shopping',
 		'StartNewOrderLinkLabel' => 'Start new order'
 	);
 
@@ -49,20 +49,20 @@ class CartPage extends Page{
 	function canCreate($member = null) {
 		return !DataObject :: get_one("SiteTree", "\"ClassName\" = 'CartPage'");
 	}
-	
+
 	/**
 	 *@return Fieldset
 	 **/
 	function getCMSFields(){
 		$fields = parent::getCMSFields();
 		if($this->ClassName != "CheckoutPage") {
+			$fields->addFieldsToTab('Root.Content.Links', new TextField('StartNewOrderLinkLabel', 'Label for starting new order (e.g. click here to start new order)'));
 			if($checkouts = DataObject::get('CheckoutPage')) {
-				$fields->addFieldToTab('Root.Content.Links',new TextField('ProceedToCheckoutMessage','Proceed to checkout message (e.g. click here to go through to checkout)'));
+				$fields->addFieldToTab('Root.Content.Links',new TextField('ProceedToCheckoutLabel','Proceed to checkout label (e.g. click here to go through to checkout)'));
 				$fields->addFieldToTab('Root.Content.Links',new DropdownField('CheckoutPageID','Checkout Page',$checkouts->toDropdownMap()));
 			}
 			$fields->addFieldToTab('Root.Content.Links',new TreeDropdownField('ContinuePageID','Continue Page',"SiteTree"));
-			$fields->addFieldToTab('Root.Content.Links',new TextField('ContinueShoppingMessage','Continue shopping link (click here to continue shopping'));
-			$fields->addFieldsToTab('Root.Content.Messages', new TextField('StartNewOrderLinkLabel', 'Label for starting new order - e.g. click here to start new order'));		
+			$fields->addFieldToTab('Root.Content.Links',new TextField('ContinueShoppingLabel','Continue shopping link label (e.g. click here to continue shopping'));
 		}
 
 		return $fields;
@@ -129,27 +129,27 @@ class CartPage_Controller extends Page_Controller{
 
 	/**
 	 * This DataObjectSet holds DataObjects with a Link and Title each....
-	 *@var $actionLinks DataObjectSet 
+	 *@var $actionLinks DataObjectSet
 	 **/
 	protected $actionLinks = null;
 
 	/**
 	 * to ensure messages and actions links are only worked out once...
-	 *@var $workedOutMessagesAndActions Boolean 
+	 *@var $workedOutMessagesAndActions Boolean
 	 **/
 	protected $workedOutMessagesAndActions = false;
 
 	/**
 	 * order currently being shown on this page
 	 *@var $order DataObject
-	 **/ 
+	 **/
 	protected $currentOrder = null;
 
 	/**
 	 * Message shown (e.g. no current order, could not find order, order updated, etc...)
 	 *
 	 *@var $message String
-	 **/ 
+	 **/
 	protected $message = "";
 
 	protected static $session_code = "CartPageMessage";
@@ -161,8 +161,8 @@ class CartPage_Controller extends Page_Controller{
 	public function init() {
 		parent::init();
 		//Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js"); VIA EcommerceSiteTreeExtension::initcontentcontroller()
-		Requirements::javascript('ecommerce/javascript/EcomCart.js'); 
-		Requirements::themedCSS('Cart'); 
+		Requirements::javascript('ecommerce/javascript/EcomCart.js');
+		Requirements::themedCSS('Cart');
 		// find the current order if any
 
 		$orderID = 0;
@@ -184,7 +184,7 @@ class CartPage_Controller extends Page_Controller{
 
 	/**
 	 * This returns a DataObjectSet, each dataobject has two vars: Title and Link
-	 *@return DataObjectSet | Null 
+	 *@return DataObjectSet | Null
 	 **/
 	function ActionLinks() {
 		$this->workOutMessagesAndActions();
@@ -276,15 +276,15 @@ class CartPage_Controller extends Page_Controller{
 	protected function workOutMessagesAndActions(){
 		if(!$this->workedOutMessagesAndActions) {
 			$this->actionLinks = new DataObjectSet();
-			if($this->ProceedToCheckoutMessage && $this->CheckoutPageID && $this->currentOrder && $this->currentOrder->Items()) {
+			if($this->ProceedToCheckoutLabel && $this->CheckoutPageID && $this->currentOrder && $this->currentOrder->Items()) {
 				$this->actionLinks->push(new ArrayData(array (
-					"Title" => $this->ProceedToCheckoutMessage,
+					"Title" => $this->ProceedToCheckoutLabel,
 					"Link" => $this->CheckoutPage()->Link()
 				)));
 			}
-			if($this->ContinueShoppingMessage && $this->ContinuePageID) {
+			if($this->ContinueShoppingLabel && $this->ContinuePageID) {
 				$this->actionLinks->push(new ArrayData(array (
-					"Title" => $this->ContinueShoppingMessage,
+					"Title" => $this->ContinueShoppingLabel,
 					"Link" => $this->ContinuePage()->Link()
 				)));
 			}

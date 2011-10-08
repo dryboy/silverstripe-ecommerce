@@ -185,18 +185,18 @@ class OrderConfirmationPage_Controller extends CartPage_Controller{
 			if($m = $o->Member()) {
 				if($m->Email) {
 					$o->sendReceipt(_t("Account.COPYONLY", "--- COPY ONLY ---"), true);
-					$this->message = _t('Account.RECEIPTSENT', 'An order receipt has been sent to: ').$m->Email.'.';
+					$this->message = _t('OrderConfirmationPage.RECEIPTSENT', 'An order receipt has been sent to: ').$m->Email.'.';
 				}
 				else {
-					$this->message = _t('Account.RECEIPTNOTSENTNOEMAIL', 'No email could be found for sending this receipt.');
+					$this->message = _t('OrderConfirmationPage.RECEIPTNOTSENTNOTSENDING', 'Email could NOT be sent.');
 				}
 			}
 			else {
-				$this->message = _t('Account.RECEIPTNOTSENTNOEMAIL', 'No email could be found for sending this receipt.');
+				$this->message = _t('OrderConfirmationPage.RECEIPTNOTSENTNOEMAIL', 'No email could be found for sending this receipt.');
 			}
 		}
 		else {
-			$this->message = _t('Account.RECEIPTNOTSENTNOORDER', 'Order could not be found...');
+			$this->message = _t('OrderConfirmationPage.RECEIPTNOTSENTNOORDER', 'Order could not be found.');
 		}
 		Director::redirectBack();
 		return array();
@@ -207,18 +207,19 @@ class OrderConfirmationPage_Controller extends CartPage_Controller{
 		if(!$this->workedOutMessagesAndActions) {
 			$this->actionLinks = new DataObjectSet();
 			if($this->currentOrder) {
-				if ($this->currentOrder->IsSubmitted()) {
+				if ($this->currentOrder->IsSubmitted() || !$this->currentOrder->canEdit() ) {
+					if($this->StartNewOrderLinkLabel && CartPage::new_order_link())
 					//start a new order
 					$this->actionLinks->push(new ArrayData(array (
 						"Title" => $this->StartNewOrderLinkLabel,
 						"Link" => CartPage::new_order_link()
 					)));
 				}
-				else {
-					//start a new order
+				elseif($this->currentOrder->canEdit() && $this->ProceedToCheckoutLabel && $this->CheckoutPageID && $this->currentOrder && $this->currentOrder->Items()) {
+					//finalise order...
 					$this->actionLinks->push(new ArrayData(array (
-						"Title" => "Finalise Order",
-						"Link" => "test"
+						"Title" => $this->ProceedToCheckoutLabel,
+						"Link" => $this->CheckoutPage()->Link()
 					)));
 				}
 			}
