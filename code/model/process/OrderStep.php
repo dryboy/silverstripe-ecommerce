@@ -716,6 +716,22 @@ class OrderStep_Paid extends OrderStep {
 		}
 		return $fields;
 	}
+
+
+	/**
+	 * Update CMS Fields for Order
+	 * with some additional fields that help the user
+	 * to proceed to the next step.
+	 *
+	 **/
+
+	function addOrderStepFields(&$fields, $order) {
+		OrderStatusLog::add_available_log_classes_array("OrderStatusLog_PaymentCheck");
+		$msg = _t("OrderStep.MUSTDOPAYMENTCHECK", " ... To move this order to the next step you the current order must be set to <i>paid</i>... Go to the payments step and edit / add payments.");
+		$fields->addFieldToTab("Root.Next", new LiteralField("OrderStatusLog_PaymentCheck", "<p>".$msg."</p>"));
+		return $fields;
+	}
+
 }
 
 
@@ -751,6 +767,12 @@ class OrderStep_Confirmed extends OrderStep {
 		return null;
 	}
 
+	/**
+	 * Update CMS Fields for Order
+	 * with some additional fields that help the user
+	 * to proceed to the next step.
+	 *
+	 **/
 
 	function addOrderStepFields(&$fields, $order) {
 		OrderStatusLog::add_available_log_classes_array("OrderStatusLog_PaymentCheck");
