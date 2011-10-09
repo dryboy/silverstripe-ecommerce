@@ -231,6 +231,7 @@ class OrderStep extends DataObject {
 
 	/**
 	 * Allows the opportunity for the Order Step to add any fields to Order::getCMSFields
+	 * Usually this is added before ActionNextStepManually
 	 *@param FieldSet $fields
 	 *@param Order $order
 	 *@return FieldSet
@@ -492,13 +493,17 @@ class OrderStep_Created extends OrderStep {
 		return null;
 	}
 
-
-
+	/**
+	 * Allows the opportunity for the Order Step to add any fields to Order::getCMSFields
+	 *@param FieldSet $fields
+	 *@param Order $order
+	 *@return FieldSet
+	 **/
 	function addOrderStepFields(&$fields, $order) {
 		if(!$order->IsSubmitted()) {
 			//LINE BELOW IS NOT REQUIRED
-			//OrderStatusLog::add_available_log_classes_array($className);
 			$header = _t("OrderStep.SUBMITORDER", "Submit Order");
+			$label = _t("OrderStep.SUBMITNOW", "Submit Now");
 			$msg = _t("OrderStep.MUSTDOSUBMITRECORD", "<p>Tick the box below to submit this order.</p>");
 			$problems = array();
 			if(!$order->Items()) {
@@ -513,10 +518,10 @@ class OrderStep_Created extends OrderStep {
 			if(count($problems)) {
 				$msg = "<p>You can not submit this order because:</p> <ul><li>".implode("</li><li>", $problems)."</li></ul>";
 			}
-			$fields->addFieldToTab("Root.Next", new HeaderField("CreateSubmitRecordHeader", $header, 3));
-			$fields->addFieldToTab("Root.Next", new LiteralField("CreateSubmitRecordMessage", $msg));
+			$fields->addFieldToTab("Root.Next", new HeaderField("CreateSubmitRecordHeader", $header, 3), "ActionNextStepManually");
+			$fields->addFieldToTab("Root.Next", new LiteralField("CreateSubmitRecordMessage", $msg), "ActionNextStepManually");
 			if(!$problems) {
-				$fields->addFieldToTab("Root.Next", new CheckboxField("SubmitOrderViaCMS", "Submit Now"));
+				$fields->addFieldToTab("Root.Next", new CheckboxField("SubmitOrderViaCMS", $label), "ActionNextStepManually");
 			}
 		}
 		return $fields;
@@ -607,6 +612,17 @@ class OrderStep_Submitted extends OrderStep {
 	}
 
 
+	/**
+	 * Allows the opportunity for the Order Step to add any fields to Order::getCMSFields
+	 *@param FieldSet $fields
+	 *@param Order $order
+	 *@return FieldSet
+	 **/
+	function addOrderStepFields(&$fields, $order) {
+		$msg = _t("OrderStep.CANADDGENERALLOG", " ... if you want to make some notes about this step then do this here...");
+		$fields->addFieldToTab("Root.Next", $order->OrderStatusLogsTable("OrderStatusLog", $msg),"ActionNextStepManually");
+		return $fields;
+	}
 
 }
 
@@ -670,6 +686,19 @@ class OrderStep_SentInvoice extends OrderStep {
 		return null;
 	}
 
+	/**
+	 * Allows the opportunity for the Order Step to add any fields to Order::getCMSFields
+	 *@param FieldSet $fields
+	 *@param Order $order
+	 *@return FieldSet
+	 **/
+	function addOrderStepFields(&$fields, $order) {
+		$msg = _t("OrderStep.CANADDGENERALLOG", " ... if you want to make some notes about this step then do this here...");
+		$fields->addFieldToTab("Root.Next", $order->OrderStatusLogsTable("OrderStatusLog", $msg),"ActionNextStepManually");
+		return $fields;
+	}
+
+
 }
 
 class OrderStep_Paid extends OrderStep {
@@ -704,33 +733,23 @@ class OrderStep_Paid extends OrderStep {
 		return null;
 	}
 
-
+	/**
+	 * Allows the opportunity for the Order Step to add any fields to Order::getCMSFields
+	 *@param FieldSet $fields
+	 *@param Order $order
+	 *@return FieldSet
+	 **/
 	function addOrderStepFields(&$fields, $order) {
 		if(!$order->IsPaid()) {
-			//LINE BELOW IS NOT REQUIRED
-			//OrderStatusLog::add_available_log_classes_array($className);
 			$header = _t("OrderStep.SUBMITORDER", "Order NOT Paid");
 			$msg = _t("OrderStep.ORDERNOTPAID", "This order can not be completed, because it has not been paid. You can either create a payment or change the status of any existing payment to <i>success</i>.");
-			$fields->addFieldToTab("Root.Next", new HeaderField("NotPaidHeader", $header, 3), "StatusID");
-			$fields->addFieldToTab("Root.Next", new LiteralField("NotPaidMessage", '<p>'.$msg.'</p>'), "StatusID");
+			$fields->addFieldToTab("Root.Next", new HeaderField("NotPaidHeader", $header, 3), "ActionNextStepManually");
+			$fields->addFieldToTab("Root.Next", new LiteralField("NotPaidMessage", '<p>'.$msg.'</p>'), "ActionNextStepManually");
 		}
 		return $fields;
 	}
 
 
-	/**
-	 * Update CMS Fields for Order
-	 * with some additional fields that help the user
-	 * to proceed to the next step.
-	 *
-	 **/
-
-	function addOrderStepFields(&$fields, $order) {
-		OrderStatusLog::add_available_log_classes_array("OrderStatusLog_PaymentCheck");
-		$msg = _t("OrderStep.MUSTDOPAYMENTCHECK", " ... To move this order to the next step you the current order must be set to <i>paid</i>... Go to the payments step and edit / add payments.");
-		$fields->addFieldToTab("Root.Next", new LiteralField("OrderStatusLog_PaymentCheck", "<p>".$msg."</p>"));
-		return $fields;
-	}
 
 }
 
@@ -767,17 +786,16 @@ class OrderStep_Confirmed extends OrderStep {
 		return null;
 	}
 
-	/**
-	 * Update CMS Fields for Order
-	 * with some additional fields that help the user
-	 * to proceed to the next step.
-	 *
-	 **/
 
+	/**
+	 * Allows the opportunity for the Order Step to add any fields to Order::getCMSFields
+	 *@param FieldSet $fields
+	 *@param Order $order
+	 *@return FieldSet
+	 **/
 	function addOrderStepFields(&$fields, $order) {
-		OrderStatusLog::add_available_log_classes_array("OrderStatusLog_PaymentCheck");
 		$msg = _t("OrderStep.MUSTDOPAYMENTCHECK", " ... To move this order to the next step you must carry out a payment check (is the money in the bank?) by creating a record here (click me)");
-		$fields->addFieldToTab("Root.Next", $order->OrderStatusLogsTable("OrderStatusLog_PaymentCheck", $msg),"StatusID");
+		$fields->addFieldToTab("Root.Next", $order->OrderStatusLogsTable("OrderStatusLog_PaymentCheck", $msg),"ActionNextStepManually");
 		return $fields;
 	}
 
@@ -836,6 +854,20 @@ class OrderStep_SentReceipt extends OrderStep {
 	}
 
 
+	/**
+	 * Allows the opportunity for the Order Step to add any fields to Order::getCMSFields
+	 *@param FieldSet $fields
+	 *@param Order $order
+	 *@return FieldSet
+	 **/
+	function addOrderStepFields(&$fields, $order) {
+		$msg = _t("OrderStep.CANADDGENERALLOG", " ... if you want to make some notes about this step then do this here...)");
+		$fields->addFieldToTab("Root.Next", $order->OrderStatusLogsTable("OrderStatusLog", $msg),"ActionNextStepManually");
+		return $fields;
+	}
+
+
+
 }
 
 
@@ -871,10 +903,15 @@ class OrderStep_Sent extends OrderStep {
 		return null;
 	}
 
+	/**
+	 * Allows the opportunity for the Order Step to add any fields to Order::getCMSFields
+	 *@param FieldSet $fields
+	 *@param Order $order
+	 *@return FieldSet
+	 **/
 	function addOrderStepFields(&$fields, $order) {
-		OrderStatusLog::add_available_log_classes_array("OrderStatusLog_DispatchPhysicalOrder");
 		$msg = _t("OrderStep.MUSTENTERDISPATCHRECORD", " ... To move this order to the next step you enter the dispatch details in the logs.");
-		$fields->addFieldToTab("Root.Next", $order->OrderStatusLogsTable("OrderStatusLog_DispatchPhysicalOrder", $msg),"StatusID");
+		$fields->addFieldToTab("Root.Next", $order->OrderStatusLogsTable("OrderStatusLog_DispatchPhysicalOrder", $msg),"ActionNextStepManually");
 		return $fields;
 	}
 
@@ -911,6 +948,19 @@ class OrderStep_Archived extends OrderStep {
 		//IMPORTANT
 		return null;
 	}
+
+	/**
+	 * Allows the opportunity for the Order Step to add any fields to Order::getCMSFields
+	 *@param FieldSet $fields
+	 *@param Order $order
+	 *@return FieldSet
+	 **/
+	function addOrderStepFields(&$fields, $order) {
+		$msg = _t("OrderStep.CANADDGENERALLOG", " ... if you want to make some notes about this order then do this here ...)");
+		$fields->addFieldToTab("Root.Next", $order->OrderStatusLogsTable("OrderStatusLog_Archived", $msg),"ActionNextStepManually");
+		return $fields;
+	}
+
 
 }
 

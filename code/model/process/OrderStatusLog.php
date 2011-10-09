@@ -580,3 +580,51 @@ class OrderStatusLog_PaymentCheck extends OrderStatusLog {
 
 }
 
+
+
+/**
+ * OrderStatusLog_Submitted is an important class that is created when an order is submitted.
+ * It is created by the order and it signifies to the OrderStep to continue to the next step.
+ **/
+
+class OrderStatusLog_Archived extends OrderStatusLog {
+
+
+	public static $defaults = array(
+		"InternalUseOnly" => false
+	);
+
+
+	public static $singular_name = "Archived Order - Additional Note";
+		function i18n_singular_name() { return _t("OrderStatusLog.ARCHIVEDORDERS", "Archived Order - Additional Note");}
+
+	public static $plural_name = "Archived Order - Additional Notes";
+		function i18n_plural_name() { return _t("OrderStatusLog.ARCHIVEDORDERS", "Archived Order - Additional Notes");}
+
+	/**
+	 * This record is not editable
+	 *@return Boolean
+	 **/
+	public function canDelete($member = null) {
+		return false;
+	}
+
+	/**
+	 * This record is not editable
+	 *@return Boolean
+	 **/
+	public function canEdit($member = null) {
+		return true;
+	}
+
+
+	/**
+	* can only be created when the order is submitted
+	*@return Boolean
+	**/
+	public function canCreate($member = null) {
+		return true;
+	}
+
+}
+
