@@ -351,9 +351,10 @@ class Order extends DataObject {
 			$fields->insertAfter(
 				new Tab(
 					"Next",
-					new HeaderField($name = "MyOrderStepHeader", "Current Status"),
+					new HeaderField("MyOrderStepHeader", "Current Status"),
 					$this->OrderStepField(),
-					new HeaderField($name = "NextStepHeader", "Action Next Step")
+					new HeaderField("OrderStepNextStepHeader", "Action Next Step"),
+					new LiteralField("ActionNextStepManually", "<br /><br /><br /><h3>Manual Status Change</h3>")
 					//SEE: $this->MyStep()->addOrderStepFields($fields, $this); BELOW
 				),
 				"Main"
@@ -381,6 +382,8 @@ class Order extends DataObject {
 				$paymentsTable->setShowPagination(false);
 				$paymentsTable->setRelationAutoSetting(true);
 				$fields->addFieldToTab('Root.Payments',$paymentsTable);
+				$fields->addFieldToTab("Root.Payments", new ReadOnlyField("TotalPaid", "Total Paid", $this->getTotalPaid()));
+				$fields->addFieldToTab("Root.Payments", new ReadOnlyField("TotalOutstanding", "Total Outstanding", $this->getTotalOutstanding()));
 				if($member = $this->Member()) {
 					$fields->addFieldToTab('Root.Customer', new LiteralField("MemberDetails", $member->getEcommerceFieldsForCMSAsString()));
 				}
@@ -533,8 +536,7 @@ class Order extends DataObject {
 				}
 			}
 			$this->MyStep()->addOrderStepFields($fields, $this);
-			$fields->addFieldToTab("Root.Next", new HeaderField("ActionNextStepManually", "Manual Status Change", 3));
-			$fields->addFieldToTab("Root.Next", new DropdownField("StatusID", "Override Status Manually", DataObject::get("OrderStep")->toDropDownMap()));
+			$fields->addFieldToTab("Root.Next", new DropdownField("StatusID", "Override Status Manually (not recommended)", DataObject::get("OrderStep")->toDropDownMap()));
 		}
 		else {
 			$fields->removeByName("Main");
@@ -549,6 +551,7 @@ class Order extends DataObject {
 	 *@return HasManyComplexTableField
 	 **/
 	public function OrderStatusLogsTable($sourceClass, $title, $fieldList = null, $detailedFormFields = null) {
+		OrderStatusLog::add_available_log_classes_array($sourceClass);
 		$orderStatusLogsTable = new HasManyComplexTableField(
 			$this,
 			"OrderStatusLogs", //$name
