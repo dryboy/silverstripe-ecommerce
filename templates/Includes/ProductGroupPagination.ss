@@ -1,6 +1,7 @@
 <% if Products.MoreThanOnePage %>
 	<div id="PageNumbers">
 		<p>
+			<span class="pagesLabel">Pages ($TotalCount items):</span>
 	<% if Products.NotFirstPage %>
 			<a class="prev" href="$Products.PrevLink" title="<% _t('ProductGroup.SHOWPREVIOUSPAGE','View the previous page') %>"><% _t('ProductGroup.PREVIOUS','previous') %></a>
 	<% end_if %>
