@@ -63,7 +63,7 @@
 			<% if Modifiers %>
 			<% control Modifiers %>
 				<% if ShowInTable %>
-		<tr id="$TableID" class="$Classes hideOnZeroItems">
+		<tr id="$TableID" class="$Classes hideOnZeroItems<% if HideInAjaxUpdate %> hideForNow<% end_if %>">
 			<td <% if Link %><% else %> id="$TableTitleID"<% end_if %> colspan="3" scope="row">
 				<% if Link %>
 					<a id="$TableTitleID" href="$Link" title="<% sprintf(_t("Order.READMORE","Click here to read more on &quot;%s&quot;"),$TableTitle) %>">$TableTitle</a>
