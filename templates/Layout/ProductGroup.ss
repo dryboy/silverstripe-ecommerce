@@ -13,8 +13,8 @@
 		<ul class="productList"><% control Products %><% include ProductGroupItem %><% end_control %></ul>
 		<div class="clear"><!-- --></div>
 	</div>
-<% end_if %>
 <% include ProductGroupPagination %>
+<% end_if %>
 	<% if Form %><div id="FormHolder">$Form</div><% end_if %>
 	<% if PageComments %><div id="PageCommentsHolder">$PageComments</div><% end_if %>
 
