@@ -283,6 +283,9 @@ class OrderModifier extends OrderAttribute {
 	*@return Boolean
 	**/
 	public function HideInAjaxUpdate() {
+		if($this->IsRemoved()) {
+			return true;
+		}
 		if($this->ShowInTable()) {
 			return false;
 		}
@@ -459,6 +462,13 @@ class OrderModifier extends OrderAttribute {
 		parent::onBeforeWrite();
 	}
 
+	function onBeforeRemove(){
+		//you can add more stuff here in sub classes
+	}
+
+	function onAfterRemove(){
+		//you can add more stuff here in sub classes
+	}
 
 
 // ######################################## ***  AJAX related functions
@@ -472,14 +482,14 @@ class OrderModifier extends OrderAttribute {
 		$tableValue = DBField::create('Currency',$this->TableValue())->Nice();
 		$cartValue = DBField::create('Currency',$this->CartValue())->Nice();
 		if($this->HideInAjaxUpdate()) {
-			$js[] = array("id" => $this->TableID(), 'parameter' => "hide", "value" => 1);
+			$js[] = array('id' => $this->TableID(), 'parameter' => 'hide', 'value' => 1);
 		}
 		else {
 			$js[] = array('id' => $this->TableTotalID(), 'parameter' => 'innerHTML', 'value' => $tableValue);
 			$js[] = array('id' => $this->CartTotalID(), 'parameter' => 'innerHTML', 'value' => $cartValue);
 			$js[] = array('id' => $this->TableTitleID(), 'parameter' => 'innerHTML', 'value' => $this->TableTitle());
 			$js[] = array('id' => $this->CartTitleID(), 'parameter' => 'innerHTML', 'value' => $this->CartTitle());
-			$js[] = array("id" => $this->TableID(), 'parameter' => "hide", "value" => $this->HideInAjaxUpdate());
+			$js[] = array('id' => $this->TableID(), 'parameter' => 'hide', 'value' => 0);
 		}
 	}
 

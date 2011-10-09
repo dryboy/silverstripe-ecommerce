@@ -377,13 +377,23 @@ class Order extends DataObject {
 					$paymentsTable->setPermissions(array('export', 'show'));
 				}
 				else {
-					$paymentsTable->setPermissions(array('edit', 'delete', 'export', 'add', 'show'));
+					$paymentsTable->setPermissions(array('edit', 'delete', 'export', 'show'));
 				}
 				$paymentsTable->setShowPagination(false);
 				$paymentsTable->setRelationAutoSetting(true);
 				$fields->addFieldToTab('Root.Payments',$paymentsTable);
 				$fields->addFieldToTab("Root.Payments", new ReadOnlyField("TotalPaid", "Total Paid", $this->getTotalPaid()));
 				$fields->addFieldToTab("Root.Payments", new ReadOnlyField("TotalOutstanding", "Total Outstanding", $this->getTotalOutstanding()));
+				if($this->canPay()) {
+					$link = EcommercePaymentController::make_payment_link($this->ID);
+					$js = "window.open(this.href, 'payment', 'toolbar=0,scrollbars=1,location=1,statusbar=1,menubar=0,resizable=1,width=800,height=600'); return false;";
+					$header = _t("Order.MAKEPAYMENT", "make payment");
+					$label = _t("Order.MAKEADDITIONALPAYMENTNOW", "make additional payment now");
+					$linkHTML = '<a href="'.$link.'" onclick="'.$js.'">'.$label.'</a>';
+					$fields->addFieldToTab("Root.Payments", new HeaderField("MakeAdditionalPaymentHeader", $header, 3));
+					$fields->addFieldToTab("Root.Payments", new LiteralField("MakeAdditionalPayment", $linkHTML));
+				}
+				//member
 				if($member = $this->Member()) {
 					$fields->addFieldToTab('Root.Customer', new LiteralField("MemberDetails", $member->getEcommerceFieldsForCMSAsString()));
 				}

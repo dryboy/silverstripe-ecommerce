@@ -115,7 +115,13 @@ EcomCart = {
 	updateForZeroVSOneOrMoreRows: function() {
 		if(EcomCart.CartHasItems()) {
 			jQuery(EcomCart.selectorShowOnZeroItems).hide();
-			jQuery(EcomCart.selectorHideOnZeroItems).show();
+			jQuery(EcomCart.selectorHideOnZeroItems).each(
+				function(i, el) {
+					if(!jQuery(el).hasClass("hideForNow")) {
+						jQuery(el).show();
+					}
+				}
+			);
 		}
 		else {
 			jQuery(EcomCart.selectorShowOnZeroItems).show();

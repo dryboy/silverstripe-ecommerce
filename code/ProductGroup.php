@@ -151,8 +151,7 @@ class ProductGroup extends Page {
 
 		//LIMIT
 		if($allProducts) {
-			$totalCount = $allProducts->Count();
-			if($totalCount > 0) {
+			if($allProducts->Count() > 0) {
 				//SORT BY
 				if(!isset($_GET['sortby'])) {
 					$sortKey = $this->MyDefaultSortOrder();
@@ -170,13 +169,18 @@ class ProductGroup extends Page {
 				}
 				$whereForPageOnly = "\"Product$stage\".\"ID\" IN (".implode(",", $allProducts->map("ID", "ID")).")";
 				$products = DataObject::get('Product',$whereForPageOnly,$sort, null,$limit);
-				$products->TotalCount = $totalCount;
-				return $products;
+				if($products) {
+					$this->totalCount = $products->count();
+					return $products;
+				}
 			}
 		}
 		return null;
 	}
 
+	function TotalCount() {
+		return $this->totalCount ? $this->totalCount : 0;
+	}
 
 	/**
 	 *@return Integer

@@ -268,7 +268,9 @@ class ShoppingCart extends Object{
 			return;
 		}
 		$modifier->HasBeenRemoved = 1;
+		$modifier->onBeforeRemove();
 		$modifier->write();
+		$modifier->onAfterRemove();
 		$this->addMessage(_t("ShoppingCart.MODIFIERREMOVED", "Removed."), 'good');
 	}
 	/**

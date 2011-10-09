@@ -10,6 +10,7 @@
 
 Director::addRules(50, array(
 	ShoppingCart_Controller::get_url_segment(). '/$Action/$ID/$OtherID' => 'ShoppingCart_Controller',
+	EcommercePaymentController::get_url_segment(). '/$Action/$ID/$OtherID' => 'EcommercePaymentController',
 	'ecommerce-load-default-records/$Action' => 'EcommerceDefaultRecords',
 	'ecommerce-migrate/$Action' => 'EcommerceMigration'
 ));

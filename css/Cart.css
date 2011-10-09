@@ -4,11 +4,11 @@
   * Also make sure you have the site's general layout and typography styled before you do this.
   *
   * This file is used to format any order that has not bee submitted yet (e.g. CartPage, CheckoutPage)
-  * 
+  *
   **/
 
 .hideOnZeroItems {display: none;}
-
+.hideForNow{display: none;}
 
 /*
 even when theme-ing ecommerce, these should not be themed

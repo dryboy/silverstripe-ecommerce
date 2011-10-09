@@ -444,10 +444,13 @@ class OrderForm_Validator extends ShopAccountForm_Validator{
 
 class OrderForm_Payment extends Form {
 
-	function __construct($controller, $name, $order) {
+	function __construct($controller, $name, $order, $returnToLink = '') {
 		$fields = new FieldSet(
 			new HiddenField('OrderID', '', $order->ID)
 		);
+		if($returnToLink) {
+			$fields->push(new HiddenField("returntolink", "", convert::raw2att($returnToLink)));
+		}
 		$totalAsCurrencyObject = $order->TotalAsCurrencyObject();
 		$paymentFields = Payment::combined_form_fields($totalAsCurrencyObject->Nice());
 		foreach($paymentFields as $paymentField) {
@@ -463,7 +466,8 @@ class OrderForm_Payment extends Form {
 		$actions = new FieldSet(
 			new FormAction('dopayment', _t('OrderForm.PAYORDER','Pay outstanding balance'))
 		);
-		parent::__construct($controller, $name, $fields, $actions, $requiredFields);
+		$form = parent::__construct($controller, $name, $fields, $actions, $requiredFields);
+		$this->setFormAction($controller->Link().$name);
 	}
 
 	function dopayment($data, $form) {
@@ -476,13 +480,7 @@ class OrderForm_Payment extends Form {
 				}
 			}
 		}
-		$form->sessionMessage(
-			_t(
-				'OrderForm.COULDNOTPROCESSPAYMENT',
-				'Sorry, we could not process your payment.'
-			),
-			'bad'
-		);
+		$form->sessionMessage(_t('OrderForm.COULDNOTPROCESSPAYMENT','Sorry, we could not process your payment.'),'bad');
 		Director::redirectBack();
 		return false;
 	}
