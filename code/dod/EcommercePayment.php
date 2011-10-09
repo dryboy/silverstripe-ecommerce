@@ -169,7 +169,7 @@ class EcommercePayment extends DataObjectDecorator {
 	 *@return String
 	 **/
 	function Status() {
-   		return _t('Payment.'.$this->owner->Status,$this->owner->Status);
+	   	return _t('Payment.'.strtoupper($this->owner->Status),$this->owner->Status);
 	}
 
 }
