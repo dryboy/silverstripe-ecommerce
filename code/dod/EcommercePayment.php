@@ -77,7 +77,12 @@ class EcommercePayment extends DataObjectDecorator {
 			return $result->getValue();
 		}
 		else {
-			Director::redirect($order->Link());
+			if(isset($data["returntolink"])) {
+				Director::redirect($data["returntolink"]);
+			}
+			else {
+				Director::redirect($order->Link());
+			}
 			return true;
 		}
 	}
