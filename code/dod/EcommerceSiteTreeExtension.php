@@ -95,6 +95,7 @@ class EcommerceSiteTreeExtension_Controller extends Extension {
 		}
 	}
 
+
 	/**
 	 *@return string
 	 **/
