@@ -45,13 +45,13 @@ class SiteConfigEcommerceExtras extends DataObjectDecorator {
 			),
 			new Tab('Products',
 				new NumericField("NumberOfProductsPerPage", "Numer of products per page"),
-				new CheckboxField("OnlyShowProductsThatCanBePurchased", "Only show products that can be purchased")
-			),
-			new Tab('Checkout',
-				new TextField("PostalCodeURL", "Postal code link"),
+				new CheckboxField("OnlyShowProductsThatCanBePurchased", "Only show products that can be purchased"),
 				new CheckboxField("ProductsHaveWeight", "Enter weight for products"),
 				new CheckboxField("ProductsHaveModelNames", "Enter model names for products"),
 				new CheckboxField("ProductsHaveQuantifiers", "Enter quantifier for products (e.g. per year, each, per dozen, etc...)")
+			),
+			new Tab('Checkout',
+				new TextField("PostalCodeURL", "Postal code link")
 			),
 			new Tab('Emails',
 				new EmailField("ReceiptEmail", "From email address for shop receipt (e.g. sales@myshop.com)"),
