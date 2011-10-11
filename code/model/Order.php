@@ -1031,17 +1031,19 @@ class Order extends DataObject {
  		$from = Order_Email::get_from_email();
  		//why are we using this email and NOT the member.EMAIL?
  		//for historical reasons????
- 		$to = $this->BillingAddress()->Email;
-		//TO DO: should be a payment specific message as well???
-		$email = new $emailClass();
-		if(!($email instanceOf Email)) {
-			user_error("No correct email class provided.", E_USER_ERROR);
+ 		$to = $this->OrderEmail();
+ 		if($from && $to) {
+			//TO DO: should be a payment specific message as well???
+			$email = new $emailClass();
+			if(!($email instanceOf Email)) {
+				user_error("No correct email class provided.", E_USER_ERROR);
+			}
+			$email->setFrom($from);
+			$email->setTo($to);
+			$email->setSubject($subject);
+			$email->populateTemplate($replacementArray);
+			return $email->send(null, $this, $resend);
 		}
- 		$email->setFrom($from);
- 		$email->setTo($to);
- 		$email->setSubject($subject);
-		$email->populateTemplate($replacementArray);
-		return $email->send(null, $this, $resend);
 	}
 
 
@@ -1397,16 +1399,16 @@ class Order extends DataObject {
 
 	function OrderEmail(){return $this->getOrderEmail();}
 	function getOrderEmail() {
-		if($this->IsSubmitted()) {
-			if($this->BillingAddressID && $this->BillingAddress()) {
-				if($e = $this->BillingAddress()->Email) {
-					return $e;
-				}
-			}
+		if($this->BillingAddressID && $this->BillingAddress()) {
+			$email = $this->BillingAddress()->Email;
+		}
+		if(!$email) {
 			if($this->MemberID && $this->Member()) {
-				return $this->Member()->Emaill;
+				$email = $this->Member()->Email;
 			}
 		}
+		$this->extend('updateOrderEmail', $email);
+		return $email;
 	}
 
 	function EmailLink(){return $this->getEmailLink();}
@@ -1654,7 +1656,7 @@ class Order extends DataObject {
 	public function getRegion() {
 		$regionIDs = array();
 		if($this->BillingAddressID) {
-			if($billingAddress = DataObject::get_by_id("BillingAddress", $this->BillingAddressID)) {
+			if($billingAddressbillingAddress = DataObject::get_by_id("BillingAddress", $this->BillingAddressID)) {
 				if($billingAddress->RegionID) {
 					$regionIDs[] = $billingAddress->RegionID;
 				}

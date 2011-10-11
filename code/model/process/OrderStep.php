@@ -515,6 +515,17 @@ class OrderStep_Created extends OrderStep {
 			if(!$order->BillingAddressID) {
 				$problems[] = "There is no billing address associated with this order.";
 			}
+			elseif($billingAddress = $order->BillingAddress()) {
+				if(!$billingAddress->FirstName) {
+					$problems[] = "There is no -- first name -- recorded the billing address.";
+				}
+				if(!$billingAddress->Surname) {
+					$problems[] = "There is no -- Surname -- recorded the billing address.";
+				}
+				if(!$billingAddress->Country) {
+					$problems[] = "There is no -- Country -- recorded the billing address.";
+				}
+			}
 			if(count($problems)) {
 				$msg = "<p>You can not submit this order because:</p> <ul><li>".implode("</li><li>", $problems)."</li></ul>";
 			}

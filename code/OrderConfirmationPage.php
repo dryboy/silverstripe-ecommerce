@@ -23,7 +23,7 @@ class OrderConfirmationPage extends CartPage{
 	);
 
 	function canCreate($member = null) {
-		return !DataObject :: get_one("SiteTree", "\"ClassName\" = 'OrderConfirmationPage'");
+		return !DataObject :: get_one("OrderConfirmationPage", "\"ClassName\" = 'OrderConfirmationPage'");
 	}
 
 	public static $defaults = array(

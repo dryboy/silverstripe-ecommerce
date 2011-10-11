@@ -37,7 +37,7 @@
 class CheckoutPage extends CartPage {
 
 	public static $icon = 'ecommerce/images/icons/CheckoutPage';
-	
+
 	public static $db = array (
 		'HasOrderSteps' => 'Boolean',
 		'InvitationToCompleteOrder' => 'HTMLText',
@@ -107,7 +107,7 @@ class CheckoutPage extends CartPage {
 	 *@return Boolean
 	 **/
 	function canCreate($member = null) {
-		return !DataObject :: get_one("SiteTree", "\"ClassName\" = 'CheckoutPage'");
+		return !DataObject :: get_one("CheckoutPage", "\"ClassName\" = 'CheckoutPage'");
 	}
 
 	/**
@@ -125,12 +125,12 @@ class CheckoutPage extends CartPage {
 				new Tab(
 					"NormalOrder",
 					new HtmlEditorField('InvitationToCompleteOrder', 'Invitation to complete order ... shown when the customer can do a normal checkout', $row = 4)
-					
+
 				),
 				new Tab(
 					"NoItems",
 					new HtmlEditorField('NoItemsInOrderMessage', 'No items in order - shown when the customer tries to checkout an order without items.', $row = 4)
-					
+
 				),
 				new Tab(
 					"NonExistingOrder",
@@ -143,7 +143,7 @@ class CheckoutPage extends CartPage {
 				new Tab(
 					"OldOrder",
 					new HtmlEditorField('MustLoginToCheckoutMessage', 'MustLoginToCheckoutMessage', $row = 4)
-					
+
 				),
 				new Tab (
 					"LinksAndLabels",
@@ -157,7 +157,7 @@ class CheckoutPage extends CartPage {
 		$fields->addFieldToTab('Root.Content.AlwaysVisible', new HtmlEditorField('Content', 'General note', 7, 7));
 		return $fields;
 	}
-	
+
 }
 class CheckoutPage_Controller extends CartPage_Controller {
 
@@ -177,7 +177,7 @@ class CheckoutPage_Controller extends CartPage_Controller {
 			if(!$this->orderstep) {
 				$this->currentStep = $this->checkoutSteps[0];
 			}
-		}		
+		}
 	}
 
 	function processmodifierform($request) {
@@ -280,7 +280,7 @@ class CheckoutPage_Controller extends CartPage_Controller {
 				//no action links
 				$this->message = $this->NoItemsInOrderMessage;
 			}
-			//order can not be edited: 
+			//order can not be edited:
 			elseif ($this->currentOrder && $this->currentOrder->IsSubmitted()) {
 				//review order... in order confirmation page
 				$this->actionLinks->push(new ArrayData(array (
@@ -301,8 +301,8 @@ class CheckoutPage_Controller extends CartPage_Controller {
 		}
 	}
 	/**
-	 * STEP STUFF 
-	 * 
+	 * STEP STUFF
+	 *
 
 	/**
 	 *@var $currentStep Integer
@@ -315,7 +315,7 @@ class CheckoutPage_Controller extends CartPage_Controller {
 		"orderformandpayment"
 	);
 
-	
+
 	/**
 	 *@var $currentStep Integer
 	 **/

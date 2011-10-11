@@ -47,7 +47,7 @@ class CartPage extends Page{
 	}
 
 	function canCreate($member = null) {
-		return !DataObject :: get_one("SiteTree", "\"ClassName\" = 'CartPage'");
+		return !DataObject :: get_one("CartPage", "\"ClassName\" = 'CartPage'");
 	}
 
 	/**
