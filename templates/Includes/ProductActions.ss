@@ -1,5 +1,5 @@
 <% if Variations %>
-	<div class="variationsTable"><% include VariationsTable %></div>
+	$VariationForm
 <% else %>
 	<% if canPurchase %>
 	<% if Price != 0 %><p class="priceDisplay">
