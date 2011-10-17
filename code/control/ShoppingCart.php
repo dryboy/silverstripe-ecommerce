@@ -337,6 +337,9 @@ class ShoppingCart extends Object{
 		if(EcommerceCountry::code_allowed($countryCode)) {
 			$this->currentOrder()->SetCountry($countryCode);
 		}
+		else {
+			//user_error("country not allowed", E_USER_NOTICE);
+		}
 	}
 	/**
 	 * sets region in order so that modifiers can be recalculated, etc...

@@ -142,7 +142,6 @@ class OrderForm extends Form {
 		parent::__construct($controller, $name, $fields, $actions, $requiredFields);
 
 
-
 		//  ________________  7)  Load saved data
 
 		if($order) {
@@ -165,6 +164,7 @@ class OrderForm extends Form {
 
 		//allow updating via decoration
 		$this->extend('updateOrderForm',$this);
+
 
 	}
 

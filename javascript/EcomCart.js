@@ -29,18 +29,21 @@ EcomCart = {
 
 	init: function () {
 		EcomCart.updateForZeroVSOneOrMoreRows();
+		EcomCart.countryAndRegionUpdates();
 	},
 
 	countryAndRegionUpdates: function() {
-		jQuery(EcomCart.ajaxCountryFieldSelector).change(
+		jQuery(EcomCart.ajaxCountryFieldSelector).live(
+			"change",
 			function() {
 				var url = jQuery('base').attr('href') + "shoppingcart/setcountry/" + this.value + "/";
 				EcomCart.getChanges(url, null);
 			}
 		);
-		jQuery(EcomCart.ajaxRegionFieldSelector).change(
+		jQuery(EcomCart.ajaxRegionFieldSelector).live(
+			"change",
 			function() {
-				var url = jQuery('base').attr('href') + "shoppingcart/setcountry/" + this.value + "/";
+				var url = jQuery('base').attr('href') + "shoppingcart/setregion/" + this.value + "/";
 				EcomCart.getChanges(url, null);
 			}
 		);

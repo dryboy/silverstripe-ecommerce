@@ -224,5 +224,15 @@ class EcommerceCountry extends EcommerceRegion {
 	}
 
 
+	/**
+	 *checks if a code is allowed
+	 *@param String $code - e.g. NZ, NSW, or CO
+	 *@return Boolean
+	 **/
+	public static function code_allowed($code) {
+		return array_key_exists($code, self::list_of_allowed_entries_for_dropdown());
+	}
+
+
 }
 
