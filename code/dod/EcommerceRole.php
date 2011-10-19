@@ -48,7 +48,7 @@ class EcommerceRole extends DataObjectDecorator {
 		static function set_customer_group_name(string $s) {self::$customer_group_name = $s;}
 		static function get_customer_group_name() {return self::$customer_group_name;}
 
-	protected static $customer_permission_code = "SHOP_CUSTOMER";
+	protected static $customer_permission_code = "SHOPCUSTOMER";
 		static function set_customer_permission_code(string $s) {self::$customer_permission_code = $s;}
 		static function get_customer_permission_code() {return ereg_replace("[^A-Za-z0-9]", "", self::$customer_permission_code);}
 
@@ -83,9 +83,21 @@ class EcommerceRole extends DataObjectDecorator {
 		static function set_admin_group_name(string $s) {self::$admin_group_name = $s;}
 		static function get_admin_group_name() {return self::$admin_group_name;}
 
-	protected static $admin_permission_code = "SHOP_ADMIN";
+	protected static $admin_permission_code = "SHOPADMIN";
 		static function set_admin_permission_code(string $s) {self::$admin_permission_code = $s;}
 		static function get_admin_permission_code() {return ereg_replace("[^A-Za-z0-9]", "", self::$admin_permission_code);}
+
+	protected static $admin_role_title = "managing store";
+		static function set_admin_role_title($s){self::$admin_role_title = $s;}
+		static function get_admin_role_title(){return self::$admin_role_title;}
+
+	protected static $admin_role_permission_codes = array(
+		"CMS_ACCESS_ProductsAndGroupsModelAdmin",
+		"CMS_ACCESS_SalesAdmin",
+		"CMS_ACCESS_StoreAdmin"
+	);
+		static function set_admin_role_permission_codes($a){self::$admin_role_permission_codes = $a;}
+		static function get_admin_role_permission_codes(){return self::$admin_role_permission_codes;}
 
 	/**
 	 *@return DataObject (Group)

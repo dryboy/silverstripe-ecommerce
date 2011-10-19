@@ -17,7 +17,7 @@ class CartCleanupTask extends HourlyTask {
 
 	static $allowed_actions = array(
 		'*' => 'ADMIN',
-		'*' => 'SHOP_ADMIN'
+		'*' => 'SHOPADMIN'
 	);
 
 
@@ -56,7 +56,7 @@ class CartCleanupTask extends HourlyTask {
 	 *
 	 *key = table where OrderID is saved
 	 *value = table where LastEdited is saved
-	 **/ 
+	 **/
 	protected static $linked_objects_array = array(
 		"OrderAttribute" =>"OrderAttribute",
 		"BillingAddress" => "OrderAddress",

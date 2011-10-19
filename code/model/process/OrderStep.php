@@ -49,19 +49,19 @@ class OrderStep extends DataObject {
 
 	public static $field_labels = array(
 		"Sort" => "Sorting Index",
-		"CustomerCanEdit" => "Customer can edit",
-		"CustomerCanPay" => "Customer can pay",
-		"CustomerCanCancel" => "Customer can cancel"
+		"CustomerCanEdit" => "Customer can edit order",
+		"CustomerCanPay" => "Customer can pay order",
+		"CustomerCanCancel" => "Customer can cancel order"
 	);
 
 	public static $summary_fields = array(
 		"Name" => "Name",
-		"CustomerCanEditNice" => "CustomerCanEdit",
-		"CustomerCanPayNice" => "CustomerCanPay",
-		"CustomerCanCancelNice" => "CustomerCanCancel",
-		"ShowAsUncompletedOrderNice" => "ShowAsUncompletedOrder",
-		"ShowAsInProcessOrderNice" => "ShowAsInProcessOrder",
-		"ShowAsCompletedOrderNice" => "ShowAsCompletedOrder"
+		"CustomerCanEditNice" => "Customer can edit order",
+		"CustomerCanPayNice" => "customer can pay order",
+		"CustomerCanCancelNice" => "customer can cancel order",
+		"ShowAsUncompletedOrderNice" => "show order as uncomplete",
+		"ShowAsInProcessOrderNice" => "show order as in process",
+		"ShowAsCompletedOrderNice" => "show order as complete"
 	);
 
 	public static $casting = array(

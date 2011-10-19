@@ -929,6 +929,7 @@ class Order extends DataObject {
 
 	/**
 	 * Sets the country in the billing and shipping address
+	 * TO DO: only set one or the other....
 	 *
 	 **/
 	public function SetCountry($countryCode) {

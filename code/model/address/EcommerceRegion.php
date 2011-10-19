@@ -21,6 +21,11 @@ class EcommerceRegion extends DataObject {
 		"DoNotAllowSales" => "Boolean"
 	);
 
+
+	static $has_one = array(
+		"Country" => "EcommerceCountry"
+	);
+
 	static $indexes = array(
 		"Code" => true
 	);

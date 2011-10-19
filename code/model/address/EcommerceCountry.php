@@ -12,11 +12,25 @@
  *
  **/
 
-class EcommerceCountry extends EcommerceRegion {
+class EcommerceCountry extends DataObject {
+
+	static $db = array(
+		"Code" => "Varchar(20)",
+		"Name" => "Varchar(200)",
+		"DoNotAllowSales" => "Boolean"
+	);
+
 
 	static $has_many = array(
 		"Regions" => "EcommerceRegion"
 	);
+
+	static $indexes = array(
+		"Code" => true
+	);
+
+	static $default_sort = "\"Name\" ASC";
+
 
 	public static $singular_name = "Country";
 		function i18n_singular_name() { return _t("EcommerceCountry.COUNTRY", "Country");}
@@ -148,6 +162,17 @@ class EcommerceCountry extends EcommerceRegion {
 			$defaultArray = $newDefaultArray;
 		}
 		return $defaultArray;
+	}
+
+	/**
+	 * Standar SS method
+	 *@return FieldSet
+	 **/
+	function getCMSFields() {
+		$fields = parent::getCMSFields();
+		$fields->removeByName("Country");
+		$fields->removeByName("Regions");
+		return $fields;
 	}
 
 	function requireDefaultRecords() {

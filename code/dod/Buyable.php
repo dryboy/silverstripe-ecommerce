@@ -202,5 +202,28 @@ class Buyable extends DataObjectDecorator {
 	}
 
 
+	//CRUD SETTINGS
+	function canEdit($memberID) {
+		if(Permission::checkMember($memberID, "SHOPADMIN")) {
+			return true;
+		}
+		return null;
+	}
+
+	function canDelete($memberID) {
+		return $this->canEdit($memberID);
+	}
+
+	public function canPublish($memberID) {
+		return $this->canEdit($memberID);
+	}
+
+	public function canDeleteFromLive($memberID) {
+		return $this->canEdit($memberID);
+	}
+
+	public function canCreate($memberID) {
+		return $this->canEdit($memberID);
+	}
 
 }

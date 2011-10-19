@@ -154,6 +154,19 @@ class EcommerceDefaultRecords_DataObject extends DataObject {
 
 	function requireDefaultRecords() {
 		parent::requireDefaultRecords();
+		$customerGroup = DataObject::get_one("Group", "\"Code\" = '".EcommerceRole::get_customer_group_code()."' ");
+		if(!$customerGroup) {
+			$customerGroup = new Group();
+			$customerGroup->Code = EcommerceRole::get_customer_group_code();
+			$customerGroup->Title = EcommerceRole::get_customer_group_name();
+			$customerGroup->write();
+			Permission::grant( $customerGroup->ID, EcommerceRole::get_customer_permission_code());
+			DB::alteration_message(EcommerceRole::get_customer_group_name().' Group created',"created");
+		}
+		elseif(DB::query("SELECT * FROM \"Permission\" WHERE \"GroupID\" = '".$customerGroup->ID."' AND \"Code\" LIKE '".EcommerceRole::get_customer_permission_code()."'")->numRecords() == 0 ) {
+			Permission::grant($customerGroup->ID, EcommerceRole::get_customer_permission_code());
+			DB::alteration_message(EcommerceRole::get_customer_group_name().' permissions granted',"created");
+		}
 		$adminGroup = DataObject::get_one("Group", "\"Code\" = '".EcommerceRole::get_admin_group_code()."' ");
 		if(!$adminGroup) {
 			$adminGroup = new Group();
@@ -167,18 +180,30 @@ class EcommerceDefaultRecords_DataObject extends DataObject {
 			Permission::grant($adminGroup->ID, EcommerceRole::get_admin_permission_code());
 			DB::alteration_message(EcommerceRole::get_admin_group_name().' permissions granted',"created");
 		}
-		$customerGroup = DataObject::get_one("Group", "\"Code\" = '".EcommerceRole::get_customer_group_code()."' ");
-		if(!$customerGroup) {
-			$customerGroup = new Group();
-			$customerGroup->Code = EcommerceRole::get_customer_group_code();
-			$customerGroup->Title = EcommerceRole::get_customer_group_name();
-			$customerGroup->write();
-			Permission::grant( $customerGroup->ID, EcommerceRole::get_customer_permission_code());
-			DB::alteration_message(EcommerceRole::get_customer_group_name().' Group created',"created");
+		$permissionRole = DataObject::get_one("PermissionRole", "\"Title\" = '".EcommerceRole::get_admin_role_title()."'");
+		if(!$permissionRole) {
+			$permissionRole = new PermissionRole();
+			$permissionRole->Title = EcommerceRole::get_admin_role_title();
+			$permissionRole->OnlyAdminCanApply = true;
+			$permissionRole->write();
 		}
-		elseif(DB::query("SELECT * FROM \"Permission\" WHERE \"GroupID\" = '".$customerGroup->ID."' AND \"Code\" LIKE '".EcommerceRole::get_customer_permission_code()."'")->numRecords() == 0 ) {
-			Permission::grant($customerGroup->ID, EcommerceRole::get_customer_permission_code());
-			DB::alteration_message(EcommerceRole::get_customer_group_name().' permissions granted',"created");
+		if($permissionRole) {
+			$permissionArray = EcommerceRole::get_admin_role_permission_codes();
+			if(is_array($permissionArray) && count($permissionArray) && $permissionRole) {
+				foreach($permissionArray as $permissionCode) {
+					$permissionRoleCode = DataObject::get_one("PermissionRoleCode", "\"Code\" = '$permissionCode'");
+					if(!$permissionRoleCode) {
+						$permissionRoleCode = new PermissionRoleCode();
+						$permissionRoleCode->Code = $permissionCode;
+						$permissionRoleCode->RoleID = $permissionRole->ID;
+						$permissionRoleCode->write();
+					}
+				}
+			}
+			if($adminGroup) {
+				$existingGroups = $permissionRole->Groups();
+				$existingGroups->add($adminGroup);
+			}
 		}
 	}
 }
