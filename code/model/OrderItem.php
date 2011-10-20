@@ -1,11 +1,11 @@
 <?php
 /**
- * @description: An order item is a product which has been added to an order,
- * ready for purchase. An order item is typically a product itself,
- * but also can include references to other information such as
- * product attributes like colour, size, or type.
- *
- *
+ * @description: An order item is a product which has been added to an order.
+ * An order item links to a Buyable (product) by class name
+ * That is, we only store the BuyableID and the Class name is derived
+ * from the name of the class... For example a Product_OrderItem has
+ * a Product as Buyable.  A ProductVariation_OrderItem has a
+ * Product Variation as Buyable.
  *
  * @authors: Silverstripe, Jeremy, Nicolaas
  *
@@ -243,6 +243,7 @@ HTML;
 	/**
 	 *
 	 * @return DataObject (Any type of Data Object that is buyable)
+	 * @param Boolean $current - is this a current one, or an older VERSION ?
 	  **/
 	function Buyable($current = false) {
 		$className = $this->BuyableClassName();
