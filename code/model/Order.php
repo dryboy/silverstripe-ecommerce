@@ -1637,7 +1637,7 @@ class Order extends DataObject {
 			if(OrderAddress::get_use_shipping_address_for_main_region_and_country() && $countryCodes["Shipping"]) {
 				return $countryCodes["Shipping"];
 			}
-			return $countryCodes["Billing"]
+			return $countryCodes["Billing"];
 		}
 	}
 
