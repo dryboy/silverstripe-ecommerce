@@ -36,7 +36,7 @@
 
 		<% control Modifiers %>
 			<% if ShowInTable %>
-		<tr class="modifierRow $EvenOdd $FirstLast $Classes">
+		<tr class="modifierRow $EvenOdd $FirstLast $Classes <% if HideInAjaxUpdate %> hideForNow<% end_if %>">
 			<td colspan="3" scope="row">$TableTitle</td>
 			<td class="right total">$TableValue.Nice</td>
 		</tr>

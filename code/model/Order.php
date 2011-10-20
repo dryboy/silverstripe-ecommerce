@@ -1952,10 +1952,12 @@ class Order extends DataObject {
 		if($this->newRecord) {
 			$this->init();
 		}
+		elseif(!$this->IsSubmitted()) {
+			$this->calculateModifiers();
+		}
 		if(EcommerceRole::current_member_is_shop_admin()) {
 			if(!$this->IsSubmitted()) {
 				if(isset($_REQUEST["SubmitOrderViaCMS"])) {
-					$this->calculateModifiers();
 					$this->tryToFinaliseOrder();
 					//just in case it writes again...
 					unset($_REQUEST["SubmitOrderViaCMS"]);
