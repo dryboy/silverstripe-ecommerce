@@ -112,7 +112,7 @@ class EcommerceRegion extends DataObject {
 	 **/
 	public static function list_of_allowed_entries_for_dropdown() {
 		$defaultArray = self::get_default_array();
-		$onlyShow = self::get_for_current_order_only_show();
+		$onlyShow = self::get_for_current_order_only_show_regions();
 		$doNotShow = self::get_for_current_order_do_not_show();
 		if(is_array($onlyShow) && count($onlyShow)) {
 			foreach($defaultArray as $key => $value) {
@@ -149,7 +149,7 @@ class EcommerceRegion extends DataObject {
 			}
 		}
 		//NOTE: this method below is more generic (does not have _regions part) so that it can be used by a method that is shared between EcommerceCountry and EcommerceRegion
-		static function get_for_current_order_only_show() {return self::$for_current_order_only_show_regions;}
+		static function get_for_current_order_only_show_regions() {return self::$for_current_order_only_show_regions;}
 
 	protected static $for_current_order_do_not_show_regions = array();
 		static function set_for_current_order_do_not_show_regions(array $a) {

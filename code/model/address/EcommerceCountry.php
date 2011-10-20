@@ -229,7 +229,7 @@ class EcommerceCountry extends DataObject {
 	 **/
 	public static function list_of_allowed_entries_for_dropdown() {
 		$defaultArray = self::get_default_array();
-		$onlyShow = self::get_for_current_order_only_show();
+		$onlyShow = self::get_for_current_order_only_show_countries();
 		$doNotShow = self::get_for_current_order_do_not_show();
 		if(is_array($onlyShow) && count($onlyShow)) {
 			foreach($defaultArray as $key => $value) {
