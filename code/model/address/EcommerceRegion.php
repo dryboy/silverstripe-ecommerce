@@ -39,16 +39,6 @@ class EcommerceRegion extends DataObject {
 		function i18n_plural_name() { return _t("EcommerceRegion.REGIONS", "Regions");}
 
 	/**
-	 * In determing the country/region from which the order originated.
-	 * For, for example, tax purposes - we use the Billing Address (@see Order::Country).
-	 * However, we can also choose the Shipping Address
-	 *@var Boolean
-	 **/
-	protected static $use_shipping_address_for_main_region_and_country = false;
-		static function set_use_shipping_address_for_main_region_and_country($b) {self::$use_shipping_address_for_main_region_and_country = $b;}
-		static function get_use_shipping_address_for_main_region_and_country() {return self::$use_shipping_address_for_main_region_and_country;}
-
-	/**
 	 * do we use regions at all in this ecommerce application?
 	 **/
 

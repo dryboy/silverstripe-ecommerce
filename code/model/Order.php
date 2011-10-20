@@ -1615,26 +1615,29 @@ class Order extends DataObject {
 	 **/
 	public function Country() {return $this->getCountry();}
 	public function getCountry() {
-		$countryCodes = array();
+		$countryCodes = array(
+			"Billing" => "",
+			"Shipping" => ""
+		);
 		if($this->BillingAddressID) {
 			if($billingAddress = DataObject::get_by_id("BillingAddress", $this->BillingAddressID)) {
 				if($billingAddress->Country) {
-					$countryCodes[] = $billingAddress->Country;
+					$countryCodes["Billing"] = $billingAddress->Country;
 				}
 			}
 		}
 		if($this->ShippingAddressID) {
 			if($shippingAddress = DataObject::get_by_id("ShippingAddress", $this->ShippingAddressID)) {
 				if($shippingAddress->ShippingCountry) {
-					$countryCodes[] = $shippingAddress->ShippingCountry;
+					$countryCodes["Shipping"] = $shippingAddress->ShippingCountry;
 				}
 			}
 		}
 		if(count($countryCodes)) {
-			if(EcommerceCountry::get_use_shipping_address_for_main_region_and_country()) {
-				$countryCodes = array_reverse($countryCodes);
+			if(OrderAddress::get_use_shipping_address_for_main_region_and_country() && $countryCodes["Shipping"]) {
+				return $countryCodes["Shipping"];
 			}
-			return array_shift($countryCodes);
+			return $countryCodes["Billing"]
 		}
 	}
 
@@ -1655,28 +1658,30 @@ class Order extends DataObject {
 	 **/
 	function Region(){return $this->getRegion();}
 	public function getRegion() {
-		$regionIDs = array();
+		$regionIDs = array(
+			"Billing" => 0,
+			"Shipping" => 0
+		);
 		if($this->BillingAddressID) {
 			if($billingAddressbillingAddress = DataObject::get_by_id("BillingAddress", $this->BillingAddressID)) {
 				if($billingAddress->RegionID) {
-					$regionIDs[] = $billingAddress->RegionID;
+					$regionIDs["Billing"] = $billingAddress->RegionID;
 				}
 			}
 		}
 		if($this->ShippingAddressID) {
 			if($shippingAddress = DataObject::get_by_id("ShippingAddress", $this->ShippingAddressID)) {
 				if($shippingAddress->ShippingRegionID) {
-					$regionIDs[] = $shippingAddress->ShippingRegionID;
+					$regionIDs["Shipping"] = $shippingAddress->ShippingRegionID;
 				}
 			}
 		}
-		if(count($countryCodes)) {
-			if(EcommerceCountry::get_use_shipping_address_for_main_region_and_country()) {
-				$regionIDs = array_reverse($regionIDs);
+		if(count($regionIDs)) {
+			if(OrderAddress::get_use_shipping_address_for_main_region_and_country() && $regionIDs["Shipping"]) {
+				return DataObject::get_by_id("EcommerceRegion", $regionIDs["Shipping"]);
 			}
-			$id = array_shift($regionIDs);
-			if($id) {
-				return DataObject::get_by_id("EcommerceRegion", $id);
+			else {
+				return DataObject::get_by_id("EcommerceRegion", $regionIDs["Billing"]);
 			}
 		}
 	}

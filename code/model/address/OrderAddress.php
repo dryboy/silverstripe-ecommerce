@@ -26,6 +26,17 @@ class OrderAddress extends DataObject {
 		static function get_use_separate_shipping_address(){return self::$use_separate_shipping_address;}
 
 	/**
+	 * In determing the country/region from which the order originated.
+	 * For, for example, tax purposes - we use the Billing Address (@see Order::Country).
+	 * However, we can also choose the Shipping Address by setting the variable below to TRUE
+	 *@var Boolean
+	 **/
+	protected static $use_shipping_address_for_main_region_and_country = false;
+		static function set_use_shipping_address_for_main_region_and_country($b) {self::$use_shipping_address_for_main_region_and_country = $b;}
+		static function get_use_shipping_address_for_main_region_and_country() {return self::$use_shipping_address_for_main_region_and_country;}
+
+
+	/**
 	 * In case you have some conflicts in the class / IDs for formfields then you can use this variable
 	 * to add a few characters in front of the classes / IDs
 	 *@var String $s
