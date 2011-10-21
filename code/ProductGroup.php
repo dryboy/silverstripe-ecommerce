@@ -283,6 +283,13 @@ class ProductGroup extends Page {
 		}
 	}
 
+	function requireDefaultRecords(){
+		parent::requireDefaultRecords();
+		if(!DataObject::get("ProductGroup", "\"LevelOfProductsToShow\" > 0")) {
+			DB::query("UPDATE ProductGroup SET \"LevelOfProductsToShow\" = ".self::$defaults["LevelOfProductsToShow"]);
+			DB::query("UPDATE ProductGroup_Live SET \"LevelOfProductsToShow\" = ".self::$defaults["LevelOfProductsToShow"]);
+		}
+	}
 
 }
 class ProductGroup_Controller extends Page_Controller {
