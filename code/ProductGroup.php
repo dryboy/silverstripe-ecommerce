@@ -285,7 +285,7 @@ class ProductGroup extends Page {
 
 	function requireDefaultRecords(){
 		parent::requireDefaultRecords();
-		if(!DataObject::get("ProductGroup", "\"LevelOfProductsToShow\" > 0") && isset($_GET["resetproductshowlevels"])) {
+		if(isset($_GET["resetproductshowlevels"])) {
 			DB::query("UPDATE ProductGroup SET \"LevelOfProductsToShow\" = ".self::$defaults["LevelOfProductsToShow"]);
 			DB::query("UPDATE ProductGroup_Live SET \"LevelOfProductsToShow\" = ".self::$defaults["LevelOfProductsToShow"]);
 			DB::alteration_message("resetting product 'show' levels", "created");
