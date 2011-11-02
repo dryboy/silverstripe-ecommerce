@@ -1,10 +1,39 @@
 <?php
 /**
- * @description:  Data class that records events for an order like "Payment Checked", "Cheque Cleaered", "Goods dispatched", etc...
- * They describe the status and history of the Order
- * Order Status Logs are different from the OrderSteps which guide the Order through the ordering process.
+ * @description:
+ * Data class that records events for an order like "Payment Checked", "Cheque Cleared", "Goods dispatched", etc...
+ * Order Status Logs describe the history of each Order.
+ * They are different from the OrderSteps which guide the Order through the ordering process.
  *
- * You can choose the relevant Order Logs, the only one that is required is the: OrderStatusLog_Submitted
+ * Basically, an Order Status Log has a title and a piece of text.
+ * In addition, we record if the customer was informed or that it is for internal use only.
+ * We also record who made the log entry.
+ *
+ * For your own e-commerce application you can add as many logs types as you need.
+ * For this, you can extend the basic class: OrderStatusLog.
+ *
+ * No logs are created "automatically", you will need to use the OrderSteps to create them.
+ * In the code you can see a bunch of examples on how these Logs are written.
+ *
+ * There is one special type of Order Status Log: OrderStatusLog_Submitted.
+ * This one is basically hard-wired into the system.
+ * That is, for every order and all e-commerce applications you need to have a moment where the customer commits / submits an order.
+ * This order log basically stores the exact details of the order at the moment of submission.
+ * This is really useful, because, based on the relational database aspect, it is very easy to loose parts of an exact order.
+ * For example, you can change the title of a product, the amount of a tax, etc... and having a log of the exact details
+ * at the moment the order was submitted can for that reason be very important.  Over time the e-commerce system will become
+ * more transactional so that submitted details can not be overriden, but the log of the submitted details will be a good backup
+ * for the time being.
+ *
+ * Other logs that you may include:
+ * - OrderStatusLog_Cancel: record about cancellation
+ * - OrderStatusLog_Dispatch: record about dispatch
+ * - OrderStatusLog_PaymentCheck: payment was made (manual check)
+ * - your own log thingy!
+ *
+ * HACK NOTE: we have included OrderStatusLog_Archived here as well.
+ * The reason we do this is that the Order CMS fields will try to look for the next Log Class in the
+ * Complex Table Field. This might be different in 3.0 and can be removed then.
  *
  * @authors: Silverstripe, Jeremy, Nicolaas
  *

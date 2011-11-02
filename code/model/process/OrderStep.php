@@ -2,13 +2,31 @@
 
 /**
  * @description:
- * Defines the Order Status Options.  Basically OrderSteps guide the Order from inception to archiving.
+ * Defines the Order Status Options.	Basically OrderSteps guide the Order from inception to archiving.
  * Each project can have its own unique order steps - to match the requirements of the shop at hand.
- * The Order Step has a number of functions:
- * a. move the order along
- * b. describe what can be done to the order (edit, view, delete, etc...) by whom
+ * The Order Step typically has (some) of the following functions:
+ * a. a method move the order along
+ *		- email the customer?
+ *		- create a log entry?
+ * b. describe what can be done to the order (edit, view, delete, etc...) and by whom
  * c. describe the status of the order
- * d. email the customer about the progress
+ * d. describe what needs to happen for the order to move along (via CMS fields)
+ *		e.g. for the Order to move to the next step it needs to be paid in full
+ *
+ * To make your own order steps, take an OrderStep from the classes listed below (one that is similar in purpose)
+ * and customise it to your needs.
+ *
+ * Next, to include the orderstep, you use one of the following methods:
+ *
+ * OrderStep::set_order_steps_to_include (RESET ORDERSTEPS)
+ * OR
+ * OrderStep::add_order_steps_to_include (ADD ONE)
+ *
+ * There are a lot of comments in the code below so there is no point in repeating that, but four KEY methods are:
+ * - initStep: are we ready?
+ * - doStep: do the step ...
+ * - nextStep: what is next?
+ * - addOrderStepFields: add CMS fields to the Order (e.g. a message stating what is next)
  *
  * @authors: Silverstripe, Jeremy, Nicolaas
  *
@@ -35,7 +53,6 @@ class OrderStep extends DataObject {
 		"HideStepFromCustomer" => "Boolean",
 		//sorting index
 		"Sort" => "Int"
-		//by-pass
 	);
 
 	public static $indexes = array(
@@ -61,7 +78,8 @@ class OrderStep extends DataObject {
 		"CustomerCanCancelNice" => "customer can cancel order",
 		"ShowAsUncompletedOrderNice" => "show order as uncomplete",
 		"ShowAsInProcessOrderNice" => "show order as in process",
-		"ShowAsCompletedOrderNice" => "show order as complete"
+		"ShowAsCompletedOrderNice" => "show order as complete",
+		"HideStepFromCustomerNice" => "hide step from customer"
 	);
 
 	public static $casting = array(
@@ -71,7 +89,7 @@ class OrderStep extends DataObject {
 		"ShowAsUncompletedOrderNice" => "Varchar",
 		"ShowAsInProcessOrderNice" => "Varchar",
 		"ShowAsCompletedOrderNice" => "Varchar",
-		"HideStepFromCustomer" => "Varchar"
+		"HideStepFromCustomerNice" => "Varchar"
 	);
 
 	public static $searchable_fields = array(
@@ -263,38 +281,38 @@ class OrderStep extends DataObject {
 * moving between statusses...
 **************************************************/
 	/**
-  	*initStep:
-  	* makes sure the step is ready to run.... (e.g. check if the order is ready to be emailed as receipt).
-	* should be able to run this function many times to check if the step is ready
-	*@see Order::doNextStatus
-  	*@param Order object
-  	*@return Boolean - true if the current step is ready to be run...
-  	**/
+		*initStep:
+		* makes sure the step is ready to run.... (e.g. check if the order is ready to be emailed as receipt).
+		* should be able to run this function many times to check if the step is ready
+		*@see Order::doNextStatus
+		*@param Order object
+		*@return Boolean - true if the current step is ready to be run...
+		**/
 	public function initStep($order) {
 		user_error("Please implement this in a subclass of OrderStep", E_USER_WARNING);
 		return true;
 	}
 
 	/**
-  	*doStep:
+		*doStep:
 	* should only be able to run this function once (init stops you from running it twice - in theory....)
-  	*runs the actual step
+		*runs the actual step
 	*@see Order::doNextStatus
-  	*@param Order object
-  	*@return Boolean - true if run correctly
-  	**/
+		*@param Order object
+		*@return Boolean - true if run correctly
+		**/
 	public function doStep($order) {
 		user_error("Please implement this in a subclass of OrderStep", E_USER_WARNING);
 		return true;
 	}
 
 	/**
-  	*nextStep:
-  	*returns the next step (checks if everything is in place for the next step to run...)
+		*nextStep:
+		*returns the next step (checks if everything is in place for the next step to run...)
 	*@see Order::doNextStatus
-  	*@param Order object
-  	*@return DataObject | Null (next step OrderStep object)
-  	**/
+		*@param Order object
+		*@return DataObject | Null (next step OrderStep object)
+		**/
 	public function nextStep($order) {
 		$nextOrderStepObject = DataObject::get_one("OrderStep", "\"Sort\" > ".$this->Sort);
 		if($nextOrderStepObject) {
@@ -368,7 +386,7 @@ class OrderStep extends DataObject {
 	 *@return Boolean
 	 **/
 	protected function hasBeenSent($order) {
-		return DataObject::get_one("OrderEmailRecord", "\"OrderEmailRecord\".\"OrderID\" = ".$order->ID." AND \"OrderEmailRecord\".\"OrderStepID\" = ".$this->ID." AND  \"OrderEmailRecord\".\"Result\" = 1");
+		return DataObject::get_one("OrderEmailRecord", "\"OrderEmailRecord\".\"OrderID\" = ".$order->ID." AND \"OrderEmailRecord\".\"OrderStepID\" = ".$this->ID." AND	\"OrderEmailRecord\".\"Result\" = 1");
 	}
 
 /**************************************************
@@ -593,9 +611,9 @@ class OrderStep_Submitted extends OrderStep {
 					$obj->OrderID = $order->ID;
 					$obj->Title = $this->Name;
 					$saved = false;
-					if($this->SaveOrderAsJSON)                        {$obj->OrderAsJSON = $order->ConvertToJSON(); $saved = true;}
-					if($this->SaveOrderAsHTML)                        {$obj->OrderAsHTML = $order->ConvertToHTML(); $saved = true;}
-					if($this->SaveOrderAsSerializedObject|| !$saved)  {$obj->OrderAsString = $order->ConvertToString();$saved = true; }
+					if($this->SaveOrderAsJSON)												{$obj->OrderAsJSON = $order->ConvertToJSON(); $saved = true;}
+					if($this->SaveOrderAsHTML)												{$obj->OrderAsHTML = $order->ConvertToHTML(); $saved = true;}
+					if($this->SaveOrderAsSerializedObject|| !$saved)	{$obj->OrderAsString = $order->ConvertToString();$saved = true; }
 					$obj->write();
 				}
 				else {
@@ -613,7 +631,7 @@ class OrderStep_Submitted extends OrderStep {
 	/**
 	 * go to next step if order has been submitted.
 	 *@param DataObject - $order Order
-	 *@return DataObject | Null  (next step OrderStep)
+	 *@return DataObject | Null	(next step OrderStep)
 	 **/
 	public function nextStep($order) {
 		if($order->IsSubmitted()) {
@@ -688,11 +706,11 @@ class OrderStep_SentInvoice extends OrderStep {
 	/**
 	 * can do next step once the invoice has been sent or in case the invoice does not need to be sent.
 	 *@param DataObject $order Order
-	 *@return DataObject | Null  (next step OrderStep object)
+	 *@return DataObject | Null	(next step OrderStep object)
 	 **/
 	public function nextStep($order) {
 		if(!$this->SendInvoiceToCustomer || $this->hasBeenSent($order)) {
-			return  parent::nextStep($order);
+			return	parent::nextStep($order);
 		}
 		return null;
 	}
@@ -717,7 +735,9 @@ class OrderStep_Paid extends OrderStep {
 	public static $defaults = array(
 		"CustomerCanEdit" => 0,
 		"CustomerCanCancel" => 0,
-		"CustomerCanPay" => 0,
+		//the one below may seem a bit paradoxical, but the thing is that the customer can pay up to and inclusive of this step
+		//that ist he code PAID means that the Order has been paid ONCE this step is completed
+		"CustomerCanPay" => 1,
 		"Name" => "Pay",
 		"Code" => "PAID",
 		"Sort" => 30,
@@ -735,7 +755,7 @@ class OrderStep_Paid extends OrderStep {
 	/**
 	 * can go to next step if order has been paid
 	 *@param DataObject $order Order
-	 *@return DataObject | Null  (next step OrderStep object)
+	 *@return DataObject | Null	(next step OrderStep object)
 	 **/
 	public function nextStep($order) {
 		if($order->IsPaid()) {
