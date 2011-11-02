@@ -91,6 +91,17 @@ class ShoppingCart extends Object{
 	public static function current_order() {
 		return self::singleton()->currentOrder();
 	}
+
+	/**
+	 * Allows access to the current order from anywhere in the code..
+	 *@return ShoppingCart Object
+	 */
+	public function Link() {
+		$order = self::singleton()->currentOrder();
+		if($order) {
+			return $order->Link();
+		}
+	}
 	/**
 	 * Adds any number of items to the cart.
 	 *@param DataObject $buyable - the buyable (generally a product) being added to the cart
@@ -534,6 +545,7 @@ class ShoppingCart_Controller extends Controller{
 	}
 
 	public static $allowed_actions = array (
+		'index',
 		'additem',
 		'removeitem',
 		'removeallitem',
@@ -551,6 +563,14 @@ class ShoppingCart_Controller extends Controller{
 		'copyorder',
 		'debug' => 'ADMIN'
 	);
+
+	function index() {
+		if($this->cart) {
+			Director::redirect($this->cart->Link());
+			return;
+		}
+		user_error(_t("ShoppingCart.NOCARTINITIALISED", "no cart initialised"), E_USER_WARNING);
+	}
 
 	/*******************************************************
 	* CONTROLLER LINKS

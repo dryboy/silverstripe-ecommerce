@@ -1,32 +1,8 @@
 <?php
 
 /**
- * @description:
- * Defines the Order Status Options.	Basically OrderSteps guide the Order from inception to archiving.
- * Each project can have its own unique order steps - to match the requirements of the shop at hand.
- * The Order Step typically has (some) of the following functions:
- * a. a method move the order along
- *		- email the customer?
- *		- create a log entry?
- * b. describe what can be done to the order (edit, view, delete, etc...) and by whom
- * c. describe the status of the order
- * d. describe what needs to happen for the order to move along (via CMS fields)
- *		e.g. for the Order to move to the next step it needs to be paid in full
+ * @description: see OrderStep.md
  *
- * To make your own order steps, take an OrderStep from the classes listed below (one that is similar in purpose)
- * and customise it to your needs.
- *
- * Next, to include the orderstep, you use one of the following methods:
- *
- * OrderStep::set_order_steps_to_include (RESET ORDERSTEPS)
- * OR
- * OrderStep::add_order_steps_to_include (ADD ONE)
- *
- * There are a lot of comments in the code below so there is no point in repeating that, but four KEY methods are:
- * - initStep: are we ready?
- * - doStep: do the step ...
- * - nextStep: what is next?
- * - addOrderStepFields: add CMS fields to the Order (e.g. a message stating what is next)
  *
  * @authors: Silverstripe, Jeremy, Nicolaas
  *
