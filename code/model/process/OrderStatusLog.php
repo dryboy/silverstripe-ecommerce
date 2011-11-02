@@ -1,7 +1,6 @@
 <?php
 /**
- * @description:
-
+ * @description: see OrderStep.md
  *
  * @authors: Silverstripe, Jeremy, Nicolaas
  *
