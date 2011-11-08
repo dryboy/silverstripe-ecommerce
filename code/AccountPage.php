@@ -173,7 +173,7 @@ class AccountPage_Controller extends Page_Controller {
 		parent::init();
 		if(!Member::CurrentMember()) {
 			$messages = array(
-				'default' => '<p class="message good">' . _t('Account.LOGINFIRST', 'You will need to login before you can access the account page. If you are not registered, you will not be able to access it until you place your first order, otherwise please enter your details below.') . '</p>',
+				'default' => '<p class="message good">' . _t('Account.LOGINFIRST', 'You will need to log in before you can access the account page. If you are not registered, you will not be able to access it until you place your first order, otherwise please enter your details below.') . '</p>',
 				'logInAgain' => _t('Account.LOGINAGAIN', 'You have been logged out. If you would like to log in again, please do so below.')
 			);
 			Security::permissionFailure($this, $messages);
@@ -198,11 +198,13 @@ class AccountPage_Controller extends Page_Controller {
 		$this->total = 0;
 		$this->paid = 0;
 		$this->outstanding = 0;
-		foreach($pastOrders as $order) {
-			$this->total += $order->Total;
-			$this->paid += $order->TotalPaid;
-			$this->outstanding += $order->TotalOutstanding;
+		if($pastOrders) {
+			foreach($pastOrders as $order) {
+				$this->total += $order->Total;
+				$this->paid += $order->TotalPaid;
+				$this->outstanding += $order->TotalOutstanding;
 
+			}
 		}
 		return $pastOrders;
 	}
