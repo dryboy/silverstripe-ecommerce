@@ -392,16 +392,34 @@ class ShoppingCart extends Object{
 
 	/**
 	 * Gets or creates the current order.
+	 * IMPORTANT FUNCTION!
+	 * @return void
 	 */
 	public function currentOrder(){
 		if (!$this->order) {
+			$member = Member::currentMember();
 			//TODO: try to retrieve incomplete member order
 			$this->order = DataObject::get_by_id('Order',intval(Session::get(self::$session_variable.".ID"))); //find order by id saved to session (allows logging out and retaining cart contents)
+			if($this->order && $this->order->IsSubmitted()) {
+				$this->order = null;
+			}
 			if(!$this->order){
 				$this->order = new Order();
-				$this->order->MemberID = Member::currentUserID();
+				if($member) {
+					$this->order->MemberID = $member->ID;
+				}
 				$this->order->write();
 				Session::set(self::$session_variable.".ID",$this->order->ID);
+			}
+			elseif($this->order && $member) {
+				if($this->order->MemberID != $member->ID) {
+					$this->order->MemberID = $member->ID;
+					$this->order->write();
+				}
+			}
+			//if you are not logged in but the order belongs to a member then clear the cart.
+			elseif($this->order->MemberID && !$member) {
+				Director::redirect(ShoppingCart_Controller::clear_cart_link());
 			}
 			$this->order->calculateModifiers();
 		}
@@ -569,7 +587,13 @@ class ShoppingCart_Controller extends Controller{
 			Director::redirect($this->cart->Link());
 			return;
 		}
-		user_error(_t("ShoppingCart.NOCARTINITIALISED", "no cart initialised"), E_USER_WARNING);
+		user_error(_t("ShoppingCart.NOCARTINITIALISED", "no cart initialised"), E_USER_NOTICE);
+		$page = DataObject::get_one("ErrorPage", "ErrorCode = '404'");
+		if($page) {
+			Director::redirect($page->Link());
+			return;
+		}
+		user_error(_t("ShoppingCart.NOCARTINITIALISED", "no 404 page available"), E_USER_ERROR);
 	}
 
 	/*******************************************************
@@ -606,6 +630,14 @@ class ShoppingCart_Controller extends Controller{
 
 	static function add_modifier_link($modifierID) {
 		return self::$url_segment.'/addmodifier/'.$modifierID."/";
+	}
+
+	static function clear_cart_link() {
+		return self::$url_segment.'/clear/';
+	}
+
+	static function save_cart_link() {
+		return self::$url_segment.'/save/';
 	}
 
 	static function clear_cart_and_logout_link() {
@@ -743,6 +775,13 @@ class ShoppingCart_Controller extends Controller{
 		if($m = Member::currentUser()) {
 			$m->logout();
 		}
+		Director::redirectBack();
+		return;
+	}
+
+	function save() {
+		$order = $this->cart->CurrentOrder();
+		$order->write();
 		Director::redirectBack();
 		return;
 	}
