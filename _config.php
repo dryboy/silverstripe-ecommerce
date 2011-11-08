@@ -6,7 +6,11 @@
  *
  *
  **/
-
+//start horrible hack
+if(class_exists("ProductVariation")) {
+	Buyable::add_class("ProductVariation");
+}
+//end horrible hack
 
 Director::addRules(50, array(
 	ShoppingCart_Controller::get_url_segment(). '/$Action/$ID/$OtherID' => 'ShoppingCart_Controller',
