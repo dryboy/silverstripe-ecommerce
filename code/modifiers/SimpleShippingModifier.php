@@ -110,7 +110,7 @@ class SimpleShippingModifier extends OrderModifier {
 	/**
 	 * Find the amount for the shipping on the shipping country for the order.
 	 */
-	protected function LiveCalculationValue() {
+	protected function LiveCalculatedTotal() {
 		return $this->IsDefaultCharge() ? self::$default_charge : self::$charges_by_country[$this->LiveCountry()];
 	}
 

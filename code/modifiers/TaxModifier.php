@@ -174,7 +174,7 @@ class TaxModifier extends OrderModifier {
 		return "Inclusive";
 	}
 
-	protected function LiveCalculationValue() {
+	protected function LiveCalculatedTotal() {
 		return $this->LiveIsExclusive() ? $this->LiveCharge() : 0;
 	}
 

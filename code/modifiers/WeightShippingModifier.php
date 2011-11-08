@@ -109,7 +109,7 @@ class WeightShippingModifier extends OrderModifier {
 	 * Calculates the extra charges from the order based on the weight attribute of a product
  	 * ASSUMPTION -> weight in grams
 	 */
-	protected function LiveCalculationValue() {
+	protected function LiveCalculatedTotal() {
 		$order = $this->Order();
 		$shippingCountry = $this->LiveCountry();
 		// if there is a shipping country then check whether it is national or international

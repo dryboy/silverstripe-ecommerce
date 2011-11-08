@@ -25,7 +25,7 @@ class SubTotalModifier extends OrderModifier {
 // ######################################## *** template functions (e.g. ShowInTable, TableTitle, etc...) ... USES DB VALUES
 
 	/**
-	 * This overrides the table value to show the subtotal, but the LiveCalculationValue is always 0 (see below)
+	 * This overrides the table value to show the subtotal, but the LiveCalculatedTotal is always 0 (see below)
 	 */
 	public function TableValue() {
 		$order = $this->Order();
@@ -47,7 +47,7 @@ class SubTotalModifier extends OrderModifier {
 // ######################################## *** calculate database fields: protected function Live[field name] ... USED CALCULATED VALUES
 
 
-	protected function LiveCalculationValue(){
+	protected function LiveCalculatedTotal(){
 		return 0;
 	}
 

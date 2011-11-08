@@ -120,7 +120,7 @@ class FlatTaxModifier extends OrderModifier {
 		return "Inclusive";
 	}
 
-	protected function LiveCalculationValue() {
+	protected function LiveCalculatedTotal() {
 		if($this->IsExclusive()) {
 			$this->TaxableAmount() * $this->LiveRate();
 		}
