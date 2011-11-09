@@ -53,11 +53,15 @@ class SimpleShippingModifier extends OrderModifier {
 
 // ######################################## *** CRUD functions (e.g. canEdit)
 // ######################################## *** init and update functions
-
-	public function runUpdate() {
+	/**
+	 * updates database fields
+	 * @param Bool $force - run it, even if it has run already
+	 * @return void
+	 */
+	public function runUpdate($force = true) {
 		$this->checkField("Country");
 		$this->checkField("ShippingChargeType");
-		parent::runUpdate();
+		parent::runUpdate($force);
 	}
 
 

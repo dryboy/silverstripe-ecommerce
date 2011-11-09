@@ -73,14 +73,19 @@ class TaxModifier extends OrderModifier {
 // ######################################## *** CRUD functions (e.g. canEdit)
 // ######################################## *** init and update functions
 
+	/**
+	 * updates database fields
+	 * @param Bool $force - run it, even if it has run already
+	 * @return void
+	 */
 
-	public function runUpdate() {
+	public function runUpdate($force = false) {
 		$this->checkField("Country");
 		$this->checkField("Rate");
 		$this->checkField("TaxType");
 		$this->checkField("Charge");
 		$this->checkField("TaxableAmount");
-		parent::runUpdate();
+		parent::runUpdate($force);
 	}
 
 // ######################################## *** form functions (e. g. showform and getform)

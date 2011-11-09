@@ -53,12 +53,17 @@ class FlatTaxModifier extends OrderModifier {
 // ######################################## *** CRUD functions (e.g. canEdit)
 // ######################################## *** init and update functions
 
-	public function runUpdate() {
+	/**
+	 * updates database fields
+	 * @param Bool $force - run it, even if it has run already
+	 * @return void
+	 */
+	public function runUpdate($force = true) {
 		$this->checkField("Country");
 		$this->checkField("Rate");
 		$this->checkField("TaxType");
 		$this->checkField("TaxableAmount");
-		parent::runUpdate();
+		parent::runUpdate($force);
 	}
 
 // ######################################## *** form functions (showform and getform)
