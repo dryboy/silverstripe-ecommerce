@@ -14,10 +14,9 @@
 class ProductGroup extends Page {
 
 	public static $db = array(
-		"LevelOfProductsToShow" => "Int",
 		"NumberOfProductsPerPage" => "Int",
 		"DefaultSortOrder" => "Varchar(50)",
-		"ProductsAlsoInOthersGroups" => "Boolean"
+		"LevelOfProductsToShow" => "Int"
 	);
 
 	public static $belongs_many_many = array(
@@ -26,8 +25,7 @@ class ProductGroup extends Page {
 
 	public static $defaults = array(
 		"DefaultSortOrder" => "default",
-		"LevelOfProductsToShow" => 99,
-		"ProductsAlsoInOthersGroups" => 0
+		"LevelOfProductsToShow" => 99
 	);
 
 	public static $default_child = 'Product';
@@ -87,8 +85,7 @@ class ProductGroup extends Page {
 				new DropdownField("LevelOfProductsToShow", _t("ProductGroup.PRODUCTSTOSHOW", "Products to show ..."), $this->showProductLevels),
 				new HeaderField("whatproductsshown", _t("ProductGroup.WHATPRODUCTSSHOWN", _t("ProductGroup.OPTIONSSELECTEDBELOWAPPLYTOCHILDGROUPS", "Options selected below apply to child product group pages as well as this product group page."))),
 				new NumericField("NumberOfProductsPerPage", _t("ProductGroup.PRODUCTSPERPAGE", "Number of products per page")),
-				new DropdownField("DefaultSortOrder", _t("ProductGroup.DEFAULTSORTORDER", "Default Sort Order"), $this->getSortOptionsForDropdown()),
-				new CheckboxField("ProductsAlsoInOthersGroups", _t("ProductGroup.PRODUCTSALSOINOTHERSGROUPS", "Also allow the products for this product group to show in other groups (see product pages for actual selection)."))
+				new DropdownField("DefaultSortOrder", _t("ProductGroup.DEFAULTSORTORDER", "Default Sort Order"), $this->getSortOptionsForDropdown())
 			)
 		);
 		return $fields;
@@ -151,7 +148,8 @@ class ProductGroup extends Page {
 
 		//LIMIT
 		if($allProducts) {
-			if($allProducts->Count() > 0) {
+			$this->totalCount = $allProducts->Count();
+			if($this->totalCount) {
 				//SORT BY
 				if(!isset($_GET['sortby'])) {
 					$sortKey = $this->MyDefaultSortOrder();
@@ -170,7 +168,6 @@ class ProductGroup extends Page {
 				$whereForPageOnly = "\"Product$stage\".\"ID\" IN (".implode(",", $allProducts->map("ID", "ID")).")";
 				$products = DataObject::get('Product',$whereForPageOnly,$sort, null,$limit);
 				if($products) {
-					$this->totalCount = $products->count();
 					return $products;
 				}
 			}
@@ -220,21 +217,6 @@ class ProductGroup extends Page {
 		return $defaultSortOrder;
 	}
 
-	/**
-	 *@return Boolean
-	 **/
-	function MyProductsAlsoInOthersGroups() {
-		$alsoInOtherGroups = self::$defaults["ProductsAlsoInOthersGroups"];
-		if($this->ProductsAlsoInOthersGroups) {
-			$alsoInOtherGroups = $this->ProductsAlsoInOthersGroups;
-		}
-		else {
-			if($parent = $this->ParentGroup()) {
-				$alsoInOtherGroups = $parent->MyProductsAlsoInOthersGroups();
-			}
-		}
-		return $alsoInOtherGroups;
-	}
 
 	/**
 	 * Return children ProductGroup pages of this group.
@@ -285,11 +267,6 @@ class ProductGroup extends Page {
 
 	function requireDefaultRecords(){
 		parent::requireDefaultRecords();
-		if(isset($_GET["resetproductshowlevels"])) {
-			DB::query("UPDATE ProductGroup SET \"LevelOfProductsToShow\" = ".self::$defaults["LevelOfProductsToShow"]);
-			DB::query("UPDATE ProductGroup_Live SET \"LevelOfProductsToShow\" = ".self::$defaults["LevelOfProductsToShow"]);
-			DB::alteration_message("resetting product 'show' levels", "created");
-		}
 	}
 
 }
@@ -343,6 +320,7 @@ class ProductGroup_Controller extends Page_Controller {
 			$dos->push(new ArrayData(array(
 				'Name' => _t('ProductGroup.SORTBY'.strtoupper(str_replace(' ','',$array['Title'])),$array['Title']),
 				'Link' => $this->Link()."?sortby=$key",
+				'SelectKey' => $key,
 				'Current' => $current,
 				'LinkingMode' => $current ? "current" : "link"
 			)));
