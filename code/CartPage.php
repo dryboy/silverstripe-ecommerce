@@ -19,27 +19,35 @@ class CartPage extends Page{
 	public static $icon = 'ecommerce/images/icons/CartPage';
 
 	public static $db = array(
-		'ProceedToCheckoutLabel' => 'Varchar(100)',
 		'ContinueShoppingLabel' => 'Varchar(100)',
-		'StartNewOrderLinkLabel' => 'Varchar(100)'
+		'ProceedToCheckoutLabel' => 'Varchar(100)',
+		'CurrentOrderLinkLabel' => 'Varchar(100)',
+		'LoginToOrderLinkLabel' => 'Varchar(100)',
+		'SaveOrderLinkLabel' => 'Varchar(100)',
+		'LoadOrderLinkLabel' => 'Varchar(100)',
+		'DeleteOrderLinkLabel' => 'Varchar(100)',
+		'NoItemsInOrderMessage' => 'HTMLText',
+		'NonExistingOrderMessage' => 'HTMLText'
 	);
 
 	public static $has_one = array(
-		'CheckoutPage' => 'CheckoutPage',
 		'ContinuePage' => 'SiteTree'
 	);
 
 	public static $defaults = array(
-		'ProceedToCheckoutLabel' => 'Proceed to checkout',
-		'ContinueShoppingLabel' => 'Continue Shopping',
-		'StartNewOrderLinkLabel' => 'Start new order'
+		'ContinueShoppingLabel' => 'continue shopping',
+		'ProceedToCheckoutLabel' => 'proceed to checkout',
+		'CurrentOrderLinkLabel' => 'view current order',
+		'LoginToOrderLinkLabel' => 'you must log in to view this order',
+		'SaveOrderLinkLabel' => 'save current order',
+		'DeleteOrderLinkLabel' => 'delete this order',
+		'LoadOrderLinkLabel' => 'finalise this order',
+		'NoItemsInOrderMessage' => '<p>You do not have any items in your current order</p>',
+		'NonExistingOrderMessage' => '<p>Sorry, the order you are trying to open does not exist</p>'
 	);
 
 	public function populateDefaults() {
 		parent::populateDefaults();
-		if($checkoutPage = DataObject::get_one("CheckoutPage", "\"ClassName\" = 'CheckoutPage'")) {
-			$this->CheckoutPageID = $checkoutPage->ID;
-		}
 		$continuePage = DataObject::get_one("ProductGroup", "ParentID = 0");
 		if($continuePage || $continuePage = DataObject::get_one("ProductGroup")) {
 			$this->ContinuePageID = $continuePage->ID;
@@ -55,16 +63,27 @@ class CartPage extends Page{
 	 **/
 	function getCMSFields(){
 		$fields = parent::getCMSFields();
-		if($this->ClassName != "CheckoutPage") {
-			$fields->addFieldsToTab('Root.Content.Links', new TextField('StartNewOrderLinkLabel', 'Label for starting new order (e.g. click here to start new order)'));
-			if($checkouts = DataObject::get('CheckoutPage')) {
-				$fields->addFieldToTab('Root.Content.Links',new TextField('ProceedToCheckoutLabel','Proceed to checkout label (e.g. click here to go through to checkout)'));
-				$fields->addFieldToTab('Root.Content.Links',new DropdownField('CheckoutPageID','Checkout Page',$checkouts->toDropdownMap()));
-			}
-			$fields->addFieldToTab('Root.Content.Links',new TreeDropdownField('ContinuePageID','Continue Page',"SiteTree"));
-			$fields->addFieldToTab('Root.Content.Links',new TextField('ContinueShoppingLabel','Continue shopping link label (e.g. click here to continue shopping'));
-		}
-
+		$fields->addFieldsToTab('Root.Content.Messages', array (
+			new TabSet(
+				"Messages",
+				new Tab(
+					"Actions",
+					new TextField('ContinueShoppingLabel', 'Label on link to continue shopping - e.g. click here to continue shopping'),
+					new TreeDropdownField('ContinuePageID','Continue Shopping Landing Page',"SiteTree"),
+					new TextField('ProceedToCheckoutLabel', 'Label on link to proceed to checkout - e.g. click here to finalise your order'),
+					new TextField('CurrentOrderLinkLabel', 'Label for the link pointing to the current order - e.g. click here to view current order'),
+					new TextField('LoginToOrderLinkLabel', 'Label for the link pointing to the order which requires a log in - e.g. you must login to view this order'),
+					new TextField('SaveOrderLinkLabel', 'Label for the saving an order - e.g. click here to save current order'),
+					new TextField('LoadOrderLinkLabel', 'Label for the loading an order into the cart - e.g. click here to finalise this order'),
+					new TextField('DeleteOrderLinkLabel', 'Label for the deleting an order - e.g. click here to delete this order')
+				),
+				new Tab(
+					"Errors",
+					new HtmlEditorField('NoItemsInOrderMessage', 'No items in order - shown when the customer tries to view an order without items.', $row = 4),
+					new HtmlEditorField('NonExistingOrderMessage', 'Non-existing Order - shown when the customer tries to load a non-existing order.', $row = 4)
+				)
+			)
+		));
 		return $fields;
 	}
 
@@ -88,7 +107,7 @@ class CartPage extends Page{
 	 * @return String (URLSegment)
 	 */
 	public static function find_link() {
-		if($page = DataObject::get_one('CartPage', "\"ClassName\" = 'CartPage'")) {
+		if($page = DataObject::get_one("CartPage", "\"ClassName\" = 'CartPage'")) {
 			return $page->Link();
 		}
 		else {
@@ -170,15 +189,48 @@ class CartPage_Controller extends Page_Controller{
 		if(isset($_REQUEST['OrderID'])) {
 			$orderID = intval($_REQUEST['OrderID']);
 		}
-		elseif($this->request->param('ID') && $this->request->param('Action') == "showorder"){
+		elseif($this->request->param('ID') && in_array($this->request->param('Action'), array("showorder", "loadorder", "copyorder", "saveorder", "deleteorder"))){
 			$orderID = intval($this->request->param('ID'));
 		}
 		if($orderID) {
-			$this->currentOrder = Order::get_by_id_if_can_view($orderID);
+			$this->currentOrder = DataObject::get_by_id("Order", $orderID);
 		}
 		else {
 			//if there is no order
 			$this->currentOrder = ShoppingCart::current_order();
+		}
+		//redirect if we are viewing the order with the wrong page!
+		if($this->currentOrder) {
+			//IMPORTANT SECURITY QUESTION!
+			if($this->currentOrder->canView()) {
+				if($this->currentOrder->IsSubmitted()) {
+					if($this->isOrderConfirmationPage()) {
+						//do nothing
+					}
+					else {
+						Director::redirect($this->currentOrder->Link());
+					}
+				}
+				else {
+					if($this->isOrderConfirmationPage()) {
+						Director::redirect($this->currentOrder->Link());
+					}
+					else {
+						//do nothing
+					}
+				}
+			}
+			else {
+				if(!$this->LoginToOrderLinkLabel) {
+					$this->LoginToOrderLinkLabel = _t('CartPage.LOGINFIRST', 'You will need to log in before you can access the requested order order. ');
+				}
+				$messages = array(
+					'default' => '<p class="message good">' . $this->LoginToOrderLinkLabel . '</p>',
+					'logInAgain' => _t('CartPage.LOGINAGAIN', 'You have been logged out. If you would like to log in again, please do so below.')
+				);
+				Security::permissionFailure($this, $messages);
+				return false;
+			}
 		}
 	}
 
@@ -234,6 +286,21 @@ class CartPage_Controller extends Page_Controller{
 	}
 
 	/**
+	 * Tells you if the order you are viewing at the moment is also in the cart
+	 *@return Boolean
+	 **/
+	function CurrentOrderIsInCart() {
+		$viewingRealCurrentOrder = false;
+		$realCurrentOrder = ShoppingCart::current_order();
+		if($this->currentOrder && $realCurrentOrder) {
+			if($realCurrentOrder->ID == $this->currentOrder->ID) {
+				$viewingRealCurrentOrder = true;
+			}
+		}
+		return $viewingRealCurrentOrder;
+	}
+
+	/**
 	 *@return array just so that template shows -  sets CurrentOrder variable
 	 **/
 	function showorder($request) {
@@ -244,20 +311,29 @@ class CartPage_Controller extends Page_Controller{
 	}
 
 	/**
-	 * Loads either the current order from the shopping cart or
-	 * by the specified Order ID in the URL.
+	 * Loads either the "current order""into the shopping cart.
 	 *
 	 * TO DO: untested
 	 * TO DO: what to do with old order
 	 *
 	 */
-	function loadorder($request) {
-		if ($orderID = intval($request->param('ID'))) {
-			self::set_message(_t("CartPage.ORDERLOADED", "Order has been loaded."));
-			$this->currentOrder = ShoppingCart::singleton()->loadOrder($orderID);
-			Director :: redirect($this->Link());
-			exit();
-		}
+	function loadorder() {
+		self::set_message(_t("CartPage.ORDERLOADED", "Order has been loaded."));
+		ShoppingCart::singleton()->loadOrder($this->currentOrder->ID);
+		Director::redirect($this->Link());
+		return array();
+	}
+	/**
+	 * copies either the current order into the shopping cart
+	 *
+	 * TO DO: untested
+	 * TO DO: what to do with old order
+	 *
+	 */
+	function copyorder() {
+		self::set_message(_t("CartPage.ORDERLOADED", "Order has been loaded."));
+		ShoppingCart::singleton()->copyOrder($this->currentOrder->ID);
+		Director::redirect($this->Link());
 		return array();
 	}
 
@@ -266,32 +342,196 @@ class CartPage_Controller extends Page_Controller{
 	 *
 	 * TO DO: untested
 	 */
-	function startneworder($request) {
+	function saveorder() {
+		$member = Member::currentMember();
+		if(!$member) {
+			$messages = array(
+				'default' => '<p class="message good">please log in first.</p>',
+			);
+			Security::permissionFailure($this, $messages);
+			return array();
+		}
+		if($this->currentOrder && $this->currentOrder->Items()) {
+			$this->currentOrder->write();
+			self::set_message(_t("CartPage.ORDERSAVED", "Your order has been saved."));
+		}
+		else {
+			self::set_message(_t("CartPage.ORDERCOULDNOTBESAVED", "Your order could not be saved."));
+		}
+		Director::redirectBack();
+		return array();
+	}
+
+
+	/**
+	 * Delete the currently viewed order.
+	 *
+	 * TO DO: untested
+	 *
+	 */
+	function deleteorder() {
+		if(!$this->CurrentOrderIsInCart()) {
+			if($this->currentOrder->canDelete()) {
+				$this->currentOrder->delete();
+				self::set_message(_t("CartPage.ORDERDELETED", "Order has been deleted."));
+			}
+		}
+		self::set_message(_t("CartPage.ORDERNOTDELETED", "Order could not be deleted."));
+		return array();
+	}
+
+
+	/**
+	 * Start a new order
+	 *
+	 * TO DO: untested
+	 */
+	function startneworder() {
 		ShoppingCart::singleton()->clear();
 		self::set_message(_t("CartPage.NEWORDERSTARTED", "New order has been started."));
 		Director::redirect($this->Link());
 		return array();
 	}
 
+	/**
+	 * work out the options for the user
+	 * @return void
+	 **/
 	protected function workOutMessagesAndActions(){
 		if(!$this->workedOutMessagesAndActions) {
 			$this->actionLinks = new DataObjectSet();
-			if($this->ProceedToCheckoutLabel && $this->CheckoutPageID && $this->currentOrder && $this->currentOrder->Items()) {
-				$this->actionLinks->push(new ArrayData(array (
-					"Title" => $this->ProceedToCheckoutLabel,
-					"Link" => $this->CheckoutPage()->Link()
-				)));
+			//what order are we viewing?
+			$viewingRealCurrentOrder = $this->CurrentOrderIsInCart();
+
+			//Continue Shopping
+			if($this->ContinueShoppingLabel) {
+				if($viewingRealCurrentOrder) {
+					if($this->isCartPage()) {
+						$continuePage = DataObject::get_by_id("SiteTree", $this->ContinuePageID );
+						if($continuePage) {
+							$this->actionLinks->push(new ArrayData(array (
+								"Title" => $this->ContinueShoppingLabel,
+								"Link" => $continuePage->Link()
+							)));
+						}
+					}
+				}
 			}
-			if($this->ContinueShoppingLabel && $this->ContinuePageID) {
-				$this->actionLinks->push(new ArrayData(array (
-					"Title" => $this->ContinueShoppingLabel,
-					"Link" => $this->ContinuePage()->Link()
-				)));
+
+			//Proceed To CheckoutLabel
+			if($this->ProceedToCheckoutLabel) {
+				if($viewingRealCurrentOrder) {
+					if($this->isCartPage()) {
+						$checkoutPageLink = CheckoutPage::find_link();
+						if($checkoutPageLink && $this->currentOrder && $this->currentOrder->Items()) {
+							$this->actionLinks->push(new ArrayData(array (
+								"Title" => $this->ProceedToCheckoutLabel,
+								"Link" => $checkoutPageLink
+							)));
+						}
+					}
+				}
 			}
+
+			//go to current order
+			if($this->CurrentOrderLinkLabel) {
+				if($this->isCartPage()) {
+					if(!$viewingRealCurrentOrder) {
+						$this->actionLinks->push(new ArrayData(array (
+							"Title" => $this->CurrentOrderLinkLabel,
+							"Link" => ShoppingCart::current_order()->Link()
+						)));
+					}
+				}
+			}
+
+
+			//Save order - we assue only current ones can be saved.
+			if($this->SaveOrderLinkLabel) {
+				if($viewingRealCurrentOrder) {
+					if($this->isCartPage()) {
+						if($this->currentOrder && $this->currentOrder->Items() && !$this->currentOrder->IsSubmitted()) {
+							$this->actionLinks->push(new ArrayData(array (
+								"Title" => $this->SaveOrderLinkLabel,
+								"Link" => $this->Link("saveorder").$this->currentOrder->ID."/"
+							)));
+						}
+					}
+				}
+			}
+
+			//load order
+			if($this->LoadOrderLinkLabel) {
+				if($this->isCartPage() && $this->currentOrder) {
+					if(!$viewingRealCurrentOrder) {
+						$this->actionLinks->push(new ArrayData(array (
+							"Title" => $this->LoadOrderLinkLabel,
+							"Link" => $this->Link("loadorder").$this->currentOrder->ID."/"
+						)));
+					}
+				}
+			}
+
+			//delete order
+			if($this->DeleteOrderLinkLabel) {
+				if($this->isCartPage() && $this->currentOrder) {
+					if(!$viewingRealCurrentOrder) {
+						$this->actionLinks->push(new ArrayData(array (
+							"Title" => $this->DeleteOrderLinkLabel,
+							"Link" => $this->Link("deleteorder").$this->currentOrder->ID."/"
+						)));
+					}
+				}
+			}
+
+
+
+			//Start new order
+			//Strictly speaking this is only part of the
+			//OrderConfirmationPage but we put it here for simplicity's sake
+			if($this->StartNewOrderLinkLabel) {
+				if($this->isOrderConfirmationPage()) {
+					$this->actionLinks->push(new ArrayData(array (
+						"Title" => $this->StartNewOrderLinkLabel,
+						"Link" => CartPage::new_order_link()
+					)));
+				}
+			}
+			//copy order
+			//Strictly speaking this is only part of the
+			//OrderConfirmationPage but we put it here for simplicity's sake
+			if($this->CopyOrderLinkLabel) {
+				if($this->isOrderConfirmationPage() && $this->currentOrder->ID) {
+					$this->actionLinks->push(new ArrayData(array (
+						"Title" => $this->CopyOrderLinkLabel,
+						"Link" => OrderConfirmationPage::new_order_link($this->currentOrder->ID)
+					)));
+				}
+			}
+
+			//no items
+			if($this->currentOrder) {
+				if(!$this->currentOrder->Items())  {
+					$this->message = $this->NoItemsInOrderMessage;
+				}
+			}
+			else {
+				$this->message = $this->NonExistingOrderMessage;
+			}
+
 			$this->workedOutMessagesAndActions = true;
 			//does nothing at present....
 		}
 	}
+
+	protected function isCartPage() {
+		if(($this->isCheckoutPage()) || ($this->isOrderConfirmationPage())) {
+			return false;
+		}
+		return true;
+	}
+	protected function isCheckoutPage() {if($this->dataRecord instanceOf CheckoutPage){ return true;}else {return false;}}
+	protected function isOrderConfirmationPage() {if($this->dataRecord instanceOf OrderConfirmationPage){ return true;}else {return false;}}
 
 }
 
