@@ -13,13 +13,13 @@
 class OrderAttribute extends DataObject {
 
 	public static $db = array(
+		'CalculatedTotal' => 'Currency',
 		'Sort' => 'Int',
 		'GroupSort' => 'Int'
 	);
 
 	public static $has_one = array(
-		'Order' => 'Order',
-		'OrderAttribute_Group' => 'OrderAttribute_Group'
+		'Order' => 'Order'
 	);
 
 	public static $casting = array(
@@ -219,18 +219,3 @@ class OrderAttribute extends DataObject {
 }
 
 
-class OrderAttribute_Group extends DataObject {
-
-	public static $db = array(
-		"Title" => "Varchar(100)",
-		'Sort' => 'Int'
-	);
-
-	public static $default_sort = "\"Sort\" ASC";
-
-	public static $indexes = array(
-		"Sort" => true,
-	);
-
-
-}
