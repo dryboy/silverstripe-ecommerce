@@ -41,14 +41,6 @@ class CheckoutPage extends CartPage {
 	public static $db = array (
 		'HasOrderSteps' => 'Boolean',
 		'InvitationToCompleteOrder' => 'HTMLText',
-		'AlreadyCompletedMessage' => 'HTMLText',
-		'NoItemsInOrderMessage' => 'HTMLText',
-		'NonExistingOrderMessage' => 'HTMLText',
-		'MustLoginToCheckoutMessage' => 'HTMLText',
-		'LoginToOrderLinkLabel' => 'Varchar(100)',
-		'FinalizedOrderLinkLabel' => 'Varchar(100)',
-		'CurrentOrderLinkLabel' => 'Varchar(100)',
-		'StartNewOrderLinkLabel' => 'Varchar(100)'
 	);
 
 	public static $has_one = array (
@@ -57,14 +49,6 @@ class CheckoutPage extends CartPage {
 
 	public static $defaults = array (
 		'InvitationToCompleteOrder' => '<p>Please finalise your order below.</p>',
-		'AlreadyCompletedMessage' => '<p>This order has already been completed.</p>',
-		'NoItemsInOrderMessage' => '<p>There are no items in your order.</p>',
-		'NonExistingOrderMessage' => '<p>Sorry, this order can not be found.</p>',
-		'MustLoginToCheckoutMessage' => '<p>You must log in first before finalising this order.</p>',
-		'LoginToOrderLinkLabel' => 'Plese log in to access this order',
-		'FinalizedOrderLinkLabel' => 'View completed order',
-		'CurrentOrderLinkLabel' => 'Go to current order',
-		'StartNewOrderLinkLabel' => 'Start new order'
 	);
 
 	/**
@@ -83,9 +67,10 @@ class CheckoutPage extends CartPage {
 	 * @return String (URLSegment)
 	 */
 	public static function find_link() {
-		if ($page = DataObject :: get_one('CheckoutPage', "\"ClassName\" = 'CheckoutPage'")) {
+		if ($page = DataObject::get_one("CheckoutPage", "\"ClassName\" = 'CheckoutPage'")) {
 			return $page->Link();
 		}
+		return "";
 	}
 
 	/**
@@ -100,6 +85,7 @@ class CheckoutPage extends CartPage {
 		if($page = self::find_link()) {
 			return $page->Link("showorder") . "/" . $orderID . "/";
 		}
+		return "";
 	}
 
 	/**
@@ -116,45 +102,19 @@ class CheckoutPage extends CartPage {
 	 **/
 	function getCMSFields() {
 		$fields = parent :: getCMSFields();
-		$fields->removeFieldFromTab('Root.Content.Main', "Content");
+		$fields->removeFieldFromTab('Root.Content.Messages.Messages.Actions',"ProceedToCheckoutLabel");
+		$fields->removeFieldFromTab('Root.Content.Messages.Messages.Actions',"ContinueShoppingLabel");
+		$fields->removeFieldFromTab('Root.Content.Messages.Messages.Actions',"ContinuePageID");
+		$fields->removeFieldFromTab('Root.Content.Messages.Messages.Actions',"LoadOrderLinkLabel");
+		$fields->removeFieldFromTab('Root.Content.Messages.Messages.Actions',"CurrentOrderLinkLabel");
+		$fields->removeFieldFromTab('Root.Content.Messages.Messages.Actions',"SaveOrderLinkLabel");
+		$fields->removeFieldFromTab('Root.Content.Messages.Messages.Actions',"DeleteOrderLinkLabel");
 		$fields->addFieldToTab('Root.Content.Process', new TreeDropdownField('TermsPageID', 'Terms and Conditions Page', 'SiteTree'));
 		$fields->addFieldToTab('Root.Content.Process', new CheckboxField('HasOrderSteps', 'Checkout Process in Steps'));
-		$fields->addFieldsToTab('Root.Content.Messages', array (
-			new TabSet(
-				"MessageOptions",
-				new Tab(
-					"NormalOrder",
-					new HtmlEditorField('InvitationToCompleteOrder', 'Invitation to complete order ... shown when the customer can do a normal checkout', $row = 4)
-
-				),
-				new Tab(
-					"NoItems",
-					new HtmlEditorField('NoItemsInOrderMessage', 'No items in order - shown when the customer tries to checkout an order without items.', $row = 4)
-
-				),
-				new Tab(
-					"NonExistingOrder",
-					new HtmlEditorField('NonExistingOrderMessage', 'Non-existing Order - shown when the customer tries to load a non-existing order.', $row = 4)
-				),
-				new Tab(
-					"AlreadyCompleted",
-					new HtmlEditorField('AlreadyCompletedMessage', 'Already Completed - shown when the customer tries to checkout an already completed order', $row = 4)
-				),
-				new Tab(
-					"OldOrder",
-					new HtmlEditorField('MustLoginToCheckoutMessage', 'MustLoginToCheckoutMessage', $row = 4)
-
-				),
-				new Tab (
-					"LinksAndLabels",
-					new TextField('FinalizedOrderLinkLabel', 'Label for the link pointing to a completed order - e.g. click here to view the completed order'),
-					new TextField('CurrentOrderLinkLabel', 'Label for the link pointing to the current order - e.g. click here to view current order'),
-					new TextField('StartNewOrderLinkLabel', 'Label for starting new order - e.g. click here to start new order'),
-					new TextField('LoginToOrderLinkLabel', 'Label for the link pointing to the order which requires a log in - e.g. click here to log in and view order')
-				)
-			)
-		));
-		$fields->addFieldToTab('Root.Content.AlwaysVisible', new HtmlEditorField('Content', 'General note', 7, 7));
+		$fields->addFieldToTab('Root.Content.Main', new HtmlEditorField('InvitationToCompleteOrder', 'Invitation to complete order ... shown when the customer can do a regular checkout', $row = 4));
+		//The Content field has a slightly different meaning for the Checkout Page.
+		$fields->removeFieldFromTab('Root.Content.Main', "Content");
+		$fields->addFieldToTab('Root.Content.Messages.Messages.AlwaysVisible', new HtmlEditorField('Content', 'General note - always visible on the checkout page', 7, 7));
 		return $fields;
 	}
 
@@ -239,67 +199,6 @@ class CheckoutPage_Controller extends CartPage_Controller {
 		return array ();
 	}
 
-	/**
-	 * Returns a message explaining why the customer
-	 * can't checkout the requested order.
-	 *
-	 */
-	protected function workOutMessagesAndActions() {
-		if(!$this->workedOutMessagesAndActions) {
-			$this->actionLinks = new DataObjectSet();
-			$checkoutLink = CheckoutPage::find_link();
-			if($this->CanCheckout()) {
-				//no action links...
-				$this->message = $this->InvitationToCompleteOrder;
-			}
-			//not logged in, an order was requested, must login first!
-			elseif (!Member::currentUserID() && $this->OrderID && !$this->currentOrder ) {
-				$redirectLink = CheckoutPage::get_checkout_order_link($this->OrderID);
-				//retrieve requested order by logging in
-				$this->actionLinks->push(new ArrayData(array (
-					"Title" => $this->LoginToOrderLinkLabel,
-					"Link" => 'Security/login?BackURL=' . urlencode($redirectLink)
-				)));
-				// open current order
-				$this->actionLinks->push(new ArrayData(array (
-					"Title" => $this->CurrentOrderLinkLabel,
-					"Link" => $checkoutLink
-				)));
-				$this->message = $this->MustLoginToCheckoutMessage;
-			}
-			//already logged in, but order can not be found: order does not exist!
-			elseif (Member::currentUserID() && $this->OrderID && !$this->currentOrder) {
-				$this->actionLinks->push(new arrayData(array (
-					"Title" => $this->CurrentOrderLinkLabel,
-					"Link" => $checkoutLink
-				)));
-				$this->message = $this->NonExistingOrderMessage;
-			}
-			//no items in basket
-			elseif ($this->currentOrder && !$this->currentOrder->Items()) {
-				//no action links
-				$this->message = $this->NoItemsInOrderMessage;
-			}
-			//order can not be edited:
-			elseif ($this->currentOrder && $this->currentOrder->IsSubmitted()) {
-				//review order... in order confirmation page
-				$this->actionLinks->push(new ArrayData(array (
-					"Title" => $this->FinalizedOrderLinkLabel,
-					"Link" => $this->currentOrder->Link()
-				)));
-				//start a new order
-				$this->actionLinks->push(new ArrayData(array (
-					"Title" => $this->StartNewOrderLinkLabel,
-					"Link" => CartPage::new_order_link()
-				)));
-				$this->message = $this->AlreadyCompletedMessage;
-			}
-			else {
-				$this->message = "An error occured in retrieving your order...";
-			}
-			$this->workedOutMessagesAndActions = true;
-		}
-	}
 	/**
 	 * STEP STUFF
 	 *
