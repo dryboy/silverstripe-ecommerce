@@ -7,8 +7,10 @@ class EcommerceDatabaseAdmin extends Controller{
 	);
 
 	static $allowed_actions = array(
-		'deleteproducts',
-		'clearoldcarts'
+		'deleteproducts' => "ADMIN",
+		'clearoldcarts' => "ADMIN",
+		'updateproductgroups' => "ADMIN",
+		'setfixedpriceforsubmittedorderitems' => "ADMIN"
 	);
 
 	function init() {
@@ -41,6 +43,44 @@ class EcommerceDatabaseAdmin extends Controller{
 	function deleteproducts($request){
 		$task = new DeleteEcommerceProductsTask();
 		$task->run($request);
+	}
+
+	function updateproductgroups() {
+		DB::query("UPDATE ProductGroup SET \"LevelOfProductsToShow\" = ".ProductGroup::$defaults["LevelOfProductsToShow"]);
+		DB::query("UPDATE ProductGroup_Live SET \"LevelOfProductsToShow\" = ".ProductGroup::$defaults["LevelOfProductsToShow"]);
+		DB::alteration_message("resetting product 'show' levels", "created");
+	}
+
+	function setfixedpriceforsubmittedorderitems() {
+		$db = DB::getConn();
+		$fieldArray = $db->fieldList("OrderModifier");
+		$hasField =  isset($fieldArray["CalculationValue"]);
+		if($hasField) {
+			DB::query("UPDATE \"OrderAttribute\" INNER JOIN\" OrderModifier\" SET \"OrderAttribute\".\"CalculatedTotal\" = \"OrderModifier\".\"CalculationValue\" WHERE \"OrderAttribute\".\"CalculatedTotal\" = 0");
+			DB::query("ALTER TABLE \"OrderModifier\" DROP \"CalculationValue\" ");
+		}
+		$limit = 1000;
+		$orderItems = DataObject::get(
+			"OrderItem",
+			"\"Quantity\" <> 0 AND \"OrderAttribute\".\"CalculatedTotal\" = 0",
+			"\"Created\" ASC",
+			"INNER JOIN
+				\"Order\" ON \"Order\".\"ID\" = \"OrderAttribute\".\"OrderID\"",
+			1000
+		);
+		$count = 0;
+		if($orderItems) {
+			foreach($orderItems as $orderItem) {
+				if($orderItem->Order()) {
+					if($orderItem->Order()->IsSubmitted()) {
+						$orderItem->CalculatedValue = $orderItem->UnitPrice() * $orderItem->Quantity;
+						$orderItem->write();
+						$count++;
+					}
+				}
+			}
+		}
+		DB::alteration_message("Fixed price for all submmitted orders without a fixed one - affected: $count order items", "created");
 	}
 
 	private $tests = array(
