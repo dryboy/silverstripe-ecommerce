@@ -14,7 +14,7 @@
 class ShippingAddress extends OrderAddress {
 
 
-	static $db = array(
+	public static $db = array(
 		'ShippingPrefix' => 'Varchar(10)',
 		'ShippingFirstName' => 'Varchar(100)',
 		'ShippingSurname' => 'Varchar(100)',
