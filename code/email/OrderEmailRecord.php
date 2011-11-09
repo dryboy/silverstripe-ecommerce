@@ -25,12 +25,12 @@ class OrderEmailRecord extends DataObject {
 		"OrderStep" => "OrderStep"
 	);
 	public static $casting = array(
-		"RelatedStatus" => "Varchar",
+		"OrderStepNice" => "Varchar",
 		"ResultNice" => "Varchar"
 	);
 	public static $summary_fields = array(
 		"Created" => "Send",
-		"RelatedStatus" => "What",
+		"OrderStepNice" => "What",
 		"From" => "From",
 		"To" => "To",
 		"Subject" => "Subject",
@@ -85,12 +85,12 @@ class OrderEmailRecord extends DataObject {
 	 *
 	 *@ return String
 	  **/
-	function RelatedStatus() {return $this->getRelatedStatus();}
-	function getRelatedStatus() {
+	function OrderStepNice() {return $this->getOrderStepNice();}
+	function getOrderStepNice() {
 		if($this->OrderStepID) {
 			$orderStep = DataObject::get_by_id("OrderStep", $this->OrderStepID);
 			if($orderStep) {
-				return $orderStep->Title;
+				return $orderStep->Name;
 			}
 		}
 	}
