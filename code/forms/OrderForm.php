@@ -222,7 +222,7 @@ class OrderForm extends Form {
 		//RUN UPDATES TO CHECK NOTHING HAS CHANGED
 		$order = ShoppingCart::current_order();
 		$oldtotal = $order->Total();
-		$order->calculateModifiers($force = true);
+		$order->calculateOrderAttributes($force = true);
 		if($order->Total() != $oldtotal) {
 			$form->sessionMessage(_t('OrderForm.PRICEUPDATED','The order price has been updated.'), 'warning');
 			Director::redirectBack();
