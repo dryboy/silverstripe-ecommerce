@@ -20,14 +20,17 @@ class OrderEmailRecord extends DataObject {
 		"Content" => "HTMLText",
 		"Result" => "Boolean"
 	);
+
 	public static $has_one = array(
 		"Order" => "Order",
 		"OrderStep" => "OrderStep"
 	);
+
 	public static $casting = array(
 		"OrderStepNice" => "Varchar",
 		"ResultNice" => "Varchar"
 	);
+
 	public static $summary_fields = array(
 		"Created" => "Send",
 		"OrderStepNice" => "What",
@@ -36,6 +39,7 @@ class OrderEmailRecord extends DataObject {
 		"Subject" => "Subject",
 		"ResultNice" => "Sent Succesfully"
 	);
+
 	public static $searchable_fields = array(
 		'OrderID' => array(
 			'field' => 'NumericField',
@@ -72,6 +76,7 @@ class OrderEmailRecord extends DataObject {
 	function getCMSFields() {
 		$fields = parent::getCMSFields();
 		$fields->replaceField("OrderID", $fields->dataFieldByName("OrderID")->performReadonlyTransformation());
+		$fields->addFieldToTab("Root.Main", new ReadonlyField("OrderStepNice", "Order Step", $this->OrderStepNice()));
 		return $fields;
 	}
 
