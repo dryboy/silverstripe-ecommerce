@@ -35,7 +35,6 @@ class OrderModifier extends OrderAttribute {
 	public static $db = array(
 		'Name' => 'Varchar(255)', // we use this to create the TableTitle, CartTitle and TableSubTitle
 		'TableValue' => 'Currency', //the $$ shown in the checkout table
-		'CalculationValue' => 'Currency', // this is the value we use to deduct / add to the sub-total (e.g. discount = -20, delivery = +10)
 		'HasBeenRemoved' => 'Boolean' // we add this so that we can see what modifiers have been removed
 	);
 
@@ -78,7 +77,7 @@ class OrderModifier extends OrderAttribute {
 		$fields->removeByName("GroupSort");
 		$fields->replaceField("Name", new ReadonlyField("Name"));
 		$fields->removeByName("TableValue");
-		$fields->removeByName("CalculationValue");
+		$fields->removeByName("CalculatedTotal");
 		$fields->removeByName("HasBeenRemoved");
 		$fields->addFieldToTab(
 			"Root",
@@ -88,7 +87,7 @@ class OrderModifier extends OrderAttribute {
 				new ReadonlyField("CreatedShown", "Created", $this->Created),
 				new ReadonlyField("LastEditedShown", "Last Edited", $this->LastEdited),
 				new ReadonlyField("TableValueShown", "Table Value", $this->TableValue),
-				new ReadonlyField("CalculationValueShown", "Raw Value", $this->CalculationValue)
+				new ReadonlyField("CalculatedTotal", "Raw Value", $this->CalculatedTotal)
 			)
 		);
 		$fields->addFieldToTab("Root.Status", new CheckboxField("HasBeenRemoved", "Has been removed"));
@@ -184,14 +183,14 @@ class OrderModifier extends OrderAttribute {
 
 	/**
 	* all modifier child-classes must have this method if it has more fields
-	*
+	 * @param Bool $force - run it, even if it has run already
 	**/
-	public function runUpdate() {
+	public function runUpdate($force = false) {
 		if(!$this->IsRemoved()) {
 			$this->checkField("Name");
 			$this->checkField("TableValue");
 			$this->checkField("CartValue");
-			$this->checkField("CalculationValue");
+			$this->checkField("CalculatedTotal");
 			if($this->mustUpdate && $this->canBeUpdated()) {
 				$this->write();
 			}
@@ -229,7 +228,7 @@ class OrderModifier extends OrderAttribute {
 		if($this->HasBeenRemoved) {
 			return 0;
 		}
-		return $this->CalculationValue;
+		return $this->CalculatedTotal;
 	}
 
 // ########################################  *** form functions (showform and getform)
@@ -325,7 +324,7 @@ class OrderModifier extends OrderAttribute {
 	 * @return Currency Object
 	 **/
 	public function TableValue() {
-		$amount = $this->CalculationValue;
+		$amount = $this->CalculatedTotal;
 		$obj = DBField::create('Currency', $amount);
 		return $obj;
 	}
@@ -345,8 +344,8 @@ class OrderModifier extends OrderAttribute {
 	 *
 	 * @return Float / Double
 	 **/
-	public function CalculationValue() {
-		return $this->CalculationValue;
+	public function CalculatedTotal() {
+		return $this->CalculatedTotal;
 	}
 
 	/**
@@ -400,11 +399,11 @@ class OrderModifier extends OrderAttribute {
 	}
 
 	protected function LiveTableValue() {
-		return $this->LiveCalculationValue();
+		return $this->LiveCalculatedTotal();
 	}
 
 	protected function LiveCartValue() {
-		return $this->LiveCalculationValue();
+		return $this->LiveCalculatedTotal();
 	}
 	/**
 	 * This function is always called to determine the
@@ -413,8 +412,8 @@ class OrderModifier extends OrderAttribute {
 	 *
 	 * @return Currency
 	 */
-	protected function LiveCalculationValue() {
-		return $this->CalculationValue;
+	protected function LiveCalculatedTotal() {
+		return $this->CalculatedTotal;
 	}
 
 
@@ -425,14 +424,14 @@ class OrderModifier extends OrderAttribute {
 	 * @return boolean
 	 */
 	public function IsChargeable() {
-		return $this->LiveCalculationValue() > 0;
+		return $this->CalculatedTotal > 0;
 	}
 	/**
 	 * should be extended if it is true in child class
 	 * @return boolean
 	 */
 	public function IsDeductable() {
-		return $this->LiveCalculationValue() < 0;
+		return $this->CalculatedTotal < 0;
 	}
 
 	/**
@@ -440,7 +439,7 @@ class OrderModifier extends OrderAttribute {
 	 * @return boolean
 	 */
 	public function IsNoChange() {
-		return $this->LiveCalculationValue()  == 0 ;
+		return $this->CalculatedTotal  == 0 ;
 	}
 
 	/**
@@ -506,7 +505,7 @@ class OrderModifier extends OrderAttribute {
 			<p>
 				<b>ID : </b>".$this->ID."<br/>
 				<b>Order ID : </b>".$this->OrderID."<br/>
-				<b>Calculation Value : </b>".$this->CalculationValue()."<br/>
+				<b>Calculation Value : </b>".$this->CalculatedTotal()."<br/>
 				<b>Table Title: </b>".$this->TableTitle()."<br/>
 				<b>Table Value: </b>".$this->TableValue()."<br/>
 				<b>Cart Value: </b>".$this->CartTitle()."<br/>
