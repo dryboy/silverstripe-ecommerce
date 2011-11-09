@@ -648,6 +648,7 @@ class Order extends DataObject {
 		return $this;
 	}
 
+
 	/**
 	 * Goes through the order steps and tries to "apply" the next status to the order
 	 *
@@ -1076,10 +1077,17 @@ class Order extends DataObject {
 	}
 
 	/**
+	 *@alias function of Items
+	 **/
+	function OrderItems($filter = "") {
+		return $this->Items();
+	}
+
+	/**
 	 * Return all the {@link OrderItem} instances that are
 	 * available as records in the database.
 	 *
-	 *@param String filter - where statement to exclude certain items.
+	 * @param String filter - where statement to exclude certain items.
 	 *
 	 * @return DataObjectSet
 	 */
@@ -1088,7 +1096,6 @@ class Order extends DataObject {
 		$items = DataObject::get("OrderItem", "\"OrderID\" = '$this->ID' AND \"Quantity\" > 0 $extrafilter");
 		return $items;
 	}
-
 
 	/**
 	 * Returns the modifiers of the order, if it hasn't been saved yet
@@ -1118,24 +1125,53 @@ class Order extends DataObject {
 	}
 
 	/**
-	 * Calculates and updates all the modifiers.
-	 **/
+	 * Calculates and updates all the order attributes.
+	 * @param Bool $force - run it, even if it has run already
+	 *
+	 */
+	public function calculateOrderAttributes($force = false) {
+		$this->calculateOrderItems($force);
+		$this->calculateModifiers($force);
+	}
 
-	public function calculateModifiers($force = false) {
+
+	/**
+	 * Calculates and updates all the product items.
+	 * @param Bool $force - run it, even if it has run already
+	 */
+	public function calculateOrderItems($force = false) {
 		//check if order has modifiers already
 		//check /re-add all non-removable ones
 		//$start = microtime();
+		$orderItems = $this->orderItems();
+		if($orderItems) {
+			foreach($orderItems as $orderItem){
+				if($orderItem) {
+					$orderItem->runUpdate($force);
+				}
+			}
+		}
+		$this->extend("onCalculateOrderItems");
+	}
+
+
+
+	/**
+	 * Calculates and updates all the modifiers.
+	 * @param Bool $force - run it, even if it has run already
+	 *
+	 */
+	public function calculateModifiers($force = false) {
 		$createdModifiers = $this->modifiersFromDatabase();
 		if($createdModifiers) {
 			foreach($createdModifiers as $modifier){
 				if($modifier) {
-					$modifier->runUpdate();
+					$modifier->runUpdate($force);
 				}
 			}
 		}
-		$this->extend("onCalculate");
+		$this->extend("onCalculateModifiers");
 	}
-
 
 
 	/**
@@ -1735,37 +1771,65 @@ class Order extends DataObject {
 
 	/**
 	 * returns the link to view the Order
-	 * TO DO: explain why not "CheckoutPage" ???
+	 * WHY NOT CHECKOUT PAGE: first we check for cart page.
+	 * If a cart page has been created then we refer through to Cart Page.
+	 * Otherwise it will default to the checkout page
+	 *@return Object - Page
+	 */
+	function DisplayPage() {
+		if($this->IsSubmitted()) {
+			$page = DataObject::get_one("OrderConfirmationPage", "\"ClassName\" = 'OrderConfirmationPage'");
+		}
+		else {
+			//make sure to get a Cart page and not some other extension of Cart Page
+			$page = DataObject::get_one("CartPage", "\"ClassName\" = 'CartPage'");
+			if(!$page) {
+				//lets get the checkout page
+				$page = DataObject::get_one("CheckoutPage");
+			}
+		}
+		return $page;
+	}
+
+	/**
+	 * returns the link to view the Order
+	 * WHY NOT CHECKOUT PAGE: first we check for cart page.
+	 * If a cart page has been created then we refer through to Cart Page.
+	 * Otherwise it will default to the checkout page
 	 *@return String(URLSegment)
 	 */
 	function Link() {
-		if($this->canEdit()) {
-			//make sure to get a Cart page and not some other extension of Cart Page
-			$page = DataObject::get_one("CartPage", "\"ClassName\" = 'CartPage'");
-		}
-		else {
-			$page = DataObject::get_one("OrderConfirmationPage", "\"ClassName\" = 'OrderConfirmationPage'");
-		}
-		//backup.... may take you to the checkout page....
-		if(!$page) {
-			$page = DataObject::get_one("CartPage");
-		}
+		$page = $this->DisplayPage();
 		if($page) {
 			return $page->getOrderLink($this->ID);
 		}
 		else {
-			user_error("An Cart Page or similar needs to be setup.", E_USER_WARNING);
+			user_error("A Cart Page or similar needs to be setup for the e-commerce module to work.", E_USER_NOTICE);
+			$page = DataObject::get_one("ErrorPage", "ErrorCode = '404'");
+			if($page) {
+				return $page->Link();
+			}
 		}
 	}
 
 	/**
-	 * Return a link to the {@link CheckoutPage} instance
-	 * that exists in the database.
-	 *
-	 * @return string
+	 * returns the link to view the Order
+	 * WHY NOT CHECKOUT PAGE: first we check for cart page.
+	 * If a cart page has been created then we refer through to Cart Page.
+	 * Otherwise it will default to the checkout page
+	 *@return String(URLSegment)
 	 */
 	function CheckoutLink() {
-		return CheckoutPage::find_link();
+		$page = DataObject::get_one("CheckoutPage");
+		if($page) {
+			return $page->Link();
+		}
+		else {
+			$page = DataObject::get_one("ErrorPage", "ErrorCode = '404'");
+			if($page) {
+				return $page->Link();
+			}
+		}
 	}
 
 
@@ -1953,10 +2017,8 @@ class Order extends DataObject {
 			$this->init();
 		}
 		elseif(!$this->IsSubmitted()) {
-			$this->calculateModifiers();
-		}
-		if(EcommerceRole::current_member_is_shop_admin()) {
-			if(!$this->IsSubmitted()) {
+			$this->calculateOrderAttributes();
+			if(EcommerceRole::current_member_is_shop_admin()){
 				if(isset($_REQUEST["SubmitOrderViaCMS"])) {
 					$this->tryToFinaliseOrder();
 					//just in case it writes again...
