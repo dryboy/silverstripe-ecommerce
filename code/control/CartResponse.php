@@ -26,7 +26,7 @@ class CartResponse extends EcommerceResponse {
 
 		//init Order - IMPORTANT
 		$currentOrder = ShoppingCart::current_order();
-		$currentOrder->calculateModifiers(true);
+		$currentOrder->calculateOrderAttributes(true);
 
 		// populate Javascript
 		$js = array ();
