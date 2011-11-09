@@ -398,11 +398,12 @@ class ShoppingCart extends Object{
 	public function currentOrder(){
 		if (!$this->order) {
 			$member = Member::currentMember();
-			//TODO: try to retrieve incomplete member order
 			$this->order = DataObject::get_by_id('Order',intval(Session::get(self::$session_variable.".ID"))); //find order by id saved to session (allows logging out and retaining cart contents)
+			//order has already been submitted
 			if($this->order && $this->order->IsSubmitted()) {
 				$this->order = null;
 			}
+			//no order has been created yet
 			if(!$this->order){
 				$this->order = new Order();
 				if($member) {
@@ -411,6 +412,7 @@ class ShoppingCart extends Object{
 				$this->order->write();
 				Session::set(self::$session_variable.".ID",$this->order->ID);
 			}
+			//member just logged in and is not associated with order yet
 			elseif($this->order && $member) {
 				if($this->order->MemberID != $member->ID) {
 					$this->order->MemberID = $member->ID;
@@ -419,9 +421,10 @@ class ShoppingCart extends Object{
 			}
 			//if you are not logged in but the order belongs to a member then clear the cart.
 			elseif($this->order->MemberID && !$member) {
-				Director::redirect(ShoppingCart_Controller::clear_cart_link());
+				$this->clear();
+				return false;
 			}
-			$this->order->calculateModifiers();
+			$this->order->calculateOrderAttributes();
 		}
 		return $this->order;
 	}
