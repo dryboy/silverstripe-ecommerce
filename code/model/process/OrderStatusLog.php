@@ -46,8 +46,6 @@ class OrderStatusLog extends DataObject {
 	);
 
 
-
-
 	function EmailCustomerNice() {return $this->getEmailCustomerNice();}
 	function getEmailCustomerNice() {if($this->EmailCustomer) { return _t("OrderStatusLog.YES", "Yes");} return _t("OrderStatusLog.No", "No");}
 
