@@ -37,7 +37,8 @@ class OrderStep extends DataObject {
 	);
 
 	public static $has_many = array(
-		"Orders" => "Order"
+		"Orders" => "Order",
+		"OrderEmailRecords" => "OrderEmailRecord"
 	);
 
 	public static $field_labels = array(
@@ -589,7 +590,7 @@ class OrderStep_Submitted extends OrderStep {
 					$saved = false;
 					if($this->SaveOrderAsJSON)												{$obj->OrderAsJSON = $order->ConvertToJSON(); $saved = true;}
 					if($this->SaveOrderAsHTML)												{$obj->OrderAsHTML = $order->ConvertToHTML(); $saved = true;}
-					if($this->SaveOrderAsSerializedObject|| !$saved)	{$obj->OrderAsString = $order->ConvertToString();$saved = true; }
+					if($this->SaveOrderAsSerializedObject || !$saved)	{$obj->OrderAsString = $order->ConvertToString();$saved = true; }
 					$obj->write();
 				}
 				else {
@@ -963,7 +964,7 @@ class OrderStep_Archived extends OrderStep {
 	 *@return FieldSet
 	 **/
 	function addOrderStepFields(&$fields, $order) {
-		$msg = _t("OrderStep.CANADDGENERALLOG", " ... if you want to make some notes about this order then do this here ...)");
+		$msg = _t("OrderStep.CANADDGENERALLOG", " ... if you want to make some notes about this order then do this here ...");
 		$fields->addFieldToTab("Root.Next", $order->OrderStatusLogsTable("OrderStatusLog_Archived", $msg),"ActionNextStepManually");
 		return $fields;
 	}
