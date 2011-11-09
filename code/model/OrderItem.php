@@ -138,6 +138,14 @@ class OrderItem extends OrderAttribute {
 		$js[] = array('name' => $this->QuantityFieldName(), 'parameter' => 'value', 'value' => $this->Quantity);
 	}
 
+	/**
+	 * saves details about the Order Item before the order is submittted
+	 * @param Bool $force - run it, even if it has run already
+	 **/
+	function runUpdate($force = false){
+		$this->CalculatedTotal = $this->UnitPrice() * $this->Quantity;
+		$this->write();
+	}
 
 	function onBeforeWrite() {
 		parent::onBeforeWrite();
@@ -148,48 +156,16 @@ class OrderItem extends OrderAttribute {
 		//product ID and version ID need to be set in subclasses
 	}
 
-	/**
-	 * Set the quantity attribute in memory.
-	 * PRECONDITION: The order item is not saved in the database yet.
-	 *
-	 * @param int $quantity The quantity to set
-	 */
-	public function setQuantityAttribute($quantity) {
-		$this->Quantity = $quantity;
-	}
 
 	/**
-	 * Increment the quantity attribute in memory by a given amount.
-	 * PRECONDITION: The order item is not saved in the database yet.
-	 *
-	 * @param int $quantity The amount to increment the quantity by.
-	 */
-	public function addQuantityAttribute($quantity) {
-		$this->Quantity += $quantity;
-	}
-
-	/**
-	 *
+	 * Check if two Order Items are the same.
+	 * Useful when adding two items to cart.
 	 * @return Boolean
 	  **/
 	function hasSameContent($orderItem) {
 		return $orderItem instanceof OrderItem && $this->BuyableID == $orderItem->BuyableID && $this->Version == $orderItem->Version;
 	}
 
-	public function debug() {
-		$id = $this->ID ? $this->ID : $this->BuyableID;
-		$quantity = $this->Quantity;
-		$orderID = $this->ID ? $this->OrderID : 'The order has not been saved yet, so there is no ID';
-		return <<<HTML
-			<h2>$this->class</h2>
-			<h3>OrderItem class details</h3>
-			<p>
-				<b>ID : </b>$id<br/>
-				<b>Quantity : </b>$quantity<br/>
-				<b>Order ID : </b>$orderID
-			</p>
-HTML;
-	}
 
 
 	######################
@@ -198,9 +174,30 @@ HTML;
 
 	public function UnitPrice() {return $this->getUnitPrice();}
 	public function getUnitPrice() {
-		return 0;
+		if($this->priceHasBeenFixed()) {
+			return $this->CalculatedTotal / $this->Quantity;
+		}
+		else {
 		//NOTE: user_error("OrderItem::UnitPrice() called. Please implement UnitPrice() and getUnitPrice on $this->class", E_USER_NOTICE);
+			return 0;
+		}
 	}
+
+	/**
+	 * Casted Variable
+	 * @return Float
+	  **/
+	function Total(){return $this->getTotal();}
+	function getTotal() {
+		if($this->priceHasBeenFixed()) {
+			//get from database
+			return $this->CalculatedTotal;
+		}
+		$total = $this->UnitPrice() * $this->Quantity;
+		$this->extend('updateTotal',$total);
+		return $total;
+	}
+
 
 	/**
 	 * Link to the Quantity Field
@@ -220,16 +217,6 @@ HTML;
 		return new EcomQuantityField($this);
 	}
 
-	/**
-	 *
-	 * @return Float
-	  **/
-	function Total(){return $this->getTotal();}
-	function getTotal() {
-		$total = $this->UnitPrice() * $this->Quantity;
-		$this->extend('updateTotal',$total);
-		return $total;
-	}
 
 
 	/**
@@ -238,6 +225,25 @@ HTML;
 	  **/
 	function TotalAsCurrencyObject() {
 		return DBField::create('Currency',$this->Total());
+	}
+
+
+	##########################
+	## OTHER LOOKUP METHODS ##
+	##########################
+
+	/**
+	 * @description - tells you if an order item price has been "fixed"
+	 * meaning that is has been saved in the CalculatedTotal field so that
+	 * it can not be altered.
+	 *
+	 * @return Boolean
+	 **/
+	protected function priceHasBeenFixed(){
+		if( $this->Order() && $this->Order()->IsSubmitted() && $this->Quantity ) {
+			return true;
+		}
+		return false;
 	}
 
 	/**
