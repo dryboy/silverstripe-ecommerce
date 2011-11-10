@@ -56,7 +56,13 @@ class EcommerceDatabaseAdmin extends Controller{
 		$fieldArray = $db->fieldList("OrderModifier");
 		$hasField =  isset($fieldArray["CalculationValue"]);
 		if($hasField) {
-			DB::query("UPDATE \"OrderAttribute\" INNER JOIN\" OrderModifier\" SET \"OrderAttribute\".\"CalculatedTotal\" = \"OrderModifier\".\"CalculationValue\" WHERE \"OrderAttribute\".\"CalculatedTotal\" = 0");
+			DB::query("
+				UPDATE \"OrderAttribute\"
+				INNER JOIN \"OrderModifier\"
+					ON \"OrderAttribute\".\"ID\" = \"OrderModifier\".\"ID\"
+				SET \"OrderAttribute\".\"CalculatedTotal\" = \"OrderModifier\".\"CalculationValue\"
+				WHERE \"OrderAttribute\".\"CalculatedTotal\" = 0"
+			);
 			DB::query("ALTER TABLE \"OrderModifier\" DROP \"CalculationValue\" ");
 		}
 		$limit = 1000;
