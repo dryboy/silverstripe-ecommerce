@@ -18,26 +18,36 @@ class OrderConfirmationPage extends CartPage{
 
 	public static $icon = 'ecommerce/images/icons/OrderConfirmationPage';
 
+
 	public static $db = array(
-		"YouDontHaveSavedOrders" => "HTMLText"
+		'StartNewOrderLinkLabel' => 'Varchar(100)',
+		'CopyOrderLinkLabel' => 'Varchar(100)'
+	);
+
+
+	public static $defaults = array(
+		"ShowInMenus" => false,
+		"ShowInSearch" => false,
+		"StartNewOrderLinkLabel" => "start new order",
+		"CopyOrderLinkLabel" => "copy order items into a new order"
 	);
 
 	function canCreate($member = null) {
 		return !DataObject :: get_one("OrderConfirmationPage", "\"ClassName\" = 'OrderConfirmationPage'");
 	}
 
-	public static $defaults = array(
-		"YouDontHaveSavedOrders" => "<p>You dont have any saved orders yet.</p>",
-		"ShowInMenus" => false,
-		"ShowInSearch" => false
-	);
-
 	/**
 	 *@return Fieldset
 	 **/
 	function getCMSFields(){
 		$fields = parent::getCMSFields();
-		$fields->addFieldToTab('Root.Content.Messages', new HTMLEditorField("YouDontHaveSavedOrders", "Message to user: You dont have any saved orders (e.g. you have not placed any orders yet) ", 5, 5));
+		$fields->removeFieldFromTab('Root.Content.Actions',"ProceedToCheckoutLabel");
+		$fields->removeFieldFromTab('Root.Content.Actions',"ContinueShoppingLabel");
+		$fields->removeFieldFromTab('Root.Content.Actions',"ContinuePageID");
+		$fields->removeFieldFromTab('Root.Content.Actions',"SaveOrderLinkLabel");
+		$fields->removeFieldFromTab('Root.Content.Errors',"NoItemsInOrderMessage");
+		$fields->addFieldToTab('Root.Content.Messages.Messages.Actions', new TextField('StartNewOrderLinkLabel', 'Label for starting new order - e.g. click here to start new order'));
+		$fields->addFieldToTab('Root.Content.Messages.Messages.Actions', new TextField('CopyOrderLinkLabel', 'Label for copying order items into a new one  - e.g. click here start a new order with the current order items'));
 		return $fields;
 	}
 
@@ -67,6 +77,15 @@ class OrderConfirmationPage extends CartPage{
 	}
 
 	/**
+	 * Return a link to copy the order to cart
+	 * @return String (URLSegment)
+	 * @param int|string $orderID ID of the order
+	 */
+	public static function new_order_link($orderID) {
+		return self::find_link(). 'copyorder/' . $orderID . '/';
+	}
+
+	/**
 	 * Return a link to view the order on this page.
 	 * @return String (URLSegment)
 	 * @param int|string $orderID ID of the order
@@ -91,6 +110,7 @@ class OrderConfirmationPage_Controller extends CartPage_Controller{
 	static $allowed_actions = array(
 		'retrieveorder',
 		'loadorder',
+		'copyorder',
 		'startneworder',
 		'showorder',
 		'sendreceipt',
@@ -114,7 +134,7 @@ class OrderConfirmationPage_Controller extends CartPage_Controller{
 		if(!Member::CurrentMember() && !$retrievedOrder) {
 			$messages = array(
 				'default' => '<p class="message good">' . _t('OrderConfirmationPage.LOGINFIRST', 'You will need to login before you can access the submitted order page. ') . '</p>',
-				'logInAgain' => _t('OrderConfirmationPage.LOGINAGAIN', 'You have been logged out. If you would like to log in again, please do so below.')
+				'logInAgain' => '<p class="message good">'. _t('OrderConfirmationPage.LOGINAGAIN', 'You have been logged out. If you would like to log in again, please do so below.') . '</p>'
 			);
 			//Security::permissionFailure($this, $messages);
 			return false;
@@ -200,32 +220,6 @@ class OrderConfirmationPage_Controller extends CartPage_Controller{
 		}
 		Director::redirectBack();
 		return array();
-	}
-
-
-	protected function workOutMessagesAndActions(){
-		if(!$this->workedOutMessagesAndActions) {
-			$this->actionLinks = new DataObjectSet();
-			if($this->currentOrder) {
-				if ($this->currentOrder->IsSubmitted() || !$this->currentOrder->canEdit() ) {
-					if($this->StartNewOrderLinkLabel && CartPage::new_order_link())
-					//start a new order
-					$this->actionLinks->push(new ArrayData(array (
-						"Title" => $this->StartNewOrderLinkLabel,
-						"Link" => CartPage::new_order_link()
-					)));
-				}
-				elseif($this->currentOrder->canEdit() && $this->ProceedToCheckoutLabel && $this->CheckoutPageID && $this->currentOrder && $this->currentOrder->Items()) {
-					//finalise order...
-					$this->actionLinks->push(new ArrayData(array (
-						"Title" => $this->ProceedToCheckoutLabel,
-						"Link" => $this->CheckoutPage()->Link()
-					)));
-				}
-			}
-			$this->workedOutMessagesAndActions = true;
-			//does nothing at present....
-		}
 	}
 
 
