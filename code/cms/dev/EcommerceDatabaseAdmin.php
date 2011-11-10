@@ -79,7 +79,7 @@ class EcommerceDatabaseAdmin extends Controller{
 			foreach($orderItems as $orderItem) {
 				if($orderItem->Order()) {
 					if($orderItem->Order()->IsSubmitted()) {
-						$orderItem->CalculatedValue = $orderItem->UnitPrice() * $orderItem->Quantity;
+						$orderItem->CalculatedTotal = $orderItem->UnitPrice() * $orderItem->Quantity;
 						$orderItem->write();
 						$count++;
 					}
