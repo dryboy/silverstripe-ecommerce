@@ -172,9 +172,9 @@ class OrderItem extends OrderAttribute {
 	## TEMPLATE METHODS ##
 	######################
 
-	public function UnitPrice() {return $this->getUnitPrice();}
-	public function getUnitPrice() {
-		if($this->priceHasBeenFixed()) {
+	public function UnitPrice($recalculate = false) {return $this->getUnitPrice($recalculate);}
+	public function getUnitPrice($recalculate = false) {
+		if($this->priceHasBeenFixed() && !$recalculate) {
 			return $this->CalculatedTotal / $this->Quantity;
 		}
 		else {

@@ -400,11 +400,11 @@ class Product_OrderItem extends OrderItem {
 	/**
 	 *@return Float
 	 **/
-	function UnitPrice() {return $this->getUnitPrice();}
-	function getUnitPrice() {
+	function UnitPrice($recalculate = false) {return $this->getUnitPrice($recalculate);}
+	function getUnitPrice($recalculate = false) {
 		$unitprice = 0;
-		if($this->priceHasBeenFixed()) {
-			return parent::getUnitPrice();
+		if($this->priceHasBeenFixed() && !$recalculate) {
+			return parent::getUnitPrice($recalculate);
 		}
 		elseif($product = $this->Product()){
 			$unitprice = $product->getCalculatedPrice();
