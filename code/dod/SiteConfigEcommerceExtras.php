@@ -61,7 +61,7 @@ class SiteConfigEcommerceExtras extends DataObjectDecorator {
 				new EmailField("ReceiptEmail", _t("SiteConfigEcommerceExtras.RECEIPTEMAIL", "From email address for shop receipt (e.g. sales@myshop.com)")),
 				new TextField("ReceiptSubject", _t("SiteConfigEcommerceExtras.RECEIPTSUBJECT", "Subject for shop receipt email ('{OrderNumber}' will be replaced with actual order number - e.g. 'thank you for your order (#{OrderNumber})');")),
 				new TextField("DispatchEmailSubject", _t("SiteConfigEcommerceExtras.DISPATCHEMAILSUBJECT", "Default subject for dispatch email (e.g. your order has been sent)")),
-				new ImageField("EmailLogo", _t("SiteConfigEcommerceExtras.EMAILLOGO", "Email Logo"), , null, null, null, "logos")
+				new ImageField("EmailLogo", _t("SiteConfigEcommerceExtras.EMAILLOGO", "Email Logo"),  null, null, null, "logos")
 			),
 			new Tab('Legal',
 				new HTMLEditorField("ShopPhysicalAddress", _t("SiteConfigEcommerceExtras.DEFAULTPRODUCTIMAGE", "Shop physical address"), 5,5)
