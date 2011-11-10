@@ -25,10 +25,12 @@ class SiteConfigEcommerceExtras extends DataObjectDecorator {
 				"OnlyShowProductsThatCanBePurchased" => "Int",
 				"ProductsHaveWeight" => "Boolean",
 				"ProductsHaveModelNames" => "Boolean",
-				"ProductsHaveQuantifiers" => "Boolean"
+				"ProductsHaveQuantifiers" => "Boolean",
+				"ProductsAlsoInOtherGroups" => "Boolean"
 			),
 			'has_one' => array(
-				"EmailLogo" => "Image"
+				"EmailLogo" => "Image",
+				"DefaultProductImage" => "Image"
 			),
 			'defaults' =>array(
 				'ShopClosed' => false
@@ -44,23 +46,25 @@ class SiteConfigEcommerceExtras extends DataObjectDecorator {
 				new CheckboxField("ShopClosed", "Shop closed")
 			),
 			new Tab('Products',
-				new NumericField("NumberOfProductsPerPage", "Numer of products per page"),
-				new CheckboxField("OnlyShowProductsThatCanBePurchased", "Only show products that can be purchased"),
-				new CheckboxField("ProductsHaveWeight", "Enter weight for products"),
-				new CheckboxField("ProductsHaveModelNames", "Enter model names for products"),
-				new CheckboxField("ProductsHaveQuantifiers", "Enter quantifier for products (e.g. per year, each, per dozen, etc...)")
+				new NumericField("NumberOfProductsPerPage", _t("SiteConfigEcommerceExtras.NUMBEROFPRODUCTSPERPAGE", "Numer of products per page")),
+				new CheckboxField("OnlyShowProductsThatCanBePurchased", _t("SiteConfigEcommerceExtras.ONLYSHOWPRODUCTSTHATCANBEPURCHASED", "Only show products that can be purchased")),
+				new CheckboxField("ProductsHaveWeight",  _t("SiteConfigEcommerceExtras.PRODUCTSHAVEWEIGHT", "Products have weight (e.g. 1.2kg) - untick to hide weight field")),
+				new CheckboxField("ProductsHaveModelNames", _t("SiteConfigEcommerceExtras.PRODUCTSHAVEMODELNAMES", "Products have model names / numbers -  untick to hide model field"),
+				new CheckboxField("ProductsHaveQuantifiers", _t("SiteConfigEcommerceExtras.PRODUCTSHAVEQUANTIFIERS", "Products have quantifiers (e.g. per year, each, per dozen, etc...) - untick to hide model field")),
+				new CheckboxField("ProductsAlsoInOtherGroups", _t("SiteConfigEcommerceExtras.PRODUCTSALSOINOTHERGROUPS", "Allow products to show in multiple product groups.")),
+				new ImageField("DefaultProductImage", _t("SiteConfigEcommerceExtras.DEFAULTPRODUCTIMAGE", "Default Product Image", null, null, null, "default-product-image"))
 			),
 			new Tab('Checkout',
-				new TextField("PostalCodeURL", "Postal code link")
+				new TextField("PostalCodeURL", _t("SiteConfigEcommerceExtras.POSTALCODEURL", "Postal code link"))
 			),
 			new Tab('Emails',
-				new EmailField("ReceiptEmail", "From email address for shop receipt (e.g. sales@myshop.com)"),
-				new TextField("ReceiptSubject", "Subject for shop receipt email ('{OrderNumber}' will be replaced with actual order number - e.g. 'thank you for your order (#{OrderNumber})');"),
-				new TextField("DispatchEmailSubject", "Default subject for dispatch email (e.g. your order has been sent)"),
-				new ImageField("EmailLogo", "Email Logo")
+				new EmailField("ReceiptEmail", _t("SiteConfigEcommerceExtras.RECEIPTEMAIL", "From email address for shop receipt (e.g. sales@myshop.com)")),
+				new TextField("ReceiptSubject", _t("SiteConfigEcommerceExtras.RECEIPTSUBJECT", "Subject for shop receipt email ('{OrderNumber}' will be replaced with actual order number - e.g. 'thank you for your order (#{OrderNumber})');")),
+				new TextField("DispatchEmailSubject", _t("SiteConfigEcommerceExtras.DISPATCHEMAILSUBJECT", "Default subject for dispatch email (e.g. your order has been sent)")),
+				new ImageField("EmailLogo", _t("SiteConfigEcommerceExtras.EMAILLOGO", "Email Logo"))
 			),
 			new Tab('Legal',
-				new HTMLEditorField("ShopPhysicalAddress", "Shop physical address", 5,5)
+				new HTMLEditorField("ShopPhysicalAddress", _t("SiteConfigEcommerceExtras.DEFAULTPRODUCTIMAGE", "Shop physical address", 5,5)
 			),
 			new Tab('Process',
 				new ComplexTableField($this->owner, "OrderSteps", "OrderStep")
