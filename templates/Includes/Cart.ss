@@ -1,6 +1,6 @@
 <% if Cart %><% control Cart %>
 <div id="ShoppingCart">
-	<h3 id="CartHeader"><% _t("Cart.HEADLINE","My Cart") %></h3>
+	<h3 id="CartHeader"><% _t("Cart.CART","Cart") %></h3>
 <% if Items %>
 	<table id="InformationTable" class="editable" cellspacing="0" cellpadding="0" summary="<% _t("TABLESUMMARY","The contents of your cart are displayed in this form and summary of all fees associated with an order and a rundown of payments options.") %>">
 		<tbody>
@@ -31,7 +31,7 @@
 			</tr>
 		</tbody>
 	</table>
-	<p class="goToCart"><a href="$checkoutLink"><% _t("Product.GOTOCHECKOUTLINK","&raquo; Go to the checkout") %></a></p>
+	<p class="goToCart"><a href="$CheckoutLink"><% _t("Product.GOTOCHECKOUTLINK","&raquo; Go to the checkout") %></a></p>
 <% else %>
 		<p class="noItems"><% _t("Cart.NOITEMS","There are no items in your cart") %>.</p>
 <% end_if %>

@@ -1,6 +1,6 @@
 <div id="Sidebar">
 	<% include Sidebar_Cart %>
-	<% include Sidebar_Products %>
+	<% include Sidebar %>
 </div>
 <div id="Product">
 	<h1 class="pageTitle">$Title</h1>

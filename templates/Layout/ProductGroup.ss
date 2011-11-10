@@ -1,5 +1,6 @@
 <div id="Sidebar">
 	<% include Sidebar_Cart %>
+	<% include Sidebar %>
 </div>
 <div id="ProductGroup">
 	<h1 id="PageTitle">$Title</h1>
