@@ -439,7 +439,7 @@ class OrderModifier extends OrderAttribute {
 	 * @return boolean
 	 */
 	public function IsNoChange() {
-		return $this->CalculatedTotal  == 0 ;
+		return $this->CalculatedTotal == 0 ;
 	}
 
 	/**
