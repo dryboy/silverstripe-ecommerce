@@ -80,6 +80,7 @@ class EcommerceDatabaseAdmin extends Controller{
 				if($orderItem->Order()) {
 					if($orderItem->Order()->IsSubmitted()) {
 						$orderItem->CalculatedTotal = $orderItem->UnitPrice(true) * $orderItem->Quantity;
+						DB::alteration_message($orderItem->UnitPrice(true)." * ".$orderItem->Quantity  ." = ".$orderItem->CalculatedTotal, "edited")
 						$orderItem->write();
 						$count++;
 					}
