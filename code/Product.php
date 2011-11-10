@@ -110,16 +110,14 @@ class Product extends Page {
 		if($sc->ProductsHaveQuantifiers) {
 			$fields->addFieldToTab('Root.Content.Details',new TextField('Quantifier', _t('Product.QUANTIFIER', 'Quantifier (e.g. per kilo, per month, per dozen, each)')));
 		}
-		if($this->ParentID && $parent = DataObject::get_by_id("ProductGroup", $this->ParentID)) {
-			if($parent->MyProductsAlsoInOthersGroups()) {
-				$fields->addFieldsToTab(
-					'Root.Content.AlsoSeenHere',
-					array(
-						new HeaderField('ProductGroupsHeader', _t('Product.ALSOAPPEARS', 'Also shows in ...')),
-						$this->getProductGroupsTable()
-					)
-				);
-			}
+		if($sc->ProductsAlsoInOtherGroups) {
+			$fields->addFieldsToTab(
+				'Root.Content.AlsoShowHere',
+				array(
+					new HeaderField('ProductGroupsHeader', _t('Product.ALSOAPPEARS', 'Also shows in ...')),
+					$this->getProductGroupsTable()
+				)
+			);
 		}
 		if($siteTreeFieldExtensions) {
 			$this->extend('updateCMSFields', $fields);
@@ -208,7 +206,15 @@ class Product extends Page {
 	}
 
 	function DefaultImageLink() {
-		return "/ecommerce/images/productPlaceHolderThumbnail.gif";
+		$sc = SiteConfig::current_site_config();
+		if($sc) {
+			if($sc->DefaultProductImageID && $sc->DefaultProductImage() ) {
+				if($sc->DefaultProductImage()->exists()) {
+					return $sc->DefaultProductImage()->Link();
+				}
+			}
+		}
+		return "ecommerce/images/productPlaceHolderThumbnail.gif";
 	}
 
 
@@ -223,6 +229,14 @@ class Product extends Page {
 		return 0;
 	}
 
+	/**
+	 * returns products in the same group
+	 *
+	 *@return DataObjectSet
+	 **/
+	function Siblings() {
+		return DataObject::get("Product", "ParentID = ".$this->ParentID);
+	}
 
 }
 
@@ -389,7 +403,10 @@ class Product_OrderItem extends OrderItem {
 	function UnitPrice() {return $this->getUnitPrice();}
 	function getUnitPrice() {
 		$unitprice = 0;
-		if($product = $this->Product()){
+		if($this->priceHasBeenFixed()) {
+			return parent::getUnitPrice();
+		}
+		elseif($product = $this->Product()){
 			$unitprice = $product->getCalculatedPrice();
 			$this->extend('updateUnitPrice',$unitprice);
 		}
