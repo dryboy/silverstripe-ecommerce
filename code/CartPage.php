@@ -95,11 +95,15 @@ class CartPage extends Page{
 		$order = ShoppingCart::current_order();
 		if($order) {
 			$count = $order->TotalItems();
-			if($count) {
-				return parent::getMenuTitle().' '.$this->renderWith("AjaxNumItemsInCart");
+			if($count && $this->LinkingMode() != "current") {
+				$oldSSViewer = SSViewer::get_source_file_comments();
+				SSViewer::set_source_file_comments(false);
+				$s = $this->renderWith("AjaxNumItemsInCart");
+				SSViewer::set_source_file_comments($oldSSViewer);
+				return $s;
 			}
 		}
-		return parent::getMenuTitle();
+		return "";
 	}
 
 	/**

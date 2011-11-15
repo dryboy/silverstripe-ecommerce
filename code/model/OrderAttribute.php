@@ -49,15 +49,18 @@ class OrderAttribute extends DataObject {
 
 
 	/**
-	 *@return Boolean
+	 * standard SS method
+	 * @return Boolean
 	 **/
 	function canCreate($member = null) {
 		return true;
 	}
 
 	/**
+	 * Standard SS method
 	 * This is an important method.
-	 *@return Boolean
+	 *
+	 * @return Boolean
 	 **/
 	function canEdit($member = null) {
 		if($this->_canEdit === null) {
@@ -74,14 +77,15 @@ class OrderAttribute extends DataObject {
 	}
 
 	/**
-	 *@return Boolean
+	 * Standard SS method
+	 * @return Boolean
 	 **/
 	function canDelete($member = null) {
 		return false;
 	}
 
 	/**
-	 *@return Boolean (true on success / false on failure)
+	 * @return Boolean (true on success / false on failure)
 	 **/
 	public function addBuyableToOrderItem($object) {
 		//more may be added here in the future

@@ -244,11 +244,11 @@ class OrderStep extends DataObject {
 			"OrderStep",
 			" (\"Name\" = '".$this->Name."' OR \"Code\" = '".strtoupper($this->Code)."') AND \"OrderStep\".\"ID\" <> ".intval($this->ID));
 		if($result) {
-			return new ValidationResult((bool) ! $result, _t("OrderStep.ORDERSTEPALREADYEXISTS", "An order status with this name already exists. Please change the name and try again."));
+			return new ValidationResult($result ? false : true, _t("OrderStep.ORDERSTEPALREADYEXISTS", "An order status with this name already exists. Please change the name and try again."));
 		}
-		$result = (bool)($this->ClassName == "OrderStep");
+		$result = $this->ClassName == "OrderStep" ? true : false;
 		if($result) {
-			return new ValidationResult((bool) ! $result, _t("OrderStep.ORDERSTEPCLASSNOTSELECTED", "You need to select the right order status class."));
+			return new ValidationResult($result ? false : true, _t("OrderStep.ORDERSTEPCLASSNOTSELECTED", "You need to select the right order status class."));
 		}
 		return parent::validate();
 	}

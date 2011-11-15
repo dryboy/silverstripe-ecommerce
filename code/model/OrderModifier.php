@@ -463,20 +463,23 @@ class OrderModifier extends OrderAttribute {
 
 	/**
 	 *
-	 *
-	 *return $array for AJAX JSON
+	 * @param Array $js javascript array
+	 * @return Array for AJAX JSON
 	 **/
 	function updateForAjax(array &$js) {
+		$tableTitle = $this->TableTitle();
+		$cartTitle = $this->CartTitle();
+		//TableValue is a database value, but CartValue is not... Important difference.
 		$tableValue = DBField::create('Currency',$this->TableValue)->Nice();
 		$cartValue = DBField::create('Currency',$this->CartValue())->Nice();
 		if($this->HideInAjaxUpdate()) {
 			$js[] = array('id' => $this->TableID(), 'parameter' => 'hide', 'value' => 1);
 		}
 		else {
+			$js[] = array('id' => $this->TableTitleID(), 'parameter' => 'innerHTML', 'value' => $tableTitle);
+			$js[] = array('id' => $this->CartTitleID(), 'parameter' => 'innerHTML', 'value' => $cartTitle);
 			$js[] = array('id' => $this->TableTotalID(), 'parameter' => 'innerHTML', 'value' => $tableValue);
 			$js[] = array('id' => $this->CartTotalID(), 'parameter' => 'innerHTML', 'value' => $cartValue);
-			$js[] = array('id' => $this->TableTitleID(), 'parameter' => 'innerHTML', 'value' => $this->TableTitle());
-			$js[] = array('id' => $this->CartTitleID(), 'parameter' => 'innerHTML', 'value' => $this->CartTitle());
 			$js[] = array('id' => $this->TableID(), 'parameter' => 'hide', 'value' => 0);
 		}
 	}

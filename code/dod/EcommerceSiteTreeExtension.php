@@ -74,9 +74,9 @@ class EcommerceSiteTreeExtension_Controller extends Extension {
 				jQuery("a[href=\''.str_replace('/', '\/', Convert::raw2js($page->Link())).'\']").each(
 					function(i, el) {
 						var oldText = jQuery(el).text();
-						var newText = \''.Convert::raw2js($page->getEcommerceMenuTitle()).'\'
-						if(oldText == \''.$page->MenuTitle.'\' && newText) {
-							jQuery(el).html(newText)
+						var newText = "'.Convert::raw2js($page->getEcommerceMenuTitle()).'"
+						if(newText) {
+							jQuery(el).html(oldText + newText)
 						}
 					}
 				);';
