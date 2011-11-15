@@ -1,22 +1,39 @@
-## Sunny Side Up Ecommerce Module
+###############################################
+E-commerce SSU Branch
+version 0.2alpha
+###############################################
 
-## Maintainer Contact
+This is the Sunny Side Up branch of e-commerce.
+Many
 
-Nicolaas [at] sunnysideup.co.nz
+Developers
+-----------------------------------------------
+Nicolaas Francken [at] sunnysideup.co.nz
 
+Requirements
+-----------------------------------------------
+Payment
+SilverStripe 2.4+
 
-## Overview
+Project Home
+-----------------------------------------------
+See http://code.google.com/p/silverstripe-ecommerce
 
-Branch of Silvertripe E-commerce.
+Demo
+-----------------------------------------------
+See http://www.silverstripe-ecommerce.com
 
-## Installation + Documentation 
+Installation Instructions
+-----------------------------------------------
+1. Find out how to add modules to SS and add module as per usual.
+2. copy configurations from this module's _config.php file
+into mysite/_config.php file and edit settings as required.
+NB. the idea is not to edit the module at all, but instead customise
+it from your mysite folder, so that you can upgrade the module without redoing the settings.
 
-See www.silverstripe-ecommerce.com for a demo and links to further information.
-
-## Requirements
-
-Payment Module 0.3+
-Sapphire 2.4+
+If you just want one or two things from this module
+then of course you are free to copy them to your
+mysite folder and delete the rest of this module.
 
 
 

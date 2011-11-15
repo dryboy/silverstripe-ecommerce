@@ -318,17 +318,6 @@ class OrderModifier extends OrderAttribute {
 	}
 
 
-	/**
-	 * This is what shows up on the actual cart / checkout page
-	 *
-	 * @return Currency Object
-	 **/
-	public function TableValue() {
-		$amount = $this->CalculatedTotal;
-		$obj = DBField::create('Currency', $amount);
-		return $obj;
-	}
-
 
 	/**
 	 * Sometimes we need a difference between Cart and Checkout Value - the cart value can be differentiated here.
@@ -337,7 +326,7 @@ class OrderModifier extends OrderAttribute {
 	 **/
 	public function CartValue() {return $this->getCartValue();}
 	public function getCartValue(){
-		return $this->TableValue();
+		return $this->TableValue;
 	}
 	/**
 	 * Actual calculation used
@@ -478,7 +467,7 @@ class OrderModifier extends OrderAttribute {
 	 *return $array for AJAX JSON
 	 **/
 	function updateForAjax(array &$js) {
-		$tableValue = DBField::create('Currency',$this->TableValue())->Nice();
+		$tableValue = DBField::create('Currency',$this->TableValue)->Nice();
 		$cartValue = DBField::create('Currency',$this->CartValue())->Nice();
 		if($this->HideInAjaxUpdate()) {
 			$js[] = array('id' => $this->TableID(), 'parameter' => 'hide', 'value' => 1);
@@ -505,9 +494,9 @@ class OrderModifier extends OrderAttribute {
 			<p>
 				<b>ID : </b>".$this->ID."<br/>
 				<b>Order ID : </b>".$this->OrderID."<br/>
-				<b>Calculation Value : </b>".$this->CalculatedTotal()."<br/>
+				<b>Calculation Value : </b>".$this->CalculatedTotal."<br/>
 				<b>Table Title: </b>".$this->TableTitle()."<br/>
-				<b>Table Value: </b>".$this->TableValue()."<br/>
+				<b>Table Value: </b>".$this->TableValue."<br/>
 				<b>Cart Value: </b>".$this->CartTitle()."<br/>
 				<b>Cart Title: </b>".$this->CartValue()."<br/>
 			</p>";

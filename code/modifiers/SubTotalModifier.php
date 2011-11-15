@@ -24,13 +24,6 @@ class SubTotalModifier extends OrderModifier {
 // ######################################## *** form functions (e. g. showform and getform)
 // ######################################## *** template functions (e.g. ShowInTable, TableTitle, etc...) ... USES DB VALUES
 
-	/**
-	 * This overrides the table value to show the subtotal, but the LiveCalculatedTotal is always 0 (see below)
-	 */
-	public function TableValue() {
-		$order = $this->Order();
-		return $order->SubTotal() + $order->ModifiersSubTotal($this->class,true);
-	}
 
 	public function CanBeRemoved(){
 		return false;
@@ -49,6 +42,15 @@ class SubTotalModifier extends OrderModifier {
 
 	protected function LiveCalculatedTotal(){
 		return 0;
+	}
+
+
+	/**
+	 * This overrides the table value to show the subtotal, but the LiveCalculatedTotal is always 0 (see below)
+	 */
+	protected function LiveTableValue() {
+		$order = $this->Order();
+		return $order->SubTotal() + $order->ModifiersSubTotal($this->class,true);
 	}
 
 // ######################################## *** Type Functions (IsChargeable, IsDeductable, IsNoChange, IsRemoved)

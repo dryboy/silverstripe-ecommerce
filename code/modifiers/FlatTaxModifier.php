@@ -73,9 +73,6 @@ class FlatTaxModifier extends OrderModifier {
 		return $this->Rate;
 	}
 
-	public function TableValue(){
-		return $this->TaxableAmount * $this->Rate;
-	}
 
 	/**
 	 * The title of what appears on the OrderInformation
@@ -134,6 +131,9 @@ class FlatTaxModifier extends OrderModifier {
 		}
 	}
 
+	public function LiveTableValue(){
+		return $this->TaxableAmount * $this->Rate;
+	}
 // ######################################## *** Type functions
 	public function IsChargeable() {
 		if($this->IsExclusive()) {

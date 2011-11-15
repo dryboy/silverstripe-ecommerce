@@ -95,12 +95,7 @@ class TaxModifier extends OrderModifier {
 		return $this->Rate;
 	}
 
-	/**
-	 * @return string
-	 */
-	function TableValue() {
-		return $this->Charge;
-	}
+
 
 	/**
 	 * @return string
@@ -181,6 +176,13 @@ class TaxModifier extends OrderModifier {
 
 	protected function LiveCalculatedTotal() {
 		return $this->LiveIsExclusive() ? $this->LiveCharge() : 0;
+	}
+
+	/**
+	 * @return string
+	 */
+	function LiveTableValue() {
+		return $this->Charge;
 	}
 
 // ######################################## *** Type Functions (IsChargeable, IsDeductable, IsNoChange, IsRemoved)

@@ -240,8 +240,24 @@ class Product extends Page {
 
 }
 
+class Product_Image extends Image {
+
+	static function set_thumbnail_size($width = 140, $height = 100){
+		user_error("This method has been depreciated, as we will be removing the Product_Image class", E_USER_NOTICE);
+	}
+
+	static function set_content_image_width($width = 200){
+		user_error("This method has been depreciated, as we will be removing the Product_Image class", E_USER_NOTICE);
+	}
+
+	static function set_large_image_width($width = 600){
+		user_error("This method has been depreciated, as we will be removing the Product_Image class", E_USER_NOTICE);
+	}
+}
+
 class Product_Controller extends Page_Controller {
 
+	//to do: why do we need this?
 	static $allowed_actions = array();
 
 	function init() {
@@ -249,6 +265,10 @@ class Product_Controller extends Page_Controller {
 		Requirements::themedCSS('Products');
 	}
 
+	/**
+	 * returns a form for adding products to cart
+	 * @return Form
+	 */
 
 	function AddProductForm(){
 		if($this->canPurchase()) {
@@ -268,6 +288,12 @@ class Product_Controller extends Page_Controller {
 			return "Product not for sale";
 		}
 	}
+
+	/**
+	 * executes the AddProductForm
+	 *
+	 * @return void
+	 */
 
 	function addproductfromform($data,$form){
 		if(!$this->IsInCart()) {
@@ -300,70 +326,8 @@ class Product_Controller extends Page_Controller {
 		}
 	}
 
-
-
 }
 
-class Product_Image extends Image {
-
-	public static $db = array();
-
-	public static $has_one = array();
-
-	public static $has_many = array();
-
-	public static $many_many = array();
-
-	public static $belongs_many_many = array();
-
-	//default image sizes
-	protected static $thumbnail_width = 140;
-	protected static $thumbnail_height = 100;
-
-	protected static $content_image_width = 200;
-
-	protected static $large_image_width = 600;
-
-	static function set_thumbnail_size($width = 140, $height = 100){
-		self::$thumbnail_width = $width;
-		self::$thumbnail_height = $height;
-	}
-
-	static function set_content_image_width($width = 200){
-		self::$content_image_width = $width;
-	}
-
-	static function set_large_image_width($width = 600){
-		self::$large_image_width = $width;
-	}
-
-	/**
-	 *@return GD
-	 **/
-	function generateThumbnail($gd) {
-		$gd->setQuality(80);
-		return $gd->paddedResize(self::$thumbnail_width,self::$thumbnail_height);
-	}
-
-	/**
-	 *@return GD
-	 **/
-	function generateContentImage($gd) {
-		$gd->setQuality(90);
-		return $gd->resizeByWidth(self::$content_image_width);
-	}
-
-	/**
-	 *@return GD
-	 **/
-	function generateLargeImage($gd) {
-		$gd->setQuality(90);
-		return $gd->resizeByWidth(self::$large_image_width);
-	}
-
-
-
-}
 class Product_OrderItem extends OrderItem {
 
 	function canCreate($member = null) {
