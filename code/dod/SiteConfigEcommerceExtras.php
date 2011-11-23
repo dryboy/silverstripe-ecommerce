@@ -15,6 +15,7 @@ class SiteConfigEcommerceExtras extends DataObjectDecorator {
 		return array(
 			'db' => array(
 				"ShopClosed" => "Boolean",
+				"ShopPricesAreTaxExclusive" => "Boolean",
 				"ShopPhysicalAddress" => "HTMLText",
 				"ReceiptEmail" => "Varchar(255)",
 				"ReceiptSubject" => "Varchar(255)",
@@ -45,7 +46,10 @@ class SiteConfigEcommerceExtras extends DataObjectDecorator {
 			new Tab('General',
 				new CheckboxField("ShopClosed", _t("SiteConfigEcommerceExtras.SHOPCLOSED", "Shop Closed"))
 			),
-			new Tab('Products',
+			new Tab('Pricing',
+				new CheckboxField("ShopPricesAreTaxExclusive", _t("SiteConfigEcommerceExtras.SHOPPRICESARETAXEXCLUSIVE", "Shop prices are tax exclusive (if this option is not ticked, it is assumed that prices are inclusive of tax)"))
+			),
+			new Tab('ProductDisplay',
 				new NumericField("NumberOfProductsPerPage", _t("SiteConfigEcommerceExtras.NUMBEROFPRODUCTSPERPAGE", "Numer of products per page")),
 				new CheckboxField("OnlyShowProductsThatCanBePurchased", _t("SiteConfigEcommerceExtras.ONLYSHOWPRODUCTSTHATCANBEPURCHASED", "Only show products that can be purchased")),
 				new CheckboxField("ProductsHaveWeight",  _t("SiteConfigEcommerceExtras.PRODUCTSHAVEWEIGHT", "Products have weight (e.g. 1.2kg) - untick to hide weight field")),
