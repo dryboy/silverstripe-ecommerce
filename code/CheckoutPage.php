@@ -165,6 +165,28 @@ class CheckoutPage_Controller extends CartPage_Controller {
 			return $this->currentOrder->getModifierForms();
 		}
 	}
+	/**
+	 * Adjusts the page title if steps are being used
+	 *
+	 * @return String
+	 */
+	function Title() {
+		$v = $this->Title;
+		if($this->HasOrderSteps) {
+			if($this->checkoutSteps) {
+				$position = 0;
+				$currentPosition = 1;
+				foreach($this->checkoutSteps as $pos => $step) {
+					$position++;
+					if($step == $this->currentStep) {
+						$currentPosition = $position;
+					}
+				}
+				$v .= " step $currentPosition of $position";
+			}
+		}
+		return $v;
+	}
 
 
 	/**
@@ -224,6 +246,7 @@ class CheckoutPage_Controller extends CartPage_Controller {
 	 * Show only one step in the order process (e.g. only show OrderItems)
 	 */
 	function orderstep($request) {
+		$this->HasOrderSteps = true;
 		$step = $request->Param("ID");
 		if($step) {
 			if (in_array($step, $this->checkoutSteps)) {
