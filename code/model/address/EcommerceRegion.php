@@ -15,38 +15,64 @@
 
 class EcommerceRegion extends DataObject {
 
+
+	/**
+	 * standard SS variable
+	 * @var Array
+	 */
 	static $db = array(
 		"Code" => "Varchar(20)",
 		"Name" => "Varchar(200)",
 		"DoNotAllowSales" => "Boolean"
 	);
 
-
+	/**
+	 * standard SS variable
+	 * @var Array
+	 */
 	static $has_one = array(
 		"Country" => "EcommerceCountry"
 	);
 
+	/**
+	 * standard SS variable
+	 * @var String
+	 */
 	static $indexes = array(
 		"Code" => true
 	);
 
+	/**
+	 * standard SS variable
+	 * @var String
+	 */
 	static $default_sort = "\"Name\" ASC";
 
+	/**
+	 * standard SS variable
+	 * @var String
+	 */
 	public static $singular_name = "Region";
 		function i18n_singular_name() { return _t("EcommerceRegion.REGION", "Region");}
 
+	/**
+	 * standard SS variable
+	 * @var String
+	 */
 	public static $plural_name = "Regions";
 		function i18n_plural_name() { return _t("EcommerceRegion.REGIONS", "Regions");}
 
 	/**
 	 * do we use regions at all in this ecommerce application?
+	 * @return Bool
 	 **/
-
-	static function show() {DataObject::get_one("EcommerceRegion");}
+	public static function show() {
+		return DataObject::get_one("EcommerceRegion") ? true : false;
+	}
 
 	/**
-	 * Standar SS method
-	 *@return FieldSet
+	 * Standard SS method
+	 * @return FieldSet
 	 **/
 	function getCMSFields() {
 		$fields = parent::getCMSFields();
@@ -55,19 +81,20 @@ class EcommerceRegion extends DataObject {
 	}
 
 	/**
-	 *checks if a code is allowed
-	 *@param String $code - e.g. NZ, NSW, or CO
-	 *@return Boolean
-	 **/
+	 * checks if a code is allowed
+	 * @param String $code - e.g. NZ, NSW, or CO
+	 * @return Boolean
+	 */
 	public static function code_allowed($code) {
 		return array_key_exists($code, self::list_of_allowed_entries_for_dropdown());
 	}
 
 
 	/**
-	 *@param $code String (Code)
-	 *@return String ( name)
-	 **/
+	 * converts a code into a proper title
+	 * @param $code String (Code)
+	 * @return String ( name)
+	 */
 	public static function find_title($code) {
 		$options = self::get_default_array();
 		// check if code was provided, and is found in the country array
@@ -81,7 +108,7 @@ class EcommerceRegion extends DataObject {
 
 	/**
 	 * This function returns back the default list of regions, filtered by the currently selected country.
-	 *@return Array - array of CountryCode => Country
+	 * @return Array - array of CountryCode => Country
 	 **/
 	protected static function get_default_array() {
 		$defaultArray = array();
@@ -98,7 +125,7 @@ class EcommerceRegion extends DataObject {
 
 	/**
 	 * takes the defaultArray and limits it with "only show" and "do not show" value, relevant for the current order.
-	 *@return Array (Code, Title)
+	 * @return Array (Code, Title)
 	 **/
 	public static function list_of_allowed_entries_for_dropdown() {
 		$defaultArray = self::get_default_array();
@@ -125,8 +152,8 @@ class EcommerceRegion extends DataObject {
 	/**
 	 * these variables and methods allow to to "dynamically limit the regions available, based on, for example: ordermodifiers, item selection, etc....
 	 * for example, if hot delivery of a catering item is only available in a certain region, then the regions can be limited with the methods below.
-	 *NOTE: these methods / variables below are IMPORTANT, because they allow the dropdown for the region to be limited for just that order
-	 * @param $a = array should be country codes.e.g array("NZ", "NP", "AU");
+	 * NOTE: these methods / variables below are IMPORTANT, because they allow the dropdown for the region to be limited for just that order
+	 * @var Array of country codes, e.g. ("NZ", "NP", "AU");
 	**/
 	protected static $for_current_order_only_show_regions = array();
 		static function set_for_current_order_only_show_regions(array $a) {

@@ -14,27 +14,49 @@
 
 class EcommerceCountry extends DataObject {
 
+	/**
+	 * Standard SS Variable
+	 * @var Array
+	 **/
 	static $db = array(
 		"Code" => "Varchar(20)",
 		"Name" => "Varchar(200)",
 		"DoNotAllowSales" => "Boolean"
 	);
 
-
+	/**
+	 * Standard SS Variable
+	 * @var Array
+	 **/
 	static $has_many = array(
 		"Regions" => "EcommerceRegion"
 	);
 
+	/**
+	 * Standard SS Variable
+	 * @var Array
+	 **/
 	static $indexes = array(
 		"Code" => true
 	);
 
+	/**
+	 * Standard SS Variable
+	 * @var String
+	 **/
 	static $default_sort = "\"Name\" ASC";
 
-
+	/**
+	 * Standard SS Variable
+	 * @var String
+	 **/
 	public static $singular_name = "Country";
 		function i18n_singular_name() { return _t("EcommerceCountry.COUNTRY", "Country");}
 
+	/**
+	 * Standard SS Variable
+	 * @var String
+	 **/
 	public static $plural_name = "Countries";
 		function i18n_plural_name() { return _t("EcommerceCountry.COUNTRIES", "Countries");}
 
@@ -55,17 +77,19 @@ class EcommerceCountry extends DataObject {
 	 **/
 	protected static $allowed_country_codes = array();
 		static function set_allowed_country_codes(array $a) {self::$allowed_country_codes = $a;}
+		static function set_fixed_country_code($s) {self::$allowed_country_codes = array($s => $s);}
 		static function get_allowed_country_codes() {return self::$allowed_country_codes;}
 		static function add_allowed_country_code(string $s) {self::$allowed_country_codes[$s] = $s;}
 		static function remove_allowed_country_code(string $s) {unset(self::$allowed_country_codes[$s]);}
 
 
 	/**
-	 *This function exists as a shortcut.  If there is only ONE allowed country code then a lot of checking of countries
-	 * can be avoided.
-	 *@return String - countrycode
+	 * This function exists as a shortcut.
+	 * If there is only ONE allowed country code
+	 * then a lot of checking of countries can be avoided.
+	 * @return String - countrycode
 	 **/
-	static function get_fixed_country_code() {
+	public static function get_fixed_country_code() {
 		$a = self::get_allowed_country_codes();
 		if(is_array($a) && count($a) == 1) {
 			return array_shift($a);
@@ -91,7 +115,7 @@ class EcommerceCountry extends DataObject {
 
 	/**
 	 * This function works out the most likely country for the current order
-	 *@return String - Country Code - e.g. NZ
+	 * @return String - Country Code - e.g. NZ
 	 **/
 	public static function get_country() {
 		$countryCode = '';
