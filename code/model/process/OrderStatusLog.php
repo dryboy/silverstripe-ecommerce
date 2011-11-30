@@ -548,7 +548,10 @@ class OrderStatusLog_PaymentCheck extends OrderStatusLog {
 		$fields = parent::getCMSFields();
 		$fields->removeByName("Title");
 		$fields->removeByName("Note");
-		$fields->addFieldsToTab('Root.Main', new CheckboxField("PaymentConfirmed", _t("OrderStatusLog.CONFIRMED", "Payment is confirmed")));
+		$fields->addFieldToTab(
+			'Root.Main',
+			new CheckboxField("PaymentConfirmed", _t("OrderStatusLog.CONFIRMED", "Payment is confirmed"))
+		);
 		return $fields;
 	}
 
