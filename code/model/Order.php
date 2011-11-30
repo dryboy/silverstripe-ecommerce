@@ -75,7 +75,7 @@ class Order extends DataObject {
 		'TotalItems' => 'Int',
 		'TotalItemsTimesQuantity' => 'Int',
 		'IsCancelled' => 'Boolean',
-		'Country' => 'Varchar', //This is the applicable country for the order - for tax purposes, etc....
+		'Country' => 'Varchar(3)', //This is the applicable country for the order - for tax purposes, etc....
 		'FullNameCountry' => 'Varchar',
 		'IsSubmitted' => 'Boolean',
 		'CustomerStatus' => 'Varchar',
@@ -413,7 +413,7 @@ class Order extends DataObject {
 					$sourceJoin = ""
 				);
 				$oldOrderStatusLogs->setPermissions(array("show"));
-				$fields->addFieldsToTab('Root.Log', $oldOrderStatusLogs);
+				$fields->addFieldToTab('Root.Log', $oldOrderStatusLogs);
 			}
 			else {
 				$fields->addFieldToTab('Root.Main', new LiteralField('MainDetails', _t("Order.NODETAILSSHOWN", '<p>No details are shown here as this order has not been submitted yet. Once you change the status of the order more options will be available.</p>')));
@@ -1647,12 +1647,13 @@ class Order extends DataObject {
 
 	/**
 	 * Returns the country code for the country that applies to the order.
-	 *@return String (country code)
+	 * It only takes into account what has actually been saved.
+	 * @return String (country code)
 	 **/
 	public function Country() {return $this->getCountry();}
 	public function getCountry() {
 		$countryCodes = array(
-			"Billing" => "",
+			"Billing" =>  "",
 			"Shipping" => ""
 		);
 		if($this->BillingAddressID) {
@@ -1688,6 +1689,22 @@ class Order extends DataObject {
 
 
 	/**
+	 * returns name of coutry that we expect the customer to have
+	 * this takes into consideration more than just what has been entered
+	 * for example, it looks at GEO IP
+	 * @return String - country name
+	 **/
+	public function ExpectedCountryName() {return $this->getExpectedCountryName();}
+	public function getExpectedCountryName() {
+		$array = EcommerceCountry::list_of_allowed_entries_for_dropdown();
+		//only show if there is more than one option.
+		if(is_array($array) && count($array) > 1) {
+			return EcommerceCountry::find_title(EcommerceCountry::get_country());
+		}
+	}
+
+
+	/**
 	 * Returns the region that applies to the order.
 	 * we check both billing and shipping, in case one of them is empty.
 	 *@return DataObject | Null (EcommerceRegion)
@@ -1699,7 +1716,7 @@ class Order extends DataObject {
 			"Shipping" => 0
 		);
 		if($this->BillingAddressID) {
-			if($billingAddressbillingAddress = DataObject::get_by_id("BillingAddress", $this->BillingAddressID)) {
+			if($billingAddress = DataObject::get_by_id("BillingAddress", $this->BillingAddressID)) {
 				if($billingAddress->RegionID) {
 					$regionIDs["Billing"] = $billingAddress->RegionID;
 				}
@@ -1951,6 +1968,29 @@ class Order extends DataObject {
 	function OrderForm_OrderForm_AmountID() {return self::$template_id_prefix.'OrderForm_OrderForm_Amount';}
 
 	/**
+	 * class that is used in templates and in the JSON return @see CartResponse
+	 * @return String
+	 **/
+	function TotalItemsClassName() {return self::$template_id_prefix.'number_of_items';}
+	/**
+	 * class that is used in templates and in the JSON return @see CartResponse
+	 * @return String
+	 **/
+	function ExpectedCountryClassName() {return self::$template_id_prefix.'expected_country_selector';}
+
+	/**
+	 * class that is used in templates and in the JSON return @see CartResponse
+	 * @return String
+	 **/
+	function CountryFieldID() {return OrderAddress::get_country_field_ID();}
+
+	/**
+	 * class that is used in templates and in the JSON return @see CartResponse
+	 * @return String
+	 **/
+	function RegionFieldID() {return OrderAddress::get_region_field_ID();}
+
+	/**
 	 *
 	 *@return Array (for use in AJAX for JSON)
 	 **/
@@ -1962,6 +2002,8 @@ class Order extends DataObject {
 		$js[] = array('id' => $this->OrderForm_OrderForm_AmountID(), 'parameter' => 'innerHTML', 'value' => $total);
 		$js[] = array('id' => $this->CartSubTotalID(), 'parameter' => 'innerHTML', 'value' => $subTotal);
 		$js[] = array('id' => $this->CartTotalID(), 'parameter' => 'innerHTML', 'value' => $total);
+		$js[] = array('className' => $this->TotalItemsClassName(), 'parameter' => 'innerHTML', 'value' => $this->TotalItems());
+		$js[] = array('className' => $this->ExpectedCountryClassName(), 'parameter' => 'innerHTML', 'value' => $this->ExpectedCountryName());
 	}
 
 
