@@ -72,8 +72,8 @@ class EcommerceCountry extends DataObject {
 
 	/**
 	 * Set $allowed_country_codes to allow sales to a select number of countries
-	 *@param $a : array("NZ" => "NZ", "UK => "UK", etc...)
-	 *@param $s : string - country code, e.g. NZ
+	 * @param $a : array("NZ" => "NZ", "UK => "UK", etc...)
+	 * @param $s : string - country code, e.g. NZ
 	 **/
 	protected static $allowed_country_codes = array();
 		static function set_allowed_country_codes(array $a) {self::$allowed_country_codes = $a;}
@@ -134,9 +134,12 @@ class EcommerceCountry extends DataObject {
 					$countryCode = Geoip::$default_country_code;
 					//5. take the FIRST country from the get_allowed_country_codes
 					if(!$countryCode) {
-						$a = self::get_default_array();
-						if(count($a)) {
-							$countryCode = array_shift($a);
+						$countryArray = self::list_of_allowed_entries_for_dropdown();
+						if(is_array($countryArray) && count($countryArray)) {
+							foreach($countryArray as $countryCode => $countryName) {
+								//we stop at the first one... as we have no idea which one is the best.
+								break;
+							}
 						}
 					}
 				}
@@ -145,17 +148,24 @@ class EcommerceCountry extends DataObject {
 		return $countryCode;
 	}
 
-		public static function get_country_id() {
-			$countryID = 0;
-			if($country = self::get_country()) {
-				$countryID = DataObject::get_one("EcommerceCountry", "\"Code\" = '$country'");
-			}
-			return $countryID;
+	/**
+	 * returns the ID of the country.
+	 * @return Int
+	 **/
+	public static function get_country_id($countryCode = "") {
+		if(!$countryCode) {
+			$countryCode = self::get_country();
 		}
+		$country = DataObject::get_one("EcommerceCountry", "\"Code\" = '$countryCode'");
+		if($country) {
+			return $country->ID;
+		}
+	}
 
 	/**
-	 *
-	 *@return Array - array of CountryCode => Country
+	 * returns an array of Codes => Names of all countries that can be used.
+	 * Use "list_of_allowed_entries_for_dropdown" to get the list.
+	 *@return Array
 	 **/
 	protected static function get_default_array() {
 		$defaultArray = array();
@@ -175,22 +185,23 @@ class EcommerceCountry extends DataObject {
 		else {
 			$defaultArray = Geoip::getCountryDropDown();
 		}
+		//work out the union of allowed + default
 		$allowed = self::get_allowed_country_codes();
 		if(is_array($allowed) && count($allowed) && count($defaultArray)) {
 			$newDefaultArray = array();
 			foreach($allowed as $code) {
-				if(!isset($defaultArray[$code])) {
+				if(isset($defaultArray[$code])) {
 					$newDefaultArray[$code] = $defaultArray[$code];
 				}
 			}
-			$defaultArray = $newDefaultArray;
+			return $newDefaultArray;
 		}
 		return $defaultArray;
 	}
 
 	/**
 	 * Standar SS method
-	 *@return FieldSet
+	 * @return FieldSet
 	 **/
 	function getCMSFields() {
 		$fields = parent::getCMSFields();
@@ -246,30 +257,33 @@ class EcommerceCountry extends DataObject {
 		static function get_for_current_order_do_not_show() {return self::$for_current_order_do_not_show_countries;}
 
 
-
+	private static $list_of_allowed_entries_for_dropdown_array = null;
 	/**
 	 * takes the defaultArray and limits it with "only show" and "do not show" value, relevant for the current order.
 	 *@return Array (Code, Title)
 	 **/
 	public static function list_of_allowed_entries_for_dropdown() {
-		$defaultArray = self::get_default_array();
-		$onlyShow = self::get_for_current_order_only_show_countries();
-		$doNotShow = self::get_for_current_order_do_not_show();
-		if(is_array($onlyShow) && count($onlyShow)) {
-			foreach($defaultArray as $key => $value) {
-				if(!in_array($key, $onlyShow)) {
-					unset($defaultArray[$key]);
+		if(!self::$list_of_allowed_entries_for_dropdown_array){
+			$defaultArray = self::get_default_array();
+			$onlyShow = self::get_for_current_order_only_show_countries();
+			$doNotShow = self::get_for_current_order_do_not_show();
+			if(is_array($onlyShow) && count($onlyShow)) {
+				foreach($defaultArray as $key => $value) {
+					if(!in_array($key, $onlyShow)) {
+						unset($defaultArray[$key]);
+					}
 				}
 			}
-		}
-		if(is_array($doNotShow) && count($doNotShow)) {
-			foreach($doNotShow as $code) {
-				if(isset($defaultArray[$code])) {
-					unset($defaultArray[$code]);
+			if(is_array($doNotShow) && count($doNotShow)) {
+				foreach($doNotShow as $code) {
+					if(isset($defaultArray[$code])) {
+						unset($defaultArray[$code]);
+					}
 				}
 			}
+			self::$list_of_allowed_entries_for_dropdown_array = $defaultArray;
 		}
-		return $defaultArray;
+		return self::$list_of_allowed_entries_for_dropdown_array;
 	}
 
 
