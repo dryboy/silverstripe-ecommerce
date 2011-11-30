@@ -27,9 +27,17 @@ EcomCart = {
 
 	selectorItemRows: "tr.orderitem",
 
+	selectorChangeCountryLink: ".changeCountryLink",
+
+	selectorChangeCountryFieldHolder: "#ChangeCountryHolder",
+
+	selectorMainCountryField: "#Country",
+		SET_selectorMainCountryField: function(s) {this.selectorMainCountryField = s;},
+
 	init: function () {
 		EcomCart.updateForZeroVSOneOrMoreRows();
 		EcomCart.countryAndRegionUpdates();
+		EcomCart.changeCountryFieldSwap();
 	},
 
 	countryAndRegionUpdates: function() {
@@ -45,6 +53,38 @@ EcomCart = {
 			function() {
 				var url = jQuery('base').attr('href') + "shoppingcart/setregion/" + this.value + "/";
 				EcomCart.getChanges(url, null);
+			}
+		);
+	},
+
+	changeCountryFieldSwap: function() {
+		jQuery(EcomCart.selectorChangeCountryFieldHolder).hide();
+		jQuery(EcomCart.selectorChangeCountryLink).click(
+			function(event) {
+				if(jQuery(EcomCart.selectorChangeCountryFieldHolder).is(":hidden")) {
+					var options = jQuery(EcomCart.ajaxCountryFieldSelector).html();
+					var html = "<select>" + options + "</select>";
+					jQuery(EcomCart.selectorChangeCountryFieldHolder).html(html).slideDown();
+				}
+				else {
+					jQuery(EcomCart.selectorChangeCountryFieldHolder).slideUp(
+						"slow",
+						function() {
+							jQuery(EcomCart.selectorChangeCountryFieldHolder).html("");
+						}
+					);
+				}
+				event.preventDefault();
+			}
+		);
+		jQuery(EcomCart.selectorChangeCountryFieldHolder + " select").live(
+			"change",
+			function() {
+				var val = jQuery(EcomCart.selectorChangeCountryFieldHolder + " select").val();
+				jQuery(EcomCart.ajaxCountryFieldSelector).val(val);
+				var url = jQuery('base').attr('href') + "shoppingcart/setcountry/" + val + "/";
+				EcomCart.getChanges(url, null);
+				jQuery(EcomCart.selectorChangeCountryLink).click();
 			}
 		);
 	},
@@ -66,7 +106,8 @@ EcomCart = {
 				//selector Types
 				var id = change.id;
 				var name = change.name;
-				var selector = change.selector;
+				var className = change.className;
+				var dropdownArray = change.dropdownArray;
 				if(EcomCart.variableSetWithValue(id)) {
 					var id = '#' + id;
 					//hide or show row...
@@ -89,6 +130,7 @@ EcomCart = {
 						jQuery(id).attr(parameter, value);
 					}
 				}
+
 				//used for form fields...
 				else if(EcomCart.variableSetWithValue(name)) {
 					jQuery('[name=' + name + ']').each(
@@ -97,13 +139,34 @@ EcomCart = {
 						}
 					);
 				}
-				//user for class elements
-				else if(EcomCart.variableSetWithValue(selector)) {
-					jQuery(selector).each(
+
+				//used for class elements
+				else if(EcomCart.variableSetWithValue(className)) {
+					var className = '.' + className;
+					jQuery(className).each(
 						function() {
 							jQuery(this).attr(parameter, value);
 						}
 					);
+				}
+
+				//used for dropdowns
+				else if(EcomCart.variableSetWithValue(dropdownArray)) {
+					var selector = '#' + dropdownArray+" select";
+					if(jQuery(selector).length > 0){
+						if(value.length > 0) {
+							jQuery(selector).html("");
+							for(var i = 0; i < value.length; i++) {
+								if(parameter == value[i].id) {
+									var selected = "selected=\"selected\" ";
+								}
+								else {
+									var selected = "";
+								}
+								jQuery(selector).append("<option value=\""+value[i].id+"\""+selected+">"+value[i].name+"</option>");
+							}
+						}
+					}
 				}
 			}
 		}
