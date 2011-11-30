@@ -112,7 +112,7 @@ class EcommerceRegion extends DataObject {
 	 **/
 	protected static function get_default_array() {
 		$defaultArray = array();
-		$regions = DataObject::get("EcommerceRegion", "\"DoNotAllowSales\" <> 1 AND \"Country\"  = '".EcommerceCountry::get_country()."'");
+		$regions = DataObject::get("EcommerceRegion", "\"DoNotAllowSales\" <> 1 AND \"CountryID\"  = '".EcommerceCountry::get_country_id()."'");
 		if($regions) {
 			foreach($regions as $region) {
 				$defaultArray[$region->Code] = $region->Name;
@@ -175,6 +175,30 @@ class EcommerceRegion extends DataObject {
 		}
 		static function get_for_current_order_do_not_show() {return self::$for_current_order_do_not_show_regions;}
 
+
+	/**
+	 * This function works out the most likely region for the current order
+	 * @return Int
+	 **/
+	public static function get_region() {
+		$regionID = 0;
+		if($order = ShoppingCart::current_order()) {
+			if($region = $order->Region()) {
+				$regionID = $region->ID;
+			}
+		}
+		//3. check GEOIP information
+		if(!$regionID) {
+			$regionArray = self::list_of_allowed_entries_for_dropdown();
+			if(is_array($regionArray) && count($regionArray)) {
+				foreach($regionArray as $regionID => $regionName) {
+					//we stop at the first one... as we have no idea which one is the best.
+					break;
+				}
+			}
+		}
+		return $regionID;
+	}
 
 
 }
