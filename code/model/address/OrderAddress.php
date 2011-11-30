@@ -39,16 +39,51 @@ class OrderAddress extends DataObject {
 	/**
 	 * In case you have some conflicts in the class / IDs for formfields then you can use this variable
 	 * to add a few characters in front of the classes / IDs
-	 *@var String $s
+	 * @var String $s
 	 **/
 	protected static $field_class_and_id_prefix = "";
 		static function set_field_class_and_id_prefix($s){self::$field_class_and_id_prefix = $s;}
 		static function get_field_class_and_id_prefix(){return self::$field_class_and_id_prefix;}
 
-	//e.g. http://www.nzpost.co.nz/Cultures/en-NZ/OnlineTools/PostCodeFinder
+	/**
+	 * e.g. http://www.nzpost.co.nz/Cultures/en-NZ/OnlineTools/PostCodeFinder
+	 * @return String
+	 */
 	static function get_postal_code_url() {$sc = DataObject::get_one('SiteConfig'); if($sc) {return $sc->PostalCodeURL;}  }
 
+	/**
+	 * e.g. "click here to check post code"
+	 * @return String
+	 */
 	static function get_postal_code_label() {$sc = DataObject::get_one('SiteConfig'); if($sc) {return $sc->PostalCodeLabel;}  }
+
+	/**
+	 * returns the id of the MAIN country field for template manipulation.
+	 * Main means the one that is used as the primary one (e.g. for tax purposes).
+	 * @return String
+	 */
+	static function get_country_field_ID() {
+		if(self::get_use_shipping_address_for_main_region_and_country()) {
+			return "ShippingCountry";
+		}
+		else {
+			return "Country";
+		}
+	}
+
+	/**
+	 * returns the id of the MAIN region field for template manipulation.
+	 * Main means the one that is used as the primary one (e.g. for tax purposes).
+	 * @return String
+	 */
+	static function get_region_field_ID() {
+		if(self::get_use_shipping_address_for_main_region_and_country()) {
+			return "ShippingRegion";
+		}
+		else {
+			return "Region";
+		}
+	}
 
 	public static $singular_name = "Order Address";
 		function i18n_singular_name() { return _t("OrderAddress.ORDERADDRESS", "Order Address");}
