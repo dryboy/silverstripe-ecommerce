@@ -63,27 +63,29 @@ class CartPage extends Page{
 	 **/
 	function getCMSFields(){
 		$fields = parent::getCMSFields();
-		$fields->addFieldsToTab('Root.Content.Messages', array (
-			new TabSet(
-				"Messages",
-				new Tab(
-					"Actions",
-					new TextField('ContinueShoppingLabel', 'Label on link to continue shopping - e.g. click here to continue shopping'),
-					new TreeDropdownField('ContinuePageID','Continue Shopping Landing Page',"SiteTree"),
-					new TextField('ProceedToCheckoutLabel', 'Label on link to proceed to checkout - e.g. click here to finalise your order'),
-					new TextField('CurrentOrderLinkLabel', 'Label for the link pointing to the current order - e.g. click here to view current order'),
-					new TextField('LoginToOrderLinkLabel', 'Label for the link pointing to the order which requires a log in - e.g. you must login to view this order'),
-					new TextField('SaveOrderLinkLabel', 'Label for the saving an order - e.g. click here to save current order'),
-					new TextField('LoadOrderLinkLabel', 'Label for the loading an order into the cart - e.g. click here to finalise this order'),
-					new TextField('DeleteOrderLinkLabel', 'Label for the deleting an order - e.g. click here to delete this order')
-				),
-				new Tab(
-					"Errors",
-					new HtmlEditorField('NoItemsInOrderMessage', 'No items in order - shown when the customer tries to view an order without items.', $row = 4),
-					new HtmlEditorField('NonExistingOrderMessage', 'Non-existing Order - shown when the customer tries to load a non-existing order.', $row = 4)
+		$fields->addFieldsToTab('Root.Content.Messages',
+			array (
+				new TabSet(
+					"Messages",
+					new Tab(
+						"Actions",
+						new TextField('ContinueShoppingLabel', 'Label on link to continue shopping - e.g. click here to continue shopping'),
+						new TreeDropdownField('ContinuePageID','Continue Shopping Landing Page',"SiteTree"),
+						new TextField('ProceedToCheckoutLabel', 'Label on link to proceed to checkout - e.g. click here to finalise your order'),
+						new TextField('CurrentOrderLinkLabel', 'Label for the link pointing to the current order - e.g. click here to view current order'),
+						new TextField('LoginToOrderLinkLabel', 'Label for the link pointing to the order which requires a log in - e.g. you must login to view this order'),
+						new TextField('SaveOrderLinkLabel', 'Label for the saving an order - e.g. click here to save current order'),
+						new TextField('LoadOrderLinkLabel', 'Label for the loading an order into the cart - e.g. click here to finalise this order'),
+						new TextField('DeleteOrderLinkLabel', 'Label for the deleting an order - e.g. click here to delete this order')
+					),
+					new Tab(
+						"Errors",
+						new HtmlEditorField('NoItemsInOrderMessage', 'No items in order - shown when the customer tries to view an order without items.', $row = 4),
+						new HtmlEditorField('NonExistingOrderMessage', 'Non-existing Order - shown when the customer tries to load a non-existing order.', $row = 4)
+					)
 				)
 			)
-		));
+		);
 		return $fields;
 	}
 
