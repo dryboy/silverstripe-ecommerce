@@ -1965,6 +1965,12 @@ class Order extends DataObject {
 	 * id that is used in templates and in the JSON return @see CartResponse
 	 *@return String
 	 **/
+	function TotalItemsClass() {return self::$template_id_prefix.'number_of_items_in_cart';}
+
+	/**
+	 * id that is used in templates and in the JSON return @see CartResponse
+	 *@return String
+	 **/
 	function OrderForm_OrderForm_AmountID() {return self::$template_id_prefix.'OrderForm_OrderForm_Amount';}
 
 	/**
