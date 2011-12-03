@@ -67,6 +67,7 @@ Buyable::add_class("Product");
 //OrderAddress::set_use_shipping_address_for_main_region_and_country(true);
 //EcommerceCountry::set_save_countries_in_database(false);
 //EcommerceCountry::set_allowed_country_codes(array("NZ", "UK", "AU"));
+//EcommerceCountry::set_fixed_country_code("NZ");
 //EcommerceRole::set_customer_group_name("Customers");
 //EcommerceRole::set_admin_group_name("Shop Administrators");
 //EcommerceRole::set_automatic_membership(false);
