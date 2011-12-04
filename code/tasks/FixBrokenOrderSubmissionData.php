@@ -25,7 +25,10 @@ class FixBrokenOrderSubmissionData extends BuildTask{
 					$sql = "
 					SELECT *
 					FROM OrderStatusLog_Submitted
-					WHERE \"OrderAsString\" LIKE '%s:7:\"OrderID\";i:$orderID%'
+					WHERE
+						\"OrderAsString\" LIKE '%s:7:\"OrderID\";i:".$orderID."%'
+						OR \"OrderAsHTML\" LIKE '%Order #".$orderID."%'
+
 					LIMIT 1";
 					if($innerInners = DB::query($sql)) {
 						foreach($innerInners as $innerInnerRow) {

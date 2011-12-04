@@ -207,6 +207,15 @@ class OrderStatusLog extends DataObject {
 
 	function onBeforeWrite() {
 		parent::onBeforeWrite();
+		//START HACK TO PREVENT LOSS OF ORDERID CAUSED BY COMPLEX TABLE FIELDS....
+		// THIS MEANS THAT A LOG CAN NEVER SWITCH FROM ONE ORDER TO ANOTHER...
+		if($this->ID) {
+			$orderID = $this->getField("OrderID");
+			if($orderID) {
+				$this->OrderID = $orderID;
+			}
+		}
+		//END HACK TO PREVENT LOSS
 		if(!$this->AuthorID && $m = Member::currentUser()) {
 			$this->AuthorID = $m->ID;
 		}
@@ -456,15 +465,6 @@ class OrderStatusLog_DispatchPhysicalOrder extends OrderStatusLog_Dispatch {
 
 	function onBeforeWrite() {
 		parent::onBeforeWrite();
-		//START HACK TO PREVENT LOSS OF ORDERID CAUSED BY COMPLEX TABLE FIELDS....
-		// THIS MEANS THAT A LOG CAN NEVER SWITCH FROM ONE ORDER TO ANOTHER...
-		if($this->ID) {
-			$orderID = $this->getField("OrderID");
-			if($orderID) {
-				$this->OrderID = $orderID;
-			}
-		}
-		//END HACK TO PREVENT LOSS
 		if(!$this->Title) {
 			$sc = DataObject::get_one("SiteConfig");
 			if($sc) {
