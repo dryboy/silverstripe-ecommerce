@@ -111,6 +111,7 @@ class EcommerceDatabaseAdmin extends Controller{
 	protected $migrations = array(
 		"updateproductgroups",
 		"setfixedpriceforsubmittedorderitems",
+		"fixbrokenordersubmissiondata"
 	);
 
 	/**
@@ -150,6 +151,15 @@ class EcommerceDatabaseAdmin extends Controller{
 	 */
 	function setfixedpriceforsubmittedorderitems($request) {
 		$buildTask = new SetFixedPriceForSubmittedOrderItems();
+		$buildTask->run($request);
+		$this->displayCompletionMessage($buildTask);
+	}
+	/**
+	 * executes build task: FixBrokenOrderSubmissionData
+	 *
+	 */
+	function fixbrokenordersubmissiondata($request) {
+		$buildTask = new FixBrokenOrderSubmissionData();
 		$buildTask->run($request);
 		$this->displayCompletionMessage($buildTask);
 	}
