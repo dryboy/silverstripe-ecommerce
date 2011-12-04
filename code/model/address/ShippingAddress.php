@@ -13,7 +13,6 @@
 
 class ShippingAddress extends OrderAddress {
 
-
 	public static $db = array(
 		'ShippingPrefix' => 'Varchar(10)',
 		'ShippingFirstName' => 'Varchar(100)',
@@ -75,6 +74,18 @@ class ShippingAddress extends OrderAddress {
 
 	public static $plural_name = "Shipping Addresses";
 		function i18n_plural_name() { return _t("OrderAddress.SHIPPINGADDRESSES", "Shipping Addresses");}
+
+
+	/**
+	 *
+	 *@return FieldSet
+	 **/
+	function getCMSFields() {
+		$fields = parent::getCMSFields();
+		$fields->replaceField("OrderID", new ReadonlyField("OrderID"));
+		return $fields;
+	}
+
 
 
 	/**
