@@ -985,7 +985,7 @@ class Order extends DataObject {
 	 * Send the receipt of the order by email.
 	 * Precondition: The order payment has been successful
 	 */
-	function sendReceipt($message = "", $resend = false) {
+	public function sendReceipt($message = "", $resend = false) {
 		$subject = str_replace("{OrderNumber}", $this->ID,Order_Email::get_subject());
 		$replacementArray = array(
 			'Message' => $message
@@ -1001,7 +1001,7 @@ class Order extends DataObject {
 	 *
 	 * @param string $note Optional note-content (instead of using the OrderStatusLog)
 	 */
-	function sendStatusChange($subject, $message = '', $resend = false) {
+	public function sendStatusChange($subject, $message = '', $resend = false) {
 		if(!$message) {
 			$emailableLogs = DataObject::get('OrderStatusLog', "\"OrderID\" = {$this->ID} AND \"EmailCustomer\" = 1 AND \"EmailSent\" = 0 ", "\"Created\" DESC", null, 1);
 			if($logs) {
@@ -1018,24 +1018,46 @@ class Order extends DataObject {
 
 
 	/**
+	 * Sends a message to the shop admin ONLY and not to the customer
+	 * This can be used by ordersteps and orderlogs to notify the admin of any potential problems.
+	 *
+	 * @param String $subject - subject for the email
+	 * @param String $message - message to be added with the email
+	 * @param Boolean $resend - send the email even if it has been sent before.
+	 *
+	 */
+	public function sendError($subject, $message = "", $resend = false) {
+		$replacementArray = array(
+			'Message' => $message
+		);
+		return $this->sendEmail('Order_ErrorEmail', $subject, $replacementArray, $resend, $adminOnly = true);
+	}
+
+	/**
 	 * Send a mail of the order to the client (and another to the admin).
 	 *
 	 * @param String $emailClass - the class name of the email you wish to send
 	 * @param String $subject - email subject
 	 * @param Array $replacementArray - array of fields to replace with data...
 	 * @param Boolean $copyToAdmin - true by default, whether it should send a copy to the admin
+	 * @param Boolean $resend - sends the email even it has been sent before.
+	 * @param Boolean $adminOnly - sends the email to the ADMIN ONLY.
 	 *
 	 * @return Boolean TRUE for success, FALSE for failure (not tested)
 	 */
-	protected function sendEmail($emailClass, $subject, $replacementArray = array(), $resend = false) {
+	protected function sendEmail($emailClass, $subject, $replacementArray = array(), $resend = false, $adminOnly = false) {
 		$replacementArray["Order"] = $this;
 		$replacementArray["EmailLogo"] = SiteConfig::current_site_config()->EmailLogo();
  		$from = Order_Email::get_from_email();
  		//why are we using this email and NOT the member.EMAIL?
  		//for historical reasons????
- 		$to = $this->OrderEmail();
+		if($adminOnly) {
+			$to = Order_Email::get_from_email();
+		}
+		else {
+			$to = $this->OrderEmail();
+		}
  		if($from && $to) {
-			//TO DO: should be a payment specific message as well???
 			$email = new $emailClass();
 			if(!($email instanceOf Email)) {
 				user_error("No correct email class provided.", E_USER_ERROR);
@@ -1046,7 +1068,10 @@ class Order extends DataObject {
 			$email->populateTemplate($replacementArray);
 			return $email->send(null, $this, $resend);
 		}
+		return false;
 	}
+
+
 
 
 
