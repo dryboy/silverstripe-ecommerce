@@ -15,7 +15,7 @@ class FixBrokenOrderSubmissionData extends BuildTask{
 	protected $description = "Fixes broken order submission links";
 
 	function run($request){
-		$problem = DB::query("Select COUNT() from \"OrderStatusLog\" WHERE OrderID = 0");
+		$problem = DB::query("SELECT COUNT(OrderStatusLog.ID) FROM OrderStatusLog_Submitted INNER JOIN OrderStatusLog ON OrderStatusLog_Submitted.ID = OrderStatusLog.ID WHERE OrderID = 0");
 		if($problem->value()) {
 			DB::alteration_message("the size of the problem is: ".$problem->value(), "deleted");
 		}
