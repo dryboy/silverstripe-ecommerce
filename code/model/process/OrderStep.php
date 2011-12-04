@@ -682,12 +682,12 @@ class OrderStep_SentInvoice extends OrderStep {
 
 	/**
 	 * can do next step once the invoice has been sent or in case the invoice does not need to be sent.
-	 *@param DataObject $order Order
-	 *@return DataObject | Null	(next step OrderStep object)
+	 * @param DataObject $order Order
+	 * @return DataObject | Null	(next step OrderStep object)
 	 **/
 	public function nextStep($order) {
 		if(!$this->SendInvoiceToCustomer || $this->hasBeenSent($order)) {
-			return	parent::nextStep($order);
+			return parent::nextStep($order);
 		}
 		return null;
 	}

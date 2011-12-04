@@ -1,9 +1,8 @@
 <?php
 
 /**
- * @Description: This class handles the status email which is sent after changing the attributes
- * in the report (eg. status changed to 'Shipped').
- *
+ * @Description: This class handles the status email which can be sent
+ * after a status update has been made (if told to do so ;-))
  *
  * @authors: Silverstripe, Jeremy, Nicolaas
  *

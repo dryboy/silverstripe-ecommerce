@@ -353,7 +353,8 @@ class Order extends DataObject {
 					"Next",
 					new HeaderField("MyOrderStepHeader", "Current Status"),
 					$this->OrderStepField(),
-					new HeaderField("OrderStepNextStepHeader", "Action Next Step"),
+					new HeaderField("OrderStepNextStepHeader", "Action Next Step", 1),
+					new LiteralField("OrderStepNextStepHeaderExtra", "<p><strong>If you have made any changes to the order then you will have to refresh or save this record to see up-to-date options here.</strong></p>"),
 					new LiteralField("ActionNextStepManually", "<br /><br /><br /><h3>Manual Status Change</h3>")
 					//SEE: $this->MyStep()->addOrderStepFields($fields, $this); BELOW
 				),

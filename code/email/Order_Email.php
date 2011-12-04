@@ -32,7 +32,7 @@ class Order_Email extends Email {
 
 	public function send($messageID = null, $order, $resend = false) {
 		if(!$this->hasBeenSent($order) || $resend) {
-			if(self::get_copy_to_admin_for_all_emails()) {
+			if(self::get_copy_to_admin_for_all_emails() && $this->to != Email::getAdminEmail()) {
 				$this->setBcc(Email::getAdminEmail());
 			}
 			if(self::get_send_all_emails_plain()) {
