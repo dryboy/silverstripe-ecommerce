@@ -37,7 +37,7 @@ class FixBrokenOrderSubmissionData extends BuildTask{
 					if($innerInners = DB::query($sql)) {
 						foreach($innerInners as $innerInnerRow) {
 							DB::alteration_message( "FOUND ".$innerInnerRow["ID"], "created");
-							DB::query("UPDATE OrderStatusLog SET OrderID = $orderID WHERE OrderStatusLog.ID = ".$innerInnerRow["ID"]);
+							DB::query("UPDATE OrderStatusLog SET OrderID = $orderID WHERE OrderStatusLog.ID = ".$innerInnerRow["ID"]." AND OrderID < 1");
 						}
 					}
 				}
