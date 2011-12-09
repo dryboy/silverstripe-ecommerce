@@ -668,13 +668,20 @@ class OrderStep_SentInvoice extends OrderStep {
 
 	/**
 	 * send invoice to customer
-	 *@param DataObject $order Order
-	 *@return Boolean
+	 * or in case this is not selected, it will send a message to the shop admin only
+	 * The latter is useful in case the payment does not go through (and no receipt is received).
+	 * @param DataObject $order Order
+	 * @return Boolean
 	 **/
 	public function doStep($order) {
 		if($this->SendInvoiceToCustomer){
 			if(!$this->hasBeenSent($order)) {
 				return $order->sendInvoice($this->CustomerMessage);
+			}
+		}
+		else {
+			if(!$this->hasBeenSent($order)) {
+				return $order->sendError($subject =  _t("OrderStep.NEWORDERHASBEENPLACED", "New order has been placed"), $message = _t("OrderStep.THISMESSAGENOTSENTTOCUSTOMER", "This message was not sent to the customer"), $resend = false);
 			}
 		}
 		return true;
