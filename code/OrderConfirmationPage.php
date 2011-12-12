@@ -125,12 +125,6 @@ class OrderConfirmationPage_Controller extends CartPage_Controller{
 	function init() {
 		parent::init();
 		$retrievedOrder = null;
-		if($this->request && $this->request->param("Action") == "retrieveorder") {
-			$sessionID = Convert::raw2sql($this->request->param("ID"));
-			$id = intval(Convert::raw2sql($this->request->param("OtherID")));
-			$retrievedOrder = DataObject::get_one("Order", "\"Order\".\"SessionID\" = '".$sessionID."' AND \"Order\".\"ID\" = $id");
-			$this->currentOrder = $retrievedOrder;
-		}
 		if(!Member::CurrentMember() && !$retrievedOrder) {
 			$messages = array(
 				'default' => '<p class="message good">' . _t('OrderConfirmationPage.LOGINFIRST', 'You will need to login before you can access the submitted order page. ') . '</p>',

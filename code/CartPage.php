@@ -194,12 +194,22 @@ class CartPage_Controller extends Page_Controller{
 		//WE HAVE THIS FOR SUBMITTING FORMS!
 		if(isset($_REQUEST['OrderID'])) {
 			$orderID = intval($_REQUEST['OrderID']);
+			$this->currentOrder = DataObject::get_by_id("Order", $orderID);
 		}
 		elseif($this->request->param('ID') && in_array($this->request->param('Action'), array("showorder", "loadorder", "copyorder", "saveorder", "deleteorder"))){
 			$orderID = intval($this->request->param('ID'));
-		}
-		if($orderID) {
 			$this->currentOrder = DataObject::get_by_id("Order", $orderID);
+		}
+		//the code below is for submitted orders, but we still put it here so
+		//we can do all the retrieval options in once.
+		elseif($this->request && $this->request->param("Action") == "retrieveorder") {
+			$sessionID = Convert::raw2sql($this->request->param("ID"));
+			$id = intval(Convert::raw2sql($this->request->param("OtherID")));
+			$retrievedOrder = DataObject::get_one("Order", "\"Order\".\"SessionID\" = '".$sessionID."' AND \"Order\".\"ID\" = $id");
+			$this->currentOrder = $retrievedOrder;
+		}
+		if($this->currentOrder) {
+
 		}
 		else {
 			//if there is no order
