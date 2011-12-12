@@ -38,7 +38,7 @@ class EcommerceSiteTreeExtension extends DataObjectDecorator {
 	}
 
 	/**
-	 *@return Integer
+	 * @return Integer
 	 **/
 	public function NumItemsInCart() {
 		$order = ShoppingCart::current_order();
@@ -49,7 +49,20 @@ class EcommerceSiteTreeExtension extends DataObjectDecorator {
 	}
 
 	/**
-	 *@return String (HTML Snippet)
+	 * used to provide templates with a class for a dom element
+	 * containing the total number of items.
+	 * @return String
+	 **/
+	public function TotalItemsClass() {
+		$order = ShoppingCart::current_order();
+		if($order) {
+			return $order->TotalItemsClass();
+		}
+		return "";
+	}
+
+	/**
+	 * @return String (HTML Snippet)
 	 **/
 	function getEcommerceMenuTitle() {
 		return $this->owner->getMenuTitle();
