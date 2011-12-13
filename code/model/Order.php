@@ -1729,6 +1729,19 @@ class Order extends DataObject {
 		}
 	}
 
+	/**
+	 * return the title of the fixed country (if any)
+	 * @return String
+	 **/
+	public function FixedCountry() {return $this->getFixedCountry();}
+	public function getFixedCountry() {
+		$code = EcommerceCountry::get_fixed_country_code();
+		if($code){
+			return EcommerceCountry::find_title($code);
+		}
+		return "";
+	}
+
 
 	/**
 	 * Returns the region that applies to the order.
