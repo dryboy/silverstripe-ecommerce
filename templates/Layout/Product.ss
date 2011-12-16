@@ -5,11 +5,7 @@
 <div id="Product">
 	<h1 class="pageTitle">$Title</h1>
 	<div class="productDetails">
-		<div class="productImage">
-<% if Image.ContentImage %>
-			<img class="realImage" src="$Image.ContentImage.URL" alt="<% sprintf(_t("Product.IMAGE","%s image"),$Title) %>" />
-<% end_if %>
-		</div>
+<% include ProductImage %>
 <% include ProductActions %>
 	</div>
 	<% if Content %><div id="ContentHolder">$Content</div><% end_if %>
