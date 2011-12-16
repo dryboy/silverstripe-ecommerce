@@ -15,6 +15,7 @@
 class OrderAddress extends DataObject {
 
 
+
 	/**
 	 *Do the goods need to he shipped and if so,
 	 * do we allow these goods to be shipped to a different address than the billing address?
@@ -94,6 +95,68 @@ class OrderAddress extends DataObject {
 	public static $casting = array(
 		"FullName" => "Text"
 	);
+
+
+	/**
+	 * save edit status for speed's sake
+	 * @var Boolean
+	 */
+	protected $_canEdit = null;
+
+	/**
+	 * save view status for speed's sake
+	 * @var Boolean
+	 */
+	protected $_canView = null;
+
+
+	/**
+	 * standard SS method
+	 * @return Boolean
+	 **/
+	function canCreate($member = null) {
+		return true;
+	}
+
+	/**
+	 * Standard SS method
+	 * This is an important method.
+	 *
+	 * @return Boolean
+	 **/
+	function canView($member = null) {
+		if($this->_canView === null) {
+			$this->_canView = false;
+			if($this->OrderID) {
+				if($this->Order()->exists()) {
+					if($this->Order()->canView($member)) {
+						$this->_canView = true;
+					}
+				}
+			}
+		}
+		return $this->_canView;
+	}
+
+	/**
+	 * Standard SS method
+	 * This is an important method.
+	 *
+	 * @return Boolean
+	 **/
+	function canEdit($member = null) {
+		if($this->_canEdit === null) {
+			$this->_canEdit = false;
+			if($this->OrderID) {
+				if($this->Order()->exists()) {
+					if($this->Order()->canEdit($member)) {
+						$this->_canEdit = true;
+					}
+				}
+			}
+		}
+		return $this->_canEdit;
+	}
 
 	/**
 	 *

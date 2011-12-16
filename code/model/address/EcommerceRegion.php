@@ -15,6 +15,16 @@
 
 class EcommerceRegion extends DataObject {
 
+	/**
+	 * what variables are accessible through  http://mysite.com/api/v1/EcommerceRegion/
+	 * @var array
+	 */
+	public static $api_access = array(
+		'view' => array(
+				"Code",
+				"Name"
+			)
+	 );
 
 	/**
 	 * standard SS variable

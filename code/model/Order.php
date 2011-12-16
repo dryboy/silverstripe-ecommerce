@@ -29,6 +29,35 @@
 
 class Order extends DataObject {
 
+
+	public static $api_access = array(
+		'view' => array(
+				'OrderEmail',
+				'EmailLink',
+				'PrintLink',
+				'RetrieveLink',
+				'Title',
+				'Total',
+				'SubTotal',
+				'TotalPaid',
+				'TotalOutstanding',
+				'TotalItems',
+				'TotalItemsTimesQuantity',
+				'IsCancelled',
+				'Country' ,
+				'FullNameCountry',
+				'IsSubmitted',
+				'CustomerStatus',
+				'CanHaveShippingAddress',
+				"CancelledBy",
+				"BillingAddress",
+				"UseShippingAddress",
+				"ShippingAddress",
+				"Status",
+				"Attributes"
+			)
+	 );
+
 	public static $db = array(
 		'SessionID' => "Varchar(32)", //so that in the future we can link sessions with Orders.... One session can have several orders, but an order can onnly have one session
 		'UseShippingAddress' => 'Boolean',
@@ -1462,6 +1491,7 @@ class Order extends DataObject {
 
 	function OrderEmail(){return $this->getOrderEmail();}
 	function getOrderEmail() {
+		$email = "";
 		if($this->BillingAddressID && $this->BillingAddress()) {
 			$email = $this->BillingAddress()->Email;
 		}

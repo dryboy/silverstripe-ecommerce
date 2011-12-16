@@ -13,6 +13,25 @@
 
 class ShippingAddress extends OrderAddress {
 
+	/**
+	 * what variables are accessible through  http://mysite.com/api/v1/ShippingAddress/
+	 * @var array
+	 */
+	public static $api_access = array(
+		'view' => array(
+				'ShippingPrefix',
+				'ShippingFirstName',
+				'ShippingSurname',
+				'ShippingAddress',
+				'ShippingAddress2',
+				'ShippingCity',
+				'ShippingPostalCode',
+				'ShippingCountry',
+				'ShippingPhone',
+				'ShippingMobilePhone'
+			)
+	);
+
 	public static $db = array(
 		'ShippingPrefix' => 'Varchar(10)',
 		'ShippingFirstName' => 'Varchar(100)',

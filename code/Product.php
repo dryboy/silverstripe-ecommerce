@@ -21,6 +21,15 @@
 
 class Product extends Page {
 
+
+	public static $api_access = array(
+		'view' => array(
+				"MenuTitle",
+				"AllowPurchase",
+				"InternalItemID"
+			)
+	 );
+
 	public static $db = array(
 		'Price' => 'Currency',
 		'Weight' => 'Decimal(9,4)',

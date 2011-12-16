@@ -15,6 +15,16 @@
 class EcommerceCountry extends DataObject {
 
 	/**
+	 * what variables are accessible through  http://mysite.com/api/v1/EcommerceCountry/
+	 * @var array
+	 */
+	public static $api_access = array(
+		'view' => array(
+				"Code",
+				"Name"
+			)
+	 );
+	/**
 	 * Standard SS Variable
 	 * @var Array
 	 **/

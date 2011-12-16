@@ -13,6 +13,24 @@
 
 class BillingAddress extends OrderAddress {
 
+	/**
+	 * what variables are accessible through  http://mysite.com/api/v1/BillingAddress/
+	 * @var array
+	 */
+	public static $api_access = array(
+		'view' => array(
+				'Prefix',
+				'FirstName',
+				'Surname',
+				'Address',
+				'Address2',
+				'City',
+				'PostalCode',
+				'Country',
+				'Phone',
+				'MobilePhone'
+			)
+	);
 
 	static $db = array(
 		'Prefix' => 'Varchar(10)',

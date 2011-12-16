@@ -35,7 +35,11 @@ class EcommerceRole extends DataObjectDecorator {
 			),
 			'has_many' => array(
 				"Orders" => "Order"
-			)
+			),
+			'api_access' => array(
+				"view" =>
+					array("ID", "Orders")
+				)
 		);
 	}
 

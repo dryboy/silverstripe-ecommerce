@@ -12,6 +12,30 @@
 
 class OrderAttribute extends DataObject {
 
+	/**
+	 * what variables are accessible through  http://mysite.com/api/v1/ShippingAddress/
+	 * @var array
+	 */
+	public static $api_access = array(
+		'view' => array(
+				'CalculatedTotal',
+				'Sort',
+				'GroupSort',
+				'TableTitle',
+				'TableSubTitle',
+				'CartTitle',
+				'Name',
+				'TableValue',
+				'HasBeenRemoved',
+				'Quantity',
+				'BuyableID',
+				'Version',
+				'UnitPrice',
+				'Total',
+				"Order"
+			)
+	 );
+
 	public static $db = array(
 		'CalculatedTotal' => 'Currency',
 		'Sort' => 'Int',
@@ -41,7 +65,17 @@ class OrderAttribute extends DataObject {
 		"Sort" => true,
 	);
 
+	/**
+	 * save edit status for speed's sake
+	 * @var Boolean
+	 */
 	protected $_canEdit = null;
+
+	/**
+	 * save view status for speed's sake
+	 * @var Boolean
+	 */
+	protected $_canView = null;
 
 	function init() {
 		return true;
@@ -54,6 +88,26 @@ class OrderAttribute extends DataObject {
 	 **/
 	function canCreate($member = null) {
 		return true;
+	}
+
+	/**
+	 * Standard SS method
+	 * This is an important method.
+	 *
+	 * @return Boolean
+	 **/
+	function canView($member = null) {
+		if($this->_canView === null) {
+			$this->_canView = false;
+			if($this->OrderID) {
+				if($this->Order()->exists()) {
+					if($this->Order()->canView($member)) {
+						$this->_canView = true;
+					}
+				}
+			}
+		}
+		return $this->_canView;
 	}
 
 	/**
