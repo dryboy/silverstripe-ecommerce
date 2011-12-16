@@ -260,6 +260,13 @@ class Product_Controller extends Page_Controller {
 		Requirements::themedCSS('Products');
 	}
 
+	function index(){
+		if(Director::is_ajax()) {
+			return $this->renderWith("ProductGroupItemMoreDetail");
+		}
+		return array();
+	}
+
 	/**
 	 * returns a form for adding products to cart
 	 * @return Form
