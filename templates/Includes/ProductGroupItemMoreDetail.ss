@@ -7,3 +7,4 @@
 </div>
 <div class="limtedContentHolder">$Content.Summary</div>
 <% include ProductActions %>
+<p class="moreInformation"><a href="$Link">more info ...</a></p>
