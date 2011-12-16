@@ -1,1 +1,1 @@
-<% if NumItemsInCart %> <span class="numberOfItemsInCart">($NumItemsInCart)</span><% end_if %>
+<% if NumItemsInCart %> <span class="$TotalItemsClass">($NumItemsInCart)</span><% end_if %>
