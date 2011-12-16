@@ -236,26 +236,19 @@ class Product extends Page {
 	 *
 	 *@return DataObjectSet
 	 **/
+
 	function Siblings() {
-		return DataObject::get("Product", "ParentID = ".$this->ParentID);
+		if($this->ParentID) {
+			$extension = "";
+			if(Versioned::current_stage() == "Live") {
+				$extension = "_Live";
+			}
+			return DataObject::get("Product", "\"ShowInMenus\" = 1 AND \"ParentID\" = ".$this->ParentID." AND \"SiteTree{$extension}\".\"ID\" <> ".$this->ID);
+		}
 	}
 
 }
 
-class Product_Image extends Image {
-
-	static function set_thumbnail_size($width = 140, $height = 100){
-		user_error("This method has been depreciated, as we will be removing the Product_Image class", E_USER_NOTICE);
-	}
-
-	static function set_content_image_width($width = 200){
-		user_error("This method has been depreciated, as we will be removing the Product_Image class", E_USER_NOTICE);
-	}
-
-	static function set_large_image_width($width = 600){
-		user_error("This method has been depreciated, as we will be removing the Product_Image class", E_USER_NOTICE);
-	}
-}
 
 class Product_Controller extends Page_Controller {
 
@@ -327,6 +320,72 @@ class Product_Controller extends Page_Controller {
 			return new EcomQuantityField($this);
 		}
 	}
+
+}
+
+
+
+class Product_Image extends Image {
+
+	/**
+	 * @var Integer $thumbnail_width
+	 */
+	protected static $thumbnail_width = 140;
+
+	/**
+	 * @var Integer $thumbnail_height
+	 */
+	protected static $thumbnail_height = 100;
+
+	/**
+	 * set the thumbnail size for product images
+	 * @param Integer $width
+	 * @param Integer $height
+	 */
+	static function set_thumbnail_size($width = 140, $height = 100){self::$thumbnail_width = $width; self::$thumbnail_height = $height;}
+
+
+	/**
+	 * @var Integer $content_image_width
+	 */
+	protected static $content_image_width = 200;
+		static function set_content_image_width($width = 200){self::$content_image_width = $width;}
+
+	/**
+	 * @var Integer $large_image_width
+	 */
+	protected static $large_image_width = 600;
+		static function set_large_image_width($width = 600){self::$large_image_width = $width;}
+
+
+	/**
+	 * @usage can be used in a template like this $Image.Thumbnail.Link
+	 * @return GD
+	 **/
+	function generateThumbnail($gd) {
+		$gd->setQuality(80);
+		return $gd->paddedResize(self::$thumbnail_width,self::$thumbnail_height);
+	}
+
+	/**
+	 * @usage can be used in a template like this $Image.ContentImage.Link
+	 * @return GD
+	 **/
+	function generateContentImage($gd) {
+		$gd->setQuality(90);
+		return $gd->resizeByWidth(self::$content_image_width);
+	}
+
+	/**
+	 * @usage can be used in a template like this $Image.LargeImage.Link
+	 * @return GD
+	 **/
+	function generateLargeImage($gd) {
+		$gd->setQuality(90);
+		return $gd->resizeByWidth(self::$large_image_width);
+	}
+
+
 
 }
 
