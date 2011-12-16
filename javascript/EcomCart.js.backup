@@ -121,12 +121,6 @@ EcomCart = {
 	//#################################
 
 	/**
-	 * turn on / off the ajax buttons outside of the cart (e.g. add this product to cart, delete from cart)
-	 */
-	ajaxButtonsOn: false,
-		set_ajaxButtonsOn: function(b) {this.confirmDeleteText = b;},
-
-	/**
 	 * NOTE: set to empty string to bypass confirmation step
 	 */
 	confirmDeleteText: 'Are you sure you would like to remove this item from your cart?',
@@ -166,14 +160,12 @@ EcomCart = {
 		EcomCart.countryAndRegionUpdates();
 		//setup an area where the user can change their country / region
 		EcomCart.changeCountryFieldSwap();
-		if(EcomCart.ajaxButtonsOn) {
-			//make sure that "add to cart" links are updated with AJAX
-			jQuery(EcomCart.ajaxLinksAreaSelector).addAddLinks();
-			//make sure that "remove from cart" links are updated with AJAX
-			jQuery(EcomCart.ajaxLinksAreaSelector).addRemoveLinks();
-			//make sure that "delete from cart" links are updated with AJAX - looking at the actual cart itself.
-			jQuery(EcomCart.ajaxLinksAreaSelector).addCartRemove();
-		}
+		//make sure that "add to cart" links are updated with AJAX
+		jQuery(EcomCart.ajaxLinksAreaSelector).addAddLinks();
+		//make sure that "remove from cart" links are updated with AJAX
+		jQuery(EcomCart.ajaxLinksAreaSelector).addRemoveLinks();
+		//make sure that "delete from cart" links are updated with AJAX - looking at the actual cart itself.
+		jQuery(EcomCart.ajaxLinksAreaSelector).addCartRemove();
 	},
 
 
@@ -214,7 +206,6 @@ EcomCart = {
 					var options = jQuery(EcomCart.ajaxCountryFieldSelector).html();
 					var html = "<select>" + options + "</select>";
 					jQuery(EcomCart.selectorChangeCountryFieldHolder).html(html).slideDown();
-					jQuery(EcomCart.selectorChangeCountryFieldHolder+" select").val(jQuery(EcomCart.ajaxCountryFieldSelector).val());
 				}
 				else {
 					jQuery(EcomCart.selectorChangeCountryFieldHolder).slideUp(
@@ -249,12 +240,6 @@ EcomCart = {
 	 * get JSON data from server
 	 */
 	getChanges: function(url, params) {
-		if(params === null) {
-			params = {};
-		}
-		if(EcomCart.ajaxButtonsOn) {
-			params.ajaxButtonsOn = true;
-		}
 		jQuery.getJSON(url, params, EcomCart.setChanges);
 	},
 
@@ -430,9 +415,10 @@ jQuery.fn.extend({
 					var url = jQuery(this).attr("href");
 					EcomCart.getChanges(url, null);
 					//hide the clicked element
-					jQuery(this).parent().addClass(EcomCart.hideClass).removeClass(EcomCart.showClass);
+					jQuery(this).addClass(EcomCart.hideClass).removeClass(EcomCart.showClass);
 					//show the previous OR next element (lazy option)
-					jQuery(this).parent().siblings("."+EcomCart.hideClass).addClass(EcomCart.showClass).removeClass(EcomCart.hideClass);
+					jQuery(this).next("."+EcomCart.hideClass).addClass(EcomCart.showClass).removeClass(EcomCart.hideClass);
+					jQuery(this).prev("."+EcomCart.hideClass).addClass(EcomCart.showClass).removeClass(EcomCart.hideClass);
 					return false;
 				}
 			);
@@ -458,14 +444,14 @@ jQuery.fn.extend({
 			jQuery(this).find(EcomCart.removeLinkSelector).live(
 				"click",
 				function(){
-					if(EcomCart.unconfirmedDelete || confirm(EcomCart.confirmDeleteText)) {
-					var url = jQuery(this).attr("href");
-					EcomCart.getChanges(url, null);
-					//hide the clicked element
-					jQuery(this).parent().addClass(EcomCart.hideClass).removeClass(EcomCart.showClass);
-					//show the previous OR next element (lazy option)
-					jQuery(this).parent().siblings("."+EcomCart.hideClass).addClass(EcomCart.showClass).removeClass(EcomCart.hideClass);
-					return false;
+					if(EcomCart.UnconfirmedDelete || confirm(EcomCart.ConfirmDeleteText)) {
+						var url = jQuery(this).attr("href");
+						EcomCart.getChanges(url, null);
+						//hide the clicked element
+						jQuery(this).addClass(EcomCart.hideClass).removeClass(EcomCart.showClass);
+						//show the previous OR next element (lazy option)
+						jQuery(this).next("."+EcomCart.hideClass).addClass(EcomCart.showClass).removeClass(EcomCart.hideClass);
+						jQuery(this).prev("."+EcomCart.hideClass).addClass(EcomCart.showClass).removeClass(EcomCart.hideClass);
 
 					}
 					return false;

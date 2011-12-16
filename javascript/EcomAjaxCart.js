@@ -13,36 +13,62 @@
 	$(document).ready(
 		function() {
 			//This needs testing...
-			//EcomAjaxCart.init("body");
+			EcomAjaxCart.init();
 		}
 	);
 })(jQuery);
 
 var EcomAjaxCart = {
 
-	ConfirmDeleteText: 'Are you sure you would like to remove this item from your cart?',
+	/**
+	 * NOTE: set to empty string to bypass confirmation step
+	 */
+	confirmDeleteText: 'Are you sure you would like to remove this item from your cart?',
+		set_confirmDeleteText: function(s) {this.confirmDeleteText = s;},
 
-	LoadingText: "updating cart ... ",
+	/**
+	 * class used to identify that the cart is loading
+	 */
+	loadingClass: "loading",
+		set_loadingClass: function(s) {this.loadingClass = s;},
 
-	LoadingClass: "loadingCartData",
-
-	ajaxAddRemoveLinkSelector: ".ajaxAddToCartLink",
-
+	/**
+	 * the class used to show add/remove buyable buttons
+	 */
 	showClass: "show",
+		set_showClass: function(s) {this.showClass = s;},
 
-	doNotShowClass: "doNotShow",
+	/**
+	 * the class used to hide add/remove buyable buttons
+	 */
+	hideClass: "hide",
+		set_hideClass: function(s) {this.hideClass = s;},
 
-	addLinkSelector: ".ajaxAdd",
+	/**
+	 * the area in which the ajax links can be found.
+	 */
+	ajaxLinksAreaSelector: "body",
+		set_ajaxLinksAreaSelector: function(v) {this.ajaxLinksAreaSelector = v;},
 
-	removeLinkSelector: ".ajaxRemove",
+	/**
+	 * the selector used to identify links that add buyables to the cart
+	 */
+	addLinkSelector: ".ajaxBuyableAdd",
+		set_addLinkSelector: function(s) {this.addLinkSelector = s;},
 
-	removeCartSelector: ".removeFromCart",
+	/**
+	 * the selector used to identify links that remove buyables from the cart
+	 * (outside the cart itself)
+	 */
+	removeLinkSelector: ".ajaxBuyableRemove",
+		set_removeLinkSelector: function(s) {this.removeLinkSelector = s;},
 
-	InCartText: "In Cart",
+	/**
+	 * the selector used to identify "remove from cart" links within the cart.
+	 */
+	removeCartSelector: ".ajaxRemoveFromCart",
+		set_removeCartSelector: function(s) {this.removeCartSelector = s;},
 
-	cartHolderSelector: "#CartHolder",
-
-	UnconfirmedDelete: false,
 
 	init: function(element) {
 		jQuery(element).addAddLinks();
@@ -50,32 +76,20 @@ var EcomAjaxCart = {
 		jQuery(element).addCartRemove();
 	},
 
-	set_LoadingText: function(v) {
-		this.LoadingText = v;
-	},
-
-	set_InCartText: function(v) {
-		this.InCartText = v;
-	},
-
-	set_ConfirmDeleteText: function(v) {
-		this.ConfirmDeleteText = v;
-	},
-
-	loadAjax: function( url, el ) {
-		jQuery(EcomAjaxCart.cartHolderSelector).html('<span class="'+EcomAjaxCart.LoadingClass+'">'+EcomAjaxCart.LoadingText+'</span>');
-		jQuery(el).addClass(EcomAjaxCart.LoadingClass);
+	reloadCart: function( url, el ) {
+		jQuery(el).addClass(EcomAjaxCart.loadingClass);
 		var clickedElement = el;
 		jQuery.get(
 			url,
 			{},
 			function(data) {
 				jQuery(EcomAjaxCart.cartHolderSelector).html(data);
-				jQuery(EcomAjaxCart.cartHolderSelector).addCartRemove();
-				jQuery(clickedElement).removeClass(EcomAjaxCart.LoadingClass);
-				jQuery(clickedElement).addClass(EcomAjaxCart.doNotShowClass).removeClass(EcomAjaxCart.showClass);
-				jQuery(clickedElement).next("."+EcomAjaxCart.doNotShowClass).addClass(EcomAjaxCart.showClass).removeClass(EcomAjaxCart.doNotShowClass);
-				jQuery(clickedElement).prev("."+EcomAjaxCart.doNotShowClass).addClass(EcomAjaxCart.showClass).removeClass(EcomAjaxCart.doNotShowClass);
+				jQuery(clickedElement).removeClass(EcomAjaxCart.loadingClass);
+				//hide the clicked element
+				jQuery(clickedElement).addClass(EcomAjaxCart.hideClass).removeClass(EcomAjaxCart.showClass);
+				//show the previous OR next element (lazy option)
+				jQuery(clickedElement).next("."+EcomAjaxCart.hideClass).addClass(EcomAjaxCart.showClass).removeClass(EcomAjaxCart.hideClass);
+				jQuery(clickedElement).prev("."+EcomAjaxCart.hideClass).addClass(EcomAjaxCart.showClass).removeClass(EcomAjaxCart.hideClass);
 			}
 		);
 		return true;
@@ -87,7 +101,8 @@ var EcomAjaxCart = {
 jQuery.fn.extend(
 	{
 		addAddLinks: function() {
-			jQuery(this).find(EcomAjaxCart.addLinkSelector).click(
+			jQuery(this).find(EcomAjaxCart.addLinkSelector).live(
+				"click",
 				function(){
 					var url = jQuery(this).attr("href");
 					EcomAjaxCart.loadAjax(url, this);
@@ -97,7 +112,8 @@ jQuery.fn.extend(
 		},
 
 		addCartRemove: function () {
-			jQuery(this).find(EcomAjaxCart.removeCartSelector).click(
+			jQuery(this).find(EcomAjaxCart.removeCartSelector).live(
+				"click",
 				function(){
 					if(EcomAjaxCart.UnconfirmedDelete || confirm(EcomAjaxCart.ConfirmDeleteText)) {
 						var url = jQuery(this).attr("href");
@@ -111,7 +127,8 @@ jQuery.fn.extend(
 		},
 
 		addRemoveLinks: function () {
-			jQuery(this).find(EcomAjaxCart.removeLinkSelector).click(
+			jQuery(this).find(EcomAjaxCart.removeLinkSelector).live(
+				"click",
 				function(){
 					if(EcomAjaxCart.UnconfirmedDelete || confirm(EcomAjaxCart.ConfirmDeleteText)) {
 						var url = jQuery(this).attr("href");
