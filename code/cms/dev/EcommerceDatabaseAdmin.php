@@ -7,6 +7,8 @@
  * You can customise this menu by using the "decorating" this class
  * and adding the method: "updateEcommerceDevMenu".
  *
+ * @author jeremy, nicolaas
+ *
  */
 
 class EcommerceDatabaseAdmin extends Controller{
@@ -69,7 +71,7 @@ class EcommerceDatabaseAdmin extends Controller{
 	// DATA CLEANUPS
 	//##############################
 
-	private $dataCleanups = array(
+	protected $dataCleanups = array(
 		"clearoldcarts",
 		"deleteecommerceproductstask",
 	);
@@ -79,7 +81,7 @@ class EcommerceDatabaseAdmin extends Controller{
 	 *
 	 */
 	function DataCleanups() {
-		return $this->createMenuDOSFromArray($this->dataCleanups);
+		return $this->createMenuDOSFromArray($this->dataCleanups, $type = "DataCleanups");
 	}
 
 	/**
@@ -88,7 +90,7 @@ class EcommerceDatabaseAdmin extends Controller{
 	 */
 	function clearoldcarts($request) {
 		$buildTask = new ClearOldCarts($request);
-		$task->run($request);
+		$buildTask->run($request);
 		$this->displayCompletionMessage($buildTask);
 	}
 
@@ -99,7 +101,7 @@ class EcommerceDatabaseAdmin extends Controller{
 	 */
 	function deleteecommerceproductstask($request){
 		$buildTask = new DeleteEcommerceProductsTask($request);
-		$task->run($request);
+		$buildTask->run($request);
 		$this->displayCompletionMessage($buildTask);
 	}
 
@@ -119,7 +121,7 @@ class EcommerceDatabaseAdmin extends Controller{
 	 *
 	 */
 	function Migrations() {
-		return $this->createMenuDOSFromArray($this->migrations);
+		return $this->createMenuDOSFromArray($this->migrations, $type = "Migrations");
 	}
 
 	/**
@@ -195,7 +197,7 @@ class EcommerceDatabaseAdmin extends Controller{
 	/**
 	 * shows a "Task Completed Message" on the screen.
 	 */
-	protected function displayCompletionMessage($buildTask, $extraMessage = '') {
+	public function displayCompletionMessage($buildTask, $extraMessage = '') {
 		DB::alteration_message("
 			------------------------------------------------------- <br />
 			<strong>".$buildTask->getTitle()."</strong><br />
@@ -210,8 +212,8 @@ class EcommerceDatabaseAdmin extends Controller{
 	 *
 	 *@param Array $buildTasks array of build tasks
 	 */
-	protected function createMenuDOSFromArray($buildTasks) {
-		$this->extend("updateEcommerceDevMenu", $buildTasks);
+	protected function createMenuDOSFromArray($buildTasks, $type = "") {
+		$this->extend("updateEcommerceDevMenu".$type, $buildTasks);
 		$dos = new DataObjectSet();
 		foreach($buildTasks as $buildTask) {
 			$obj = new $buildTask();
@@ -226,6 +228,7 @@ class EcommerceDatabaseAdmin extends Controller{
 		}
 		return $dos;
 	}
+
 
 }
 
