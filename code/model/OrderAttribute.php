@@ -24,14 +24,6 @@ class OrderAttribute extends DataObject {
 				'TableTitle',
 				'TableSubTitle',
 				'CartTitle',
-				'Name',
-				'TableValue',
-				'HasBeenRemoved',
-				'Quantity',
-				'BuyableID',
-				'Version',
-				'UnitPrice',
-				'Total',
 				"Order"
 			)
 	 );

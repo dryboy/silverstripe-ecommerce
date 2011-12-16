@@ -31,6 +31,10 @@
  **/
 class OrderModifier extends OrderAttribute {
 
+	/**
+	 * what variables are accessible through  http://mysite.com/api/v1/OrderModifier/
+	 * @var array
+	 */
 	public static $api_access = array(
 		'view' => array(
 				'CalculatedTotal',

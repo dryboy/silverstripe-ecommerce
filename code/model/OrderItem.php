@@ -15,6 +15,21 @@
  **/
 class OrderItem extends OrderAttribute {
 
+	/**
+	 * what variables are accessible through  http://mysite.com/api/v1/OrderItem/
+	 * @var array
+	 */
+	public static $api_access = array(
+		'view' => array(
+				'Quantity',
+				'BuyableID',
+				'Version',
+				'UnitPrice',
+				'Total',
+				"Order"
+			)
+	 );
+
 	protected static $disable_quantity_js = false;
 		static function set_disable_quantity_js($b){self::$disable_quantity_js = $b;}
 		static function get_disable_quantity_js(){return self::$disable_quantity_js;}
