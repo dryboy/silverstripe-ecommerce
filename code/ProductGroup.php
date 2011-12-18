@@ -93,27 +93,50 @@ class ProductGroup extends Page {
 
 
 	/**
-	 * Retrieve a set of products, based on the given parameters. Checks get query for sorting and pagination.
+	 * Retrieve a set of products, based on the given parameters.
+	 * This method is usually called by the various controller methods.
+	 * The extraFilter and recursive help you to select different products,
+	 * depending on the method used in the controller.
+	 *
+	 * We do not use the recursive here.
+	 * Furthermore, extrafilter can take onl all sorts of variables.
+	 * This is basically setup like this so that in ProductGroup extensions you
+	 * can setup all sorts of filters, while still using the ProductsShowable method.
+	 *
+	 * @param mixed $extraFilter Additional SQL filters to apply to the Product retrieval
+	 * @param boolean $recursive
+	 * @return DataObjectSet | Null
+	 */
+	public function ProductsShowable($extraFilter = '', $recursive = true){
+		$allProducts = $this->currentInitialProducts($extraFilter, $recursive);
+		return $this->currentFinalProducts($allProducts);
+	}
+
+	/**
+	 * returns the inital (all) products, based on the all the eligile products
+	 * for the page.
+	 *
+	 * This is THE pivotal method that probably changes for classes that
+	 * extend ProductGroup as here you can determine what products or other buyables are shown.
+	 *
+	 * The return from this method will then be sorted and filtered to product the final product list
 	 *
 	 * @param string $extraFilter Additional SQL filters to apply to the Product retrieval
 	 * @param boolean $recursive
 	 * @return DataObjectSet | Null
-	 */
-	function ProductsShowable($extraFilter = '', $recursive = true){
-				//GROUPS FILTER
+	 **/
+	protected function currentInitialProducts($extraFilter = '', $recursive = true){
+	//GROUPS FILTER
 		if($this->LevelOfProductsToShow == 0) {
 			return null;
 		}
-
 		// STANDARD FILTER
 		$filter = $this->getStandardFilter(); //
 		$join = "";
-
 		// EXTRA FILTER
 		if($extraFilter) {
 			$filter.= " AND $extraFilter";
 		}
-
 		//PARENT ID
 		$groupIDs = array();
 		$groupIDs[$this->ID] = $this->ID;
@@ -123,59 +146,111 @@ class ProductGroup extends Page {
 				$groupIDs = array_merge($groupIDs,$childGroups->map('ID','ID'));
 			}
 		}
-
 		//OTHER GROUPS MANY MANY
 		$join = $this->getManyManyJoin('Products','Product');
 		$multiCategoryFilter = $this->getManyManyFilter('Products','Product');
-
 		// GET PRODUCTS
 		$where = "(\"ParentID\" IN (".implode(",", $groupIDs).") OR $multiCategoryFilter) $filter";
 		$allProducts = DataObject::get('Product',$where,null,$join);
+		return $allProducts;
+	}
 
-		//REMOVE DUPLICATES AND NOT canPurcahse
-		if($allProducts && $allProducts instanceOf DataObjectSet) {
-			$allProducts->removeDuplicates();
+	/**
+	 * returns the final products, based on the all the eligile products
+	 * for the page.
+	 *
+	 * @param Object $allProducts DataObjectSet of all eligile products before sorting and limiting
+	 * @returns Object DataObjectSet of products
+	 **/
+	protected function currentFinalProducts($buyables){
+		if($buyables && $buyables instanceOf DataObjectSet) {
+			$buyables->removeDuplicates();
 			$siteConfig = SiteConfig::current_site_config();
 			if($siteConfig->OnlyShowProductsThatCanBePurchased) {
-				foreach($allProducts as $product) {
-					if(!$product->canPurchase()) {
-						$allProducts->remove($product);
+				foreach($buyables as $buyable) {
+					if(!$buyables->canPurchase()) {
+						$buyables->remove($buyable);
 					}
 				}
 			}
 		}
-
-
-		//LIMIT
-		if($allProducts) {
-			$this->totalCount = $allProducts->Count();
+		if($buyables) {
+			$this->totalCount = $buyables->Count();
 			if($this->totalCount) {
-				//SORT BY
-				if(!isset($_GET['sortby'])) {
-					$sortKey = $this->MyDefaultSortOrder();
-				}
-				else {
-					$sortKey = Convert::raw2sqL($_GET['sortby']);
-				}
-				$sort = $this->getSortOptionSQL($sortKey);
-
-				$limit = (isset($_GET['start']) && (int)$_GET['start'] > 0) ? (int)$_GET['start'] : "0";
-				$limit .= ", ".$this->MyNumberOfProductsPerPage();
-				$stage = '';
-				if(Versioned::current_stage() == "Live") {
-					$stage = "_Live";
-				}
-				$whereForPageOnly = "\"Product$stage\".\"ID\" IN (".implode(",", $allProducts->map("ID", "ID")).")";
-				$products = DataObject::get('Product',$whereForPageOnly,$sort, null,$limit);
-				if($products) {
-					return $products;
-				}
+				return DataObject::get(
+					$this->currentClassNameSQL(),
+					$this->currentWhereSQL($buyables),
+					$this->currentSortSQL(),
+					$this->currentJoinSQL(),
+					$this->currentLimitSQL()
+				);
 			}
 		}
+
+	}
+
+
+	/**
+	 * returns the CLASSNAME part of the final selection of products.
+	 * @return String
+	 */
+	protected function currentClassNameSQL() {
+		return "Product";
+	}
+
+	/**
+	 * returns the WHERE part of the final selection of products.
+	 * @param Object $allProducts - list of ALL products showable (without the applied LIMIT)
+	 * @return String
+	 */
+	protected function currentWhereSQL($buyables) {
+		$className = $this->currentClassNameSQL();
+		$stage = '';
+		if(Versioned::current_stage() == "Live") {
+			$stage = "_Live";
+		}
+		$where = "\"{$className}{$stage}\".\"ID\" IN (".implode(",", $buyables->map("ID", "ID")).")";
+		return $where;
+	}
+
+	/**
+	 * returns the SORT part of the final selection of products.
+	 * @return String
+	 */
+	protected function currentSortSQL() {
+		if(!isset($_GET['sortby'])) {
+			$sortKey = $this->MyDefaultSortOrder();
+		}
+		else {
+			$sortKey = Convert::raw2sqL($_GET['sortby']);
+		}
+		$sort = $this->getSortOptionSQL($sortKey);
+		return $sort;
+	}
+
+	/**
+	 * returns the JOIN part of the final selection of products.
+	 * @return String
+	 */
+	protected function currentJoinSQL() {
 		return null;
 	}
 
-	function TotalCount() {
+	/**
+	 * returns the LIMIT part of the final selection of products.
+	 * @return String
+	 */
+	protected function currentLimitSQL() {
+		$limit = (isset($_GET['start']) && (int)$_GET['start'] > 0) ? (int)$_GET['start'] : "0";
+		$limit .= ", ".$this->MyNumberOfProductsPerPage();
+		return $limit;
+	}
+
+	/**
+	 * returns the total numer of products (before pagination)
+	 * @return Integer
+	 **/
+	public function TotalCount() {
 		return $this->totalCount ? $this->totalCount : 0;
 	}
 
@@ -201,8 +276,11 @@ class ProductGroup extends Page {
 		}
 		return $productsPagePage;
 	}
+
 	/**
-	 *@return String
+	 * returns the code of the default sort order.
+	 *
+	 * @return String
 	 **/
 	function MyDefaultSortOrder() {
 		$defaultSortOrder = "";
@@ -218,9 +296,10 @@ class ProductGroup extends Page {
 	}
 
 
+
 	/**
-	 * Return children ProductGroup pages of this group.
-	 * @return DataObjectSet
+	 * Returns children ProductGroup pages of this group.
+	 * @return DataObjectSet | null
 	 */
 	function ChildGroups($maxRecursiveLevel = 99, $filter = "", $numberOfRecursions = 1) {
 		$numberOfRecursions++;
@@ -245,7 +324,8 @@ class ProductGroup extends Page {
 	}
 
 	/**
-	 *@return DataObject (ProductGroup)
+	 * returns the parent page, but only if it is an instance of Product Group.
+	 * @return DataObject | Null (ProductGroup)
 	 **/
 	function ParentGroup() {
 		return DataObject::get_by_id("ProductGroup", $this->ParentID);
@@ -265,9 +345,6 @@ class ProductGroup extends Page {
 		}
 	}
 
-	function requireDefaultRecords(){
-		parent::requireDefaultRecords();
-	}
 
 }
 class ProductGroup_Controller extends Page_Controller {
