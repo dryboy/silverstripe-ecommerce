@@ -277,7 +277,7 @@ class OrderAddress extends DataObject {
 	 * Copies the last address used by the member.
 	 *@return DataObject (OrderAddress / ShippingAddress / BillingAddfress)
 	 **/
-	public function FillWithLastAddressFromMember($member = null) {
+	public function FillWithLastAddressFromMember($member = null, $write = false) {
 		$prefix = $this->prefix();
 		if(!$member) {
 			//cant use "Current Member" here, because the order might be created by the Shop Admin...
@@ -288,7 +288,7 @@ class OrderAddress extends DataObject {
 			if($oldAddress) {
 				$fieldNameArray = $this->getFieldNameArray($prefix);
 				foreach($fieldNameArray as $field) {
-					if(!$this->$field && isset($oldAddress->$field)) {
+					if(!$this->$field && isset($oldAddress->$field) && $field != "ID") {
 						$this->$field = $oldAddress->$field;
 					}
 				}
@@ -303,7 +303,9 @@ class OrderAddress extends DataObject {
 				if(!$this->$fieldName || $this instanceOf BillingAddress) {$this->$fieldName = $member->$memberField;}
 			}
 		}
-		$this->write();
+		if($write) {
+			$this->write();
+		}
 		return $this;
 	}
 
