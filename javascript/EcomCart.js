@@ -85,6 +85,12 @@ EcomCart = {
 	hideClass: "hide",
 		set_hideClass: function(s) {this.hideClass = s;},
 
+	/**
+	 * selector of actions hidden during update
+	 */
+	submitSelector: "#OrderForm_OrderForm_action_processOrder",
+		set_submitSelector: function(s) {this.hideClass = s;},
+
 
 
 	//#################################
@@ -255,6 +261,7 @@ EcomCart = {
 		if(EcomCart.ajaxButtonsOn) {
 			params.ajaxButtonsOn = true;
 		}
+		jQuery(EcomCart.submitSelector).attr("disabled", "disabled").addClass("disabled");
 		jQuery.getJSON(url, params, EcomCart.setChanges);
 	},
 
@@ -347,6 +354,7 @@ EcomCart = {
 		}
 		EcomCart.updateForZeroVSOneOrMoreRows();
 		jQuery(EcomCart.attachLoadingClassTo).removeClass(EcomCart.classToShowLoading);
+		jQuery(EcomCart.submitSelector).attr("disabled", "").removeClass("disabled");
 	},
 
 
