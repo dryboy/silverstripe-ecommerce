@@ -364,7 +364,9 @@ class ShoppingCart extends Object{
 	 * Produces a debug of the shopping cart.
 	 */
 	public function debug(){
-		Debug::show($this->currentOrder());
+		if(Director::isDev() || Permission::check("ADMIN")){
+			Debug::show($this->currentOrder());
+		}
 	}
 
 	/**
