@@ -296,7 +296,7 @@ class Product_Controller extends Page_Controller {
 			return $form;
 		}
 		else {
-			return "Product not for sale";
+			return _t("Product.PRODUCTNOTFORSALE", "Product not for sale");
 		}
 	}
 
