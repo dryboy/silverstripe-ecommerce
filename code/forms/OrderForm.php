@@ -119,7 +119,7 @@ class OrderForm extends Form {
 		$finalFields->push(new HeaderField(_t('OrderForm.COMPLETEORDER','Complete Order'), 3));
 		// If a terms and conditions page exists, we need to create a field to confirm the user has read it
 		if($termsAndConditionsPage = CheckoutPage::find_terms_and_conditions_page()) {
-			$finalFields->push(new CheckboxField('ReadTermsAndConditions', _t('OrderForm.AGREEWITHTERMS1','I agree to the terms and conditions stated on the ').' <a href="'.$termsAndConditionsPage->Link().'">'.Convert::raw2xml($termsAndConditionsPage->Title).'</a> '._t('OrderForm.AGREEWITHTERMS2','page.')));
+			$finalFields->push(new CheckboxField('ReadTermsAndConditions', _t('OrderForm.AGREEWITHTERMS1','I have read the ').' <a href="'.$termsAndConditionsPage->Link().'">'.Convert::raw2xml($termsAndConditionsPage->Title).'</a> '._t('OrderForm.AGREEWITHTERMS2','page.')));
 			$requiredFields[] = 'ReadTermsAndConditions';
 		}
 		$finalFields->push(new TextareaField('CustomerOrderNote', _t('OrderForm.CUSTOMERNOTE','Note / Question'), 7, 30));
@@ -342,7 +342,10 @@ class OrderForm extends Form {
 	}
 
 	/**
-	 *returns TRUE if unique field does not exist already AND member is not logged in already AND non-members are automatically created (and logged in).
+	 *returns TRUE IF
+	 * unique field does not exist already (there is no-one else with the same email)
+	 * AND member is not logged in already
+	 * AND non-members are automatically created (and logged in).
 	 * i.e. the logged in member tries to take on another identity.
 	 *@param Array - form data - should include $data[uniqueField....] - e.g. $data["Email"]
 	 *@return Boolean
@@ -359,8 +362,11 @@ class OrderForm extends Form {
 	}
 
 	/**
-	 *returns FALSE if the unique field already exists in another member
-	 * AND the member being "tested" is already logged in...
+	 *returns FALSE IF
+	 * 1. the unique field already exists in another member
+	 * AND 2. the member being "tested" is already logged in...
+	 *
+	 *
 	 * i.e. the logged in member tries to take on another identity.
 	 * returns TRUE if there is no existing member with the unique field OR the member is not logged in.
 	 * If you are not logged BUT the the unique field is used by an existing member then we can still
