@@ -123,28 +123,21 @@ class OrderConfirmationPage_Controller extends CartPage_Controller{
 	 * standard controller function
 	 **/
 	function init() {
+		//we retrieve the order in the parent page
+		//the parent page also takes care of the security
 		parent::init();
-		$retrievedOrder = null;
-		if(!Member::CurrentMember() && !$retrievedOrder) {
-			$messages = array(
-				'default' => '<p class="message good">' . _t('OrderConfirmationPage.LOGINFIRST', 'You will need to login before you can access the submitted order page. ') . '</p>',
-				'logInAgain' => '<p class="message good">'. _t('OrderConfirmationPage.LOGINAGAIN', 'You have been logged out. If you would like to log in again, please do so below.') . '</p>'
-			);
-			//Security::permissionFailure($this, $messages);
-			return false;
-		}
 		Requirements::themedCSS('Order');
 		Requirements::themedCSS('Order_Print', "print");
 		Requirements::javascript('ecommerce/javascript/EcomPayment.js');
 	}
 
 	/**
-	 *@return array just so that template shows -  sets CurrentOrder variable
+	 * This method exists just so that template
+	 * sets CurrentOrder variable
+	 *
+	 *@return array
 	 **/
 	function showorder($request) {
-		if(!$this->currentOrder) {
-			$this->message = _t('CartPage.ORDERNOTFOUND', 'Order can not be found.');
-		}
 		if(isset($_REQUEST["print"])) {
 			Requirements::themedCSS("OrderReport"); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
 			Requirements::themedCSS("OrderReport_Print", "print"); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
@@ -175,6 +168,7 @@ class OrderConfirmationPage_Controller extends CartPage_Controller{
 
 
 	/**
+	 * show the payment form
 	 *@return Form (OrderForm_Payment) or Null
 	 **/
 	function PaymentForm(){
@@ -186,6 +180,12 @@ class OrderConfirmationPage_Controller extends CartPage_Controller{
 		}
 	}
 
+
+	/**
+	 * This is an additional way to look at an order.
+	 * The order is already retrieved from the
+	 *@return Array
+	 **/
 	function retrieveorder(){
 		return array();
 	}
