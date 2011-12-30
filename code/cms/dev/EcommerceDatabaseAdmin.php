@@ -8,6 +8,7 @@
  * and adding the method: "updateEcommerceDevMenu".
  *
  * @author jeremy, nicolaas
+ * @todo: work out a standard "silent" option and a display option the "display" options shows all output when running it from ecommerce/dev/
  *
  */
 
@@ -54,34 +55,21 @@ class EcommerceDatabaseAdmin extends Controller{
 		return Controller::join_links(Director::absoluteBaseURL(), 'dev/ecommerce/'.$action);
 	}
 
-
 	//##############################
-	// ACTIONS
-	//##############################
-/*
-	static $allowed_actions = array(
-		'deleteproducts' => "ADMIN",
-		'clearoldcarts' => "ADMIN",
-		'updateproductgroups' => "ADMIN",
-		'setfixedpriceforsubmittedorderitems' => "ADMIN"
-	);
-*/
-
-	//##############################
-	// DATA CLEANUPS
+	// REGULAR MAINTENANCE
 	//##############################
 
-	protected $dataCleanups = array(
+	protected $regularMaintenance = array(
 		"clearoldcarts",
-		"deleteecommerceproductstask",
+		"recalculatethenumberofproductssold"
 	);
 
 	/**
 	 * @return DataObjectSet list of data cleanup tasks
 	 *
 	 */
-	function DataCleanups() {
-		return $this->createMenuDOSFromArray($this->dataCleanups, $type = "DataCleanups");
+	function RegularMaintenance() {
+		return $this->createMenuDOSFromArray($this->regularMaintenance, $type = "RegularMaintenance");
 	}
 
 	/**
@@ -92,6 +80,48 @@ class EcommerceDatabaseAdmin extends Controller{
 		$buildTask = new ClearOldCarts($request);
 		$buildTask->run($request);
 		$this->displayCompletionMessage($buildTask);
+	}
+
+	/**
+	 * executes build task: UpdateProductGroups
+	 *
+	 */
+	function recalculatethenumberofproductssold($request) {
+		$buildTask = new RecalculateTheNumberOfProductsSold($request);
+		$buildTask->run($request);
+		$this->displayCompletionMessage($buildTask);
+	}
+
+	//##############################
+	// DEBUG ACTIONS
+	//##############################
+
+	protected $debugActions = array(
+	);
+
+	/**
+	 * @return DataObjectSet list of data debug actions
+	 *
+	 */
+	function DebugActions() {
+		return $this->createMenuDOSFromArray($this->debugActions, $type = "debugActions");
+	}
+
+
+	//##############################
+	// DATA CLEANUPS
+	//##############################
+
+	protected $dataCleanups = array(
+		"deleteecommerceproductstask"
+	);
+
+	/**
+	 * @return DataObjectSet list of data cleanup tasks
+	 *
+	 */
+	function DataCleanups() {
+		return $this->createMenuDOSFromArray($this->dataCleanups, $type = "DataCleanups");
 	}
 
 
