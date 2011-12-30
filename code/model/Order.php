@@ -624,7 +624,7 @@ class Order extends DataObject {
 *******************************************************/
 
 	/**
-	 *init runs on start of a new Order (@see onAfterWrite)
+	 * init runs on start of a new Order (@see onAfterWrite)
 	 * it adds all the modifiers to the orders and the starting OrderStep
 	 *
 	 * @return DataObject (Order)
@@ -674,6 +674,7 @@ class Order extends DataObject {
 			}
 		}
 		$this->extend('onInit', $this);
+		//careful - this will call "onAfterWrite" again
 		$this->write();
 		return $this;
 	}
@@ -1339,6 +1340,7 @@ class Order extends DataObject {
 	}
 
 	/**
+	 * Standard SS method - can the current member view this order?
 	 *
 	 *@return Boolean
 	 **/
@@ -1349,20 +1351,22 @@ class Order extends DataObject {
 		$member = $this->getMemberForCanFunctions($member);
 		//check if this has been "altered" in a DataObjectDecorator
 		$extended = $this->extendedCan('canView', $member->ID);
-		if($extended !== null) {return $extended;}
-		//no member present: ONLY if the member can edit the order it can be viewed...
+		//if this method has been extended in a data object decorator then use this
+		if($extended !== null) {
+			return $extended;
+		}
+		//is the member is a shop admin they can always view it
 		if(EcommerceRole::current_member_is_shop_admin($member)) {
 			return true;
 		}
+		//if the order is the current order then they can always view it
 		$currentOrder = ShoppingCart::current_order();
 		if($currentOrder && $currentOrder->ID == $this->ID){
 			return true;
 		}
-		elseif(!$this->MemberID) {
-			if( $this->SessionID == session_id()) {
-				return true;
-			}
-			return false;
+		//if the member is not logged in, but the session ID matches then the order can be viewed
+		if( $this->SessionID == session_id()) {
+			return true;
 		}
 		elseif($member && $this->MemberID == $member->ID) {
 			return true;
@@ -1527,7 +1531,6 @@ class Order extends DataObject {
 		}
 		else {
 			if(!$this->SessionID) {
-
 				$this->SessionID = session_id();
 				$this->write();
 			}
@@ -2104,6 +2107,9 @@ class Order extends DataObject {
 			if($firstStep) {
 				$this->StatusID = $firstStep->ID;
 			}
+		}
+		if(!$this->SessionID) {
+			$this->SessionID = session_id();
 		}
 	}
 
