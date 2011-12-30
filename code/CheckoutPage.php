@@ -140,6 +140,12 @@ class CheckoutPage_Controller extends CartPage_Controller {
 		}
 	}
 
+	/**
+	 * process the order modifier forms as they are submitted
+	 * in the checkout page.
+	 *
+	 * @todo: is this used anywhere?
+	 */
 	function processmodifierform($request) {
 		$formName = $request->param("ID");
 		if ($forms = $this->ModifierForms()) {
