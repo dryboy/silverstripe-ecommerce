@@ -84,10 +84,6 @@ class Product extends Page {
 
 	public static $icon = 'ecommerce/images/icons/product';
 
-	protected static $number_sold_calculation_type = "SUM"; //SUM or COUNT
-		static function set_number_sold_calculation_type($s){self::$number_sold_calculation_type = $s;}
-		static function get_number_sold_calculation_type(){return self::$number_sold_calculation_type;}
-
 	function CalculatedPrice() {return $this->getCalculatedPrice();}
 	function getCalculatedPrice() {
 		$price = $this->Price;
@@ -138,33 +134,6 @@ class Product extends Page {
 
 
 	/**
-	 * Recaulculates the number sold for all products. This should be run as a cron job perhaps daily.
-	 */
-	public static function recalculate_number_sold(){
-		$ps = singleton('Product');
-		$q = $ps->buildSQL("\"Product\".\"AllowPurchase\" = 1");
-		$select = $q->select;
-
-		$select['NewNumberSold'] = self::$number_sold_calculation_type."(\"OrderItem\".\"Quantity\") AS \"NewNumberSold\"";
-
-		$q->select($select);
-		$q->groupby("\"Product\".\"ID\"");
-		$q->orderby("\"NewNumberSold\" DESC");
-
-		$q->leftJoin('OrderItem','"Product"."ID" = "OrderItem"."BuyableID"');
-		$records = $q->execute();
-		$productssold = $ps->buildDataObjectSet($records, "DataObjectSet", $q, 'Product');
-
-		foreach($productssold as $product){
-			if($product->NewNumberSold != $product->NumberSold){
-				DB::query("Update \"Product\" SET \"NumberSold\" = ".$product->NewNumberSold." WHERE ID = ".$product->ID);
-				DB::query("Update \"Product_Live\" SET \"NumberSold\" = ".$product->NewNumberSold." WHERE ID = ".$product->ID);
-			}
-		}
-
-	}
-
-	/**
 	 * Returns all the parent groups for the product.
 	 * This function has been added her to contrast it with MainParentGroup (see below).
 	  *@return DataObjectSet(ProductGroup) or NULL
@@ -186,7 +155,13 @@ class Product extends Page {
 	 *@return TreeMultiselectField
 	 **/
 	protected function getProductGroupsTable() {
-		$field = new TreeMultiselectField($name = "ProductGroups", $title = "Other Groups", $sourceObject = "SiteTree", $keyField = "ID", $labelField = "MenuTitle");
+		$field = new TreeMultiselectField(
+			$name = "ProductGroups",
+			$title = _t("Product.THISPRODUCTSHOULDALSOBELISTEDUNDER", "This product is also listed under ..."),
+			$sourceObject = "SiteTree",
+			$keyField = "ID",
+			$labelField = "MenuTitle"
+		);
 		//See issue: 139
 		return $field;
 	}
