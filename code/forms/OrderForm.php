@@ -342,11 +342,11 @@ class OrderForm extends Form {
 	}
 
 	/**
-	 *returns TRUE IF
-	 * unique field does not exist already (there is no-one else with the same email)
-	 * AND member is not logged in already
-	 * AND non-members are automatically created (and logged in).
-	 * i.e. the logged in member tries to take on another identity.
+	 *returns TRUE if
+	 * - the member is nog logged in
+	 * - AND unique field does not exist already (someone else has used that email)
+	 * - AND non-members are automatically created (and logged in).
+	 *
 	 *@param Array - form data - should include $data[uniqueField....] - e.g. $data["Email"]
 	 *@return Boolean
 	 **/
@@ -354,7 +354,9 @@ class OrderForm extends Form {
 		if(!Member::currentUserID()) {
 			if(EcommerceRole::get_automatic_membership()) {
 				if($this->uniqueMemberFieldCanBeUsed($data)) {
-					return true;
+					if(!$this->existingMemberWithUniqueField($data)){
+					 return true;
+				 }
 				}
 			}
 		}
@@ -362,28 +364,28 @@ class OrderForm extends Form {
 	}
 
 	/**
-	 *returns FALSE IF
-	 * 1. the unique field already exists in another member
-	 * AND 2. the member being "tested" is already logged in...
-	 *
-	 *
-	 * i.e. the logged in member tries to take on another identity.
-	 * returns TRUE if there is no existing member with the unique field OR the member is not logged in.
+	 * returns FALSE if
+	 * - the unique field already exists in another member
+	 * - AND the member being "tested" is already logged in...
+	 * in that case the logged in member tries to take on another identity.
+	 * returns TRUE if
+	 * - there is no existing member with the unique field
+	 * - OR the member is not logged in.
 	 * If you are not logged BUT the the unique field is used by an existing member then we can still
 	 * use the field - we just CAN NOT log in the member.
 	 * This method needs to be public because it is used by the OrderForm_Validator (see below).
-	 *@param Array - form data - should include $data[uniqueField....] - e.g. $data["Email"]
-	 *@return Boolean
+	 * @param Array - form data - should include $data[uniqueField....] - e.g. $data["Email"]
+	 * @return Boolean
 	 **/
 	public function uniqueMemberFieldCanBeUsed($data) {
 		return !$this->existingMemberWithUniqueField($data) || !Member::currentUserID() ? true : false;
 	}
 
 	/**
-	 *returns existing member if it already exists and it is not the logged-in one.
+	 * returns existing member if it already exists and it is not the logged-in one.
 	 * and null if this member does not exist (based on the unique field (email))
-	 *@param Array - form data - should include $data[uniqueField....] - e.g. $data["Email"]
-	 *@return DataObject | Null (dataobject = member)
+	 * @param Array - form data - should include $data[uniqueField....] - e.g. $data["Email"]
+	 * @return DataObject | Null (dataobject = member)
 	 **/
 	protected function existingMemberWithUniqueField($data) {
 		$uniqueField = Member::get_unique_identifier_field();
