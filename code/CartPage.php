@@ -248,6 +248,9 @@ class CartPage_Controller extends Page_Controller{
 				return false;
 			}
 		}
+		else {
+			$this->message = _t('CartPage.ORDERNOTFOUND', 'Order can not be found.');
+		}
 	}
 
 	/**
@@ -462,7 +465,7 @@ class CartPage_Controller extends Page_Controller{
 			}
 
 
-			//Save order - we assue only current ones can be saved.
+			//Save order - we assume only current ones can be saved.
 			if($this->SaveOrderLinkLabel) {
 				if($viewingRealCurrentOrder) {
 					if($this->isCartPage()) {
@@ -500,8 +503,6 @@ class CartPage_Controller extends Page_Controller{
 				}
 			}
 
-
-
 			//Start new order
 			//Strictly speaking this is only part of the
 			//OrderConfirmationPage but we put it here for simplicity's sake
@@ -513,6 +514,7 @@ class CartPage_Controller extends Page_Controller{
 					)));
 				}
 			}
+
 			//copy order
 			//Strictly speaking this is only part of the
 			//OrderConfirmationPage but we put it here for simplicity's sake
@@ -521,6 +523,18 @@ class CartPage_Controller extends Page_Controller{
 					$this->actionLinks->push(new ArrayData(array (
 						"Title" => $this->CopyOrderLinkLabel,
 						"Link" => OrderConfirmationPage::new_order_link($this->currentOrder->ID)
+					)));
+				}
+			}
+
+			//log out
+			//Strictly speaking this is only part of the
+			//OrderConfirmationPage but we put it here for simplicity's sake
+			if(Member::currentMember()) {
+				if($this->isOrderConfirmationPage()) {
+					$this->actionLinks->push(new ArrayData(array (
+						"Title" => _t("CartPage.LOGOUT","log out"),
+						"Link" => "/Security/logout/"
 					)));
 				}
 			}
