@@ -472,5 +472,47 @@ HTML;
 		return $html;
 	}
 
+	/**
+	 *
+	 * This method can be extended to show products in the side bar.
+	 *
+	 * @return Object DataObjectSet
+	 */
+	function SidebarProducts(){
+		return null;
+	}
+
+	/**
+	 *
+	 * This method can be extended to show products in the side bar.
+	 *
+	 * @return Object Product
+	 */
+	function NextProduct(){
+		return null;
+	}
+
+	/**
+	 *
+	 * This method can be extended to show products in the side bar.
+	 *
+	 * @return Object Product
+	 */
+	function PreviousProduct(){
+		return null;
+	}
+
+
+
+	/**
+	 *
+	 * This method can be extended to show products in the side bar.
+	 *
+	 * @return Boolean
+	 */
+	function HasPreviousOrNextProduct(){
+		return null;
+	}
+
 
 }

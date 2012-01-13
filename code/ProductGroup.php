@@ -405,4 +405,15 @@ class ProductGroup_Controller extends Page_Controller {
 		return $dos;
 	}
 
+
+	/**
+	 *
+	 * This method can be extended to show products in the side bar.
+	 *
+	 * @return Object DataObjectSet
+	 */
+	function SidebarProducts(){
+		return null;
+	}
+
 }
