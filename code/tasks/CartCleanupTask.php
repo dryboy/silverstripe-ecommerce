@@ -131,14 +131,6 @@ class CartCleanupTask extends HourlyTask {
 				$limit = "0, ".self::get_maximum_number_of_objects_deleted();
 				//the code below is a bit of a hack, but because of the one-to-one relationship we
 				//want to check both sides....
-				if($classWithOrderID == "BillingAddress") {
-					$join .= " LEFT JOIN \"Order\" SecondAddressOrderLink ON SecondAddressOrderLink.\"{$classWithOrderID}ID\" = \"$classWithOrderID\".\"ID\"";
-					$where .= " AND SecondAddressOrderLink.ID IS NULL";
-				}
-				elseif($classWithOrderID == "ShippingAddress") {
-					$join .= " LEFT JOIN \"Order\" SecondAddressOrderLink ON SecondAddressOrderLink.\"{$classWithOrderID}ID\" = \"$classWithOrderID\".\"ID\"";
-					$where .= " AND SecondAddressOrderLink.ID IS NULL";
-				}
 				$unlinkedObjects = DataObject::get($classWithLastEdited, $where, $sort, $join, $limit);
 				if($unlinkedObjects){
 					foreach($unlinkedObjects as $unlinkedObject){
