@@ -897,6 +897,11 @@ class OrderStep_SentReceipt extends OrderStep {
 
 class OrderStep_Sent extends OrderStep {
 
+	static $db = array(
+		"SendDetailsToCustomer" => "Boolean",
+		"EmailSubject" => "Varchar(255)"
+	);
+
 	public static $defaults = array(
 		"CustomerCanEdit" => 0,
 		"CustomerCanCancel" => 0,
@@ -907,11 +912,33 @@ class OrderStep_Sent extends OrderStep {
 		"ShowAsCompletedOrder" => 1
 	);
 
+
+	public function getCMSFields() {
+		$fields = parent::getCMSFields();
+		$fields->addFieldToTab("Root.Main", new HeaderField("ACTUALLYSENDDETAILS", _t("OrderStep.ACTUALLYSENDDETAILS", "Send details to the customer?"), 3), "SendDetailsToCustomer");
+		return $fields;
+	}
+
+	/**
+	 * Explains the current order step.
+	 * @return String
+	 */
+	function description(){
+		_t("OrderStep.SENTDESCRIPTON", "During this step we record the delivery details for the order such as the courrier ticket number and whatever else is relevant.")
+	}
+
 	public function initStep($order) {
 		return true;
 	}
 
+
 	public function doStep($order) {
+		if($this->SendDetailsToCustomer){
+			if(!$this->hasBeenSent($order)) {
+				$subject = $this->EmailSubject ? $this->EmailSubject : _t("OrderStep.OR", "Your order has been dispatched");
+				return $order->sendStatusChange($subject, $this->CustomerMessage);
+			}
+		}
 		return true;
 	}
 
@@ -954,6 +981,14 @@ class OrderStep_Archived extends OrderStep {
 		"Sort" => 55,
 		"ShowAsCompletedOrder" => 1
 	);
+
+	/**
+	 * Explains the current order step.
+	 * @return String
+	 */
+	function description(){
+		_t("OrderStep.ARCHIVEDDESCRIPTON", "This is typically the last step in the order process. Nothing needs to be done to the order anymore.  We keep the order in the system for record-keeping and statistical purposes.")
+	}
 
 	public function initStep($order) {
 		return true;

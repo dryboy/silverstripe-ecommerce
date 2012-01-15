@@ -1005,6 +1005,11 @@ class Order extends DataObject {
 
 	/**
 	 * Send the invoice of the order by email.
+	 *
+	 * @param String $message - the main message in the email
+	 * @param Boolean $resend - send the email even if it has been sent before
+	 * @param Boolean $adminOnly - do not send to customer, only send to shop admin
+	 * @return Boolean TRUE on success, FALSE on failure (in theory)
 	 */
 	function sendInvoice($message = "", $resend = false, $adminOnly = false) {
 		$subject = str_replace("{OrderNumber}", $this->ID,Order_Email::get_subject());
@@ -1015,6 +1020,10 @@ class Order extends DataObject {
 	/**
 	 * Send the receipt of the order by email.
 	 * Precondition: The order payment has been successful
+	 * @param String $message - the main message in the email
+	 * @param Boolean $resend - send the email even if it has been sent before
+	 * @param Boolean $adminOnly - do not send to customer, only send to shop admin
+	 * @return Boolean TRUE on success, FALSE on failure (in theory)
 	 */
 	public function sendReceipt($message = "", $resend = false, $adminOnly = false) {
 		$subject = str_replace("{OrderNumber}", $this->ID,Order_Email::get_subject());
@@ -1028,11 +1037,12 @@ class Order extends DataObject {
 	 * Send a message to the client containing the latest
 	 * note of {@link OrderStatusLog} and the current status.
 	 *
-	 * Used in {@link OrderReport}.
-	 *
-	 * @param string $note Optional note-content (instead of using the OrderStatusLog)
+	 * @param String $subject - subject for message
+	 * @param String $message - the main message in the email
+	 * @param Boolean $resend - send the email even if it has been sent before
+	 * @return Boolean TRUE on success, FALSE on failure (in theory)
 	 */
-	public function sendStatusChange($subject, $message = '', $resend = false) {
+	public function sendStatusChange($subject= '', $message = '', $resend = false) {
 		if(!$message) {
 			$emailableLogs = DataObject::get('OrderStatusLog', "\"OrderID\" = {$this->ID} AND \"EmailCustomer\" = 1 AND \"EmailSent\" = 0 ", "\"Created\" DESC", null, 1);
 			if($logs) {
