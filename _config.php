@@ -103,22 +103,27 @@ Buyable::add_class("Product");
 //Order_Email::set_send_all_emails_plain(true);
 //Order_Email::set_copy_to_admin_for_all_emails(false);
 
+
 // * * * PROCESS
 //OrderStep::set_order_steps_to_include(array("OrderStep_Created", "OrderStep_Submitted","OrderStep_SentInvoice", "OrderStep_Confirmed","OrderStep_Archived"));
-
-// * * * PROCESS: LOGS AND STATUS
-//OrderStatusLog::set_available_log_classes_array(array("OrderStatusLog_PaymentCheck"));
-//OrderStatusLog::set_order_status_log_class_used_for_submitting_order("OrderStatusLog_PaymentCheck");
 //OrderStep::set_order_steps_to_include(array("OrderStep_Created","OrderStep_Submitted","OrderStep_SentInvoice","OrderStep_Paid","OrderStep_Sent","OrderStep_Archived"));
 //OrderStep::add_order_step_to_include("OrderStep_MyOrderStep", $placeAfter = "OrderStep_Submitted");
 //OrderStep::remove_order_step_to_include("OrderStep_SentInvoice");
+//OrderStatusLog::set_available_log_classes_array(array("OrderStatusLog_PaymentCheck"));
+//OrderStatusLog::set_order_status_log_class_used_for_submitting_order("OrderStatusLog_PaymentCheck");
 
 
 // * * * SALES
 //SalesAdmin::add_managed_model("MyOtherLogThing")
 
-// * * * HELP
+// * * * MAINTENANCE
+//CartCleanupTask::set_clear_days(5);
+//CartCleanupTask::set_maximum_number_of_objects_deleted(100);
+//CartCleanupTask::set_never_delete_if_linked_to_member(true);
+
+
 // __________________________________ END ECOMMERCE MODULE CONFIG __________________________________
+
 
 
 

@@ -45,8 +45,8 @@ class CartCleanupTask extends HourlyTask {
 	 *@var Integer
 	 **/
 	protected static $maximum_number_of_objects_deleted = 2;
-		function set_maximum_number_of_objects_deleted(integer $i){self::$maximum_number_of_objects_deleted = $i;}
-		function get_maximum_number_of_objects_deleted(){return(integer)self::$maximum_number_of_objects_deleted;}
+		function set_maximum_number_of_objects_deleted($i){self::$maximum_number_of_objects_deleted = $i;}
+		function get_maximum_number_of_objects_deleted(){return self::$maximum_number_of_objects_deleted;}
 
 	protected static $never_delete_if_linked_to_member = true;
 		function set_never_delete_if_linked_to_member($b){self::$never_delete_if_linked_to_member = $b;}
