@@ -153,6 +153,13 @@ class CartCleanupTask extends HourlyTask {
 		}
 	}
 
+	/**
+	 * make sure that the link between order and the two addresses is made on
+	 * both sides.
+	 * @param Boolean $verbose - show output?
+	 *
+	 */
+
 	protected function linkOrderWithBillingAndShippingAddress($verbose = false) {
 		DB::query("
 			UPDATE \"Order\"
