@@ -37,8 +37,8 @@ class CartCleanupTask extends HourlyTask {
 *******************************************************/
 
 	protected static $clear_days = 30;
-		function set_clear_days(integer $i){self::$clear_days = $i;}
-		function get_clear_days(){return(integer)self::$clear_days;}
+		function set_clear_days($i){self::$clear_days = $i;}
+		function get_clear_days(){return self::$clear_days;}
 
 	/**
 	 * We need to protect the system from falling over by limiting the number of objects that can be deleted at any one time
