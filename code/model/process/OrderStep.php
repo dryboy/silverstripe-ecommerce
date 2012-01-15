@@ -987,7 +987,7 @@ class OrderStep_Archived extends OrderStep {
 	 * @return String
 	 */
 	function description(){
-		_t("OrderStep.ARCHIVEDDESCRIPTON", "This is typically the last step in the order process. Nothing needs to be done to the order anymore.  We keep the order in the system for record-keeping and statistical purposes.")
+		_t("OrderStep.ARCHIVEDDESCRIPTON", "This is typically the last step in the order process. Nothing needs to be done to the order anymore.  We keep the order in the system for record-keeping and statistical purposes.");
 	}
 
 	public function initStep($order) {
