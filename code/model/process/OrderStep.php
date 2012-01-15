@@ -924,7 +924,7 @@ class OrderStep_Sent extends OrderStep {
 	 * @return String
 	 */
 	function description(){
-		_t("OrderStep.SENTDESCRIPTON", "During this step we record the delivery details for the order such as the courrier ticket number and whatever else is relevant.")
+		_t("OrderStep.SENTDESCRIPTON", "During this step we record the delivery details for the order such as the courrier ticket number and whatever else is relevant.");
 	}
 
 	public function initStep($order) {
