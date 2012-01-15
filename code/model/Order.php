@@ -272,11 +272,11 @@ class Order extends DataObject {
 	 * STANDARD SILVERSTRIPE STUFF
 	 **/
 	public static $summary_fields = array(
-		"\"Order\".\"ID\"" => "ID",
-		'BillingAddress.Surname',
-		'BillingAddress.Email',
-		'TotalAsCurrencyObject.Nice' => 'Total',
-		'Status.Name',
+		"Title" => "Title",
+		//'BillingAddress.Surname',
+		//'BillingAddress.Email',
+		//'TotalAsCurrencyObject.Nice' => 'Total',
+		//'Status.Name' => "Status",
 	);
 		public static function get_summary_fields() {return self::$summary_fields;}
 
