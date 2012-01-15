@@ -1006,22 +1006,22 @@ class Order extends DataObject {
 	/**
 	 * Send the invoice of the order by email.
 	 */
-	function sendInvoice($message = "", $resend = false) {
+	function sendInvoice($message = "", $resend = false, $adminOnly = false) {
 		$subject = str_replace("{OrderNumber}", $this->ID,Order_Email::get_subject());
 		$replacementArray = array("Message" => $message);
-		return $this->sendEmail('Order_ReceiptEmail', $subject, $replacementArray, $resend);
+		return $this->sendEmail('Order_ReceiptEmail', $subject, $replacementArray, $resend, $adminOnly);
 	}
 
 	/**
 	 * Send the receipt of the order by email.
 	 * Precondition: The order payment has been successful
 	 */
-	public function sendReceipt($message = "", $resend = false) {
+	public function sendReceipt($message = "", $resend = false, $adminOnly = false) {
 		$subject = str_replace("{OrderNumber}", $this->ID,Order_Email::get_subject());
 		$replacementArray = array(
 			'Message' => $message
 		);
-		return $this->sendEmail('Order_ReceiptEmail', $subject, $replacementArray, $resend);
+		return $this->sendEmail('Order_ReceiptEmail', $subject, $replacementArray, $resend, $adminOnly);
 	}
 
 	/**

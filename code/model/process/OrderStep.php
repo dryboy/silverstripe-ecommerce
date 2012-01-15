@@ -172,6 +172,10 @@ class OrderStep extends DataObject {
 			return $array;
 		}
 
+		/**
+		 *
+		 *@return String
+		 **/
 		function getMyCode() {
 			$array = Object::uninherited_static($this->ClassName, 'defaults');
 			if(!isset($array["Code"])) {user_error($this->class." does not have a default code specified");}
@@ -851,6 +855,11 @@ class OrderStep_SentReceipt extends OrderStep {
 		if($this->SendReceiptToCustomer){
 			if(!$this->hasBeenSent($order)) {
 				return $order->sendReceipt($this->CustomerMessage);
+			}
+		}
+		else {
+			if(!$this->hasBeenSent($order)) {
+				return $order->sendError($subject =  _t("OrderStep.NEWORDERHASBEENPLACED", "Order has been placed"), $message = _t("OrderStep.THISMESSAGENOTSENTTOCUSTOMER", "This message was not sent to the customer"), $resend = false);
 			}
 		}
 		return true;
