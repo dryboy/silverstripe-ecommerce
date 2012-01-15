@@ -178,4 +178,18 @@ class ShippingAddress extends OrderAddress {
 		$this->ShippingCountry = EcommerceCountry::get_country();
 	}
 
+	/**
+	 * standard SS method
+	 * double-check if Shipping Address is linked correctly
+	 */
+	function onBeforeWrite() {
+		parent::onBeforeWrite();
+		if(!$this->OrderID && $this->ID) {
+			$order = DataObject::get_one("Order", "\"ShippingAddressID\" = ".intval($this->ID));
+			if($order) {
+				$this->OrderID = $order->ID;
+			}
+		}
+	}
+
 }

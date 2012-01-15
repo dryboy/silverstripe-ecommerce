@@ -165,4 +165,19 @@ class BillingAddress extends OrderAddress {
 		$this->Country = EcommerceCountry::get_country();
 	}
 
+
+	/**
+	 * standard SS method
+	 * double-check if Billing Address is linked correctly
+	 */
+	function onBeforeWrite() {
+		parent::onBeforeWrite();
+		if(!$this->OrderID && $this->ID) {
+			$order = DataObject::get_one("Order", "\"ShippingAddressID\" = ".intval($this->ID));
+			if($order) {
+				$this->OrderID = $order->ID;
+			}
+		}
+	}
+
 }

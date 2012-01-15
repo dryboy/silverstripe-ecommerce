@@ -117,6 +117,7 @@ class CartCleanupTask extends HourlyTask {
 	}
 
 	function cleanupUnlinkedOrderObjects($verbose = false) {
+		$this->linkOrderWithBillingAndShippingAddress($verbose);
 		$classNames = self::get_linked_objects_array();
 		if(is_array($classNames) && count($classNames)) {
 			foreach($classNames as $classWithOrderID => $classWithLastEdited) {
@@ -126,8 +127,18 @@ class CartCleanupTask extends HourlyTask {
 				$time = date('Y-m-d H:i:s', strtotime("-".self::$clear_days." days"));
 				$where = "\"Order\".\"ID\" IS NULL AND \"$classWithLastEdited\".\"LastEdited\" < '$time'";
 				$sort = '';
-				$join = "LEFT JOIN \"Order\" ON \"Order\".\"ID\" = \"$classWithOrderID\".\"OrderID\"";
+				$join = " LEFT JOIN \"Order\" ON \"Order\".\"ID\" = \"$classWithOrderID\".\"OrderID\"";
 				$limit = "0, ".self::get_maximum_number_of_objects_deleted();
+				//the code below is a bit of a hack, but because of the one-to-one relationship we
+				//want to check both sides....
+				if($classWithOrderID == "BillingAddress") {
+					$join .= " LEFT JOIN \"Order\" SecondAddressOrderLink ON SecondAddressOrderLink.\"{$classWithOrderID}ID\" = \"$classWithOrderID\".\"ID\"";
+					$where .= " AND SecondAddressOrderLink.ID IS NULL";
+				}
+				elseif($classWithOrderID == "ShippingAddress") {
+					$join .= " LEFT JOIN \"Order\" SecondAddressOrderLink ON SecondAddressOrderLink.\"{$classWithOrderID}ID\" = \"$classWithOrderID\".\"ID\"";
+					$where .= " AND SecondAddressOrderLink.ID IS NULL";
+				}
 				$unlinkedObjects = DataObject::get($classWithLastEdited, $where, $sort, $join, $limit);
 				if($unlinkedObjects){
 					foreach($unlinkedObjects as $unlinkedObject){
@@ -141,5 +152,48 @@ class CartCleanupTask extends HourlyTask {
 			}
 		}
 	}
+
+	protected function linkOrderWithBillingAndShippingAddress($verbose = false) {
+		DB::query("
+			UPDATE \"Order\"
+				INNER JOIN \"BillingAddress\" ON \"Order\".\"BillingAddressID\" = \"BillingAddress\".\"ID\"
+			SET \"BillingAddress\".\"OrderID\" = \"Order\".\"ID\"
+			WHERE
+				(\"BillingAddress\".\"OrderID\" IS NULL OR \"BillingAddress\".\"OrderID\" <> \"Order\".\"ID\")
+				AND
+				(\"Order\".\"BillingAddressID\" IS NOT NULL AND \"Order\".\"BillingAddressID\" > 0)
+		");
+		DB::query("
+			UPDATE \"Order\"
+				INNER JOIN \"BillingAddress\" ON \"BillingAddress\".\"OrderID\" = \"Order\".\"ID\"
+			SET \"Order\".\"BillingAddressID\" = \"BillingAddress\".\"ID\"
+			WHERE
+				(\"Order\".\"BillingAddressID\" IS NULL OR \"Order\".\"BillingAddressID\" <> \"BillingAddress\".\"ID\")
+				AND
+				(\"BillingAddress\".\"OrderID\" IS NOT NULL AND \"BillingAddress\".\"OrderID\" > 0)
+		");
+		DB::query("
+			UPDATE \"Order\"
+				INNER JOIN \"ShippingAddress\" ON \"Order\".\"ShippingAddressID\" = \"ShippingAddress\".\"ID\"
+			SET \"ShippingAddress\".\"OrderID\" = \"Order\".\"ID\"
+			WHERE
+				(\"ShippingAddress\".\"OrderID\" IS NULL OR \"ShippingAddress\".\"OrderID\" <> \"Order\".\"ID\")
+				AND
+				(\"Order\".\"ShippingAddressID\" IS NOT NULL AND \"Order\".\"ShippingAddressID\" > 0)
+		");
+		DB::query("
+			UPDATE \"Order\"
+				INNER JOIN \"ShippingAddress\" ON \"ShippingAddress\".\"OrderID\" = \"Order\".\"ID\"
+			SET \"Order\".\"ShippingAddressID\" = \"ShippingAddress\".\"ID\"
+			WHERE
+				(\"Order\".\"ShippingAddressID\" IS NULL OR \"Order\".\"ShippingAddressID\" <> \"ShippingAddress\".\"ID\")
+				AND
+				(\"ShippingAddress\".\"OrderID\" IS NOT NULL AND \"ShippingAddress\".\"OrderID\" > 0)
+		");
+		if($verbose){
+			DB::alteration_message("Linking Order to Billing and Shipping Address on both sides");
+		}
+	}
+
 
 }

@@ -2138,6 +2138,19 @@ class Order extends DataObject {
 		if((isset($this->record['ID']) && $this->record['ID'])) {
 			$this->newRecord = false;
 		}
+		//double-check if Billing and Shipping Address are linked correctly.
+		if(!$this->BillingAddressID && $this->ID) {
+			$billingAddress = DataObject::get_one("BillingAddress", "\"OrderID\" = ".intval($this->ID));
+			if($billingAddress) {
+				$this->BillingAddressID = $billingAddress->ID;
+			}
+		}
+		if(!$this->ShippingAddressID && $this->ID) {
+			$shippingAddress = DataObject::get_one("ShippingAddress", "\"OrderID\" = ".intval($this->ID));
+			if($shippingAddress) {
+				$this->ShippingAddressID = $shippingAddress->ID;
+			}
+		}
 	}
 
 	/**
