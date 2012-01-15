@@ -109,7 +109,8 @@ class CartCleanupTask extends HourlyTask {
 		}
 		else {
 			if($verbose) {
-				DB::alteration_message("There are no abandonned orders.", "created");
+				$count = DB::query("SELECT COUNT(\"ID\") FROM \"Order\"")->value();
+				DB::alteration_message("There are no abandonned orders. There are $count 'live' Orders.", "created");
 			}
 		}
 		return $count;
