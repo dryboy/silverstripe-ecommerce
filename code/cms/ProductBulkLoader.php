@@ -22,7 +22,7 @@ class ProductBulkLoader extends CsvBulkLoader{
 		static function get_product_group_class_name() {return self::$product_group_class_name;}
 
 	protected static $parent_page_id = null;
-		static function set_parent_page_id(int $i) {self::$parent_page_id = intval($i);}
+		static function set_parent_page_id($i) {self::$parent_page_id = intval($i);}
 		static function get_parent_page_id() {return self::$parent_page_id;}
 
 	protected static $create_new_product_groups = false;
@@ -44,7 +44,7 @@ class ProductBulkLoader extends CsvBulkLoader{
 		'Short Title' => 'MenuTitle',
 
 		'Title' => 'Title',
-		
+
 		//'Delete' //TODO: allow products to be deleted/disabled via CSV
 	);
 

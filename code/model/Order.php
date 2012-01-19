@@ -201,7 +201,7 @@ class Order extends DataObject {
 	 *@var Float
 	 **/
 	protected static $maximum_ignorable_sales_payments_difference = 0.01;
-		static function set_maximum_ignorable_sales_payments_difference(float $f) {self::$maximum_ignorable_sales_payments_difference = $f;}
+		static function set_maximum_ignorable_sales_payments_difference($f) {self::$maximum_ignorable_sales_payments_difference = $f;}
 		static function get_maximum_ignorable_sales_payments_difference() {return(float)self::$maximum_ignorable_sales_payments_difference;}
 
 	/**
@@ -929,7 +929,7 @@ class Order extends DataObject {
 	 * @return DataObject (OrderAddress)
 	 **/
 
-	public function CreateOrReturnExistingAddress(string $className, $alternativeMethodName = '') {
+	public function CreateOrReturnExistingAddress($className, $alternativeMethodName = '') {
 		if($this->ID) {
 			$variableName = $className."ID";
 			$methodName = $className;
@@ -1289,7 +1289,7 @@ class Order extends DataObject {
 	 * @param String $className: class name for the modifier
 	 * @return DataObject (OrderModifier)
 	 **/
-	function RetrieveModifier(String $className) {
+	function RetrieveModifier($className) {
 		if($modifiers = $this->Modifiers()) {
 			foreach($modifiers as $modifier) {
 				if($modifier instanceof $className) {
@@ -2010,7 +2010,7 @@ class Order extends DataObject {
 	 *@var String
 	 **/
 	protected static $template_id_prefix = "";
-		public static function set_template_id_prefix(string $s) {self::$template_id_prefix = $s;}
+		public static function set_template_id_prefix($s) {self::$template_id_prefix = $s;}
 		public static function get_template_id_prefix() {return self::$template_id_prefix;}
 
 	/**

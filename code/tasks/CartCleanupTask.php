@@ -50,7 +50,7 @@ class CartCleanupTask extends HourlyTask {
 
 	protected static $never_delete_if_linked_to_member = true;
 		function set_never_delete_if_linked_to_member($b){self::$never_delete_if_linked_to_member = $b;}
-		function get_never_delete_if_linked_to_member(){return(boolean)self::$never_delete_if_linked_to_member;}
+		function get_never_delete_if_linked_to_member(){return self::$never_delete_if_linked_to_member;}
 
 	/**
 	 *

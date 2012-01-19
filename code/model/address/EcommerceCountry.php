@@ -86,11 +86,11 @@ class EcommerceCountry extends DataObject {
 	 * @param $s : string - country code, e.g. NZ
 	 **/
 	protected static $allowed_country_codes = array();
-		static function set_allowed_country_codes(array $a) {self::$allowed_country_codes = $a;}
+		static function set_allowed_country_codes($a) {self::$allowed_country_codes = $a;}
 		static function set_fixed_country_code($s) {self::$allowed_country_codes = array($s => $s);}
 		static function get_allowed_country_codes() {return self::$allowed_country_codes;}
-		static function add_allowed_country_code(string $s) {self::$allowed_country_codes[$s] = $s;}
-		static function remove_allowed_country_code(string $s) {unset(self::$allowed_country_codes[$s]);}
+		static function add_allowed_country_code($s) {self::$allowed_country_codes[$s] = $s;}
+		static function remove_allowed_country_code($s) {unset(self::$allowed_country_codes[$s]);}
 
 
 	/**
@@ -246,7 +246,7 @@ class EcommerceCountry extends DataObject {
 	 * @param $a = array should be country codes.e.g array("NZ", "NP", "AU");
 	**/
 	protected static $for_current_order_only_show_countries = array();
-		static function set_for_current_order_only_show_countries(array $a) {
+		static function set_for_current_order_only_show_countries($a) {
 			if(count(self::$for_current_order_only_show_countries)) {
 				//we INTERSECT here so that only countries allowed by all forces (modifiers) are added.
 				self::$for_current_order_only_show_countries = array_intersect($a, self::$for_current_order_only_show_countries);
@@ -259,7 +259,7 @@ class EcommerceCountry extends DataObject {
 		static function get_for_current_order_only_show_countries() {return self::$for_current_order_only_show_countries;}
 
 	protected static $for_current_order_do_not_show_countries = array();
-		static function set_for_current_order_do_not_show_countries(array $a) {
+		static function set_for_current_order_do_not_show_countries($a) {
 			//We MERGE here because several modifiers may limit the countries
 			self::$for_current_order_do_not_show_countries = array_merge($a, self::$for_current_order_do_not_show_countries);
 		}

@@ -18,7 +18,7 @@ class Buyable extends DataObjectDecorator {
 	 *@var array
 	 **/
 	protected static $array_of_buyables = array();
-		static function set_array_of_buyables(array $a) {self::$array_of_buyables = $a;}
+		static function set_array_of_buyables($a) {self::$array_of_buyables = $a;}
 		static function get_array_of_buyables() {return(array)self::$array_of_buyables;}
 		static function add_class($className) {Object::add_extension($className, "Buyable");self::$array_of_buyables[$className] = $className;}
 		static function is_buyable($className) {
@@ -48,8 +48,8 @@ class Buyable extends DataObjectDecorator {
 	 *@var String
 	 **/
 	protected static $order_item_class_name_post_fix = "_OrderItem";
-		static function get_order_item_class_name_post_fix() {return(string)self::$order_item_class_name_post_fix;}
-		static function set_order_item_class_name_post_fix(string $s) {self::$order_item_class_name_post_fix = $s;}
+		static function get_order_item_class_name_post_fix() {return self::$order_item_class_name_post_fix;}
+		static function set_order_item_class_name_post_fix($s) {self::$order_item_class_name_post_fix = $s;}
 
 
 	/**

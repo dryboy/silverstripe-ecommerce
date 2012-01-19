@@ -45,15 +45,15 @@ class EcommerceRole extends DataObjectDecorator {
 
 
 	protected static $customer_group_code = 'shopcustomers';
-		static function set_customer_group_code(string $s) {self::$customer_group_code = $s;}
+		static function set_customer_group_code($s) {self::$customer_group_code = $s;}
 		static function get_customer_group_code() {return ereg_replace("[^A-Za-z0-9]", "", self::$customer_group_code);}
 
 	protected static $customer_group_name = "shop customers";
-		static function set_customer_group_name(string $s) {self::$customer_group_name = $s;}
+		static function set_customer_group_name($s) {self::$customer_group_name = $s;}
 		static function get_customer_group_name() {return self::$customer_group_name;}
 
 	protected static $customer_permission_code = "SHOPCUSTOMER";
-		static function set_customer_permission_code(string $s) {self::$customer_permission_code = $s;}
+		static function set_customer_permission_code($s) {self::$customer_permission_code = $s;}
 		static function get_customer_permission_code() {return ereg_replace("[^A-Za-z0-9]", "", self::$customer_permission_code);}
 
 
@@ -80,15 +80,15 @@ class EcommerceRole extends DataObjectDecorator {
 	}
 
 	protected static $admin_group_code = "shopadministrators";
-		static function set_admin_group_code(string $s) {self::$admin_group_code = $s;}
+		static function set_admin_group_code($s) {self::$admin_group_code = $s;}
 		static function get_admin_group_code() {return ereg_replace("[^A-Za-z0-9]", "", self::$admin_group_code);}
 
 	protected static $admin_group_name = "shop administrators";
-		static function set_admin_group_name(string $s) {self::$admin_group_name = $s;}
+		static function set_admin_group_name($s) {self::$admin_group_name = $s;}
 		static function get_admin_group_name() {return self::$admin_group_name;}
 
 	protected static $admin_permission_code = "SHOPADMIN";
-		static function set_admin_permission_code(string $s) {self::$admin_permission_code = $s;}
+		static function set_admin_permission_code($s) {self::$admin_permission_code = $s;}
 		static function get_admin_permission_code() {return ereg_replace("[^A-Za-z0-9]", "", self::$admin_permission_code);}
 
 	protected static $admin_role_title = "managing store";

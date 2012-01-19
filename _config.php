@@ -31,8 +31,12 @@ DevelopmentAdmin::$allowed_actions[] = 'ecommerce';
 Buyable::add_class("Product");
 
 // copy the lines below to your mysite/_config.php file and set as required.
+
 // __________________________________START ECOMMERCE MODULE CONFIG __________________________________
-//The configuration below is not required, but allows you to customise your ecommerce application - check for the defalt value first.
+//The configuration below is not required, but allows you to customise your ecommerce application -
+//Check for the defalt value first rather than setting eveery single config as this requires a lot
+//of valuable processing where in many cases the default value is fine.
+
 // * * * DEFINITELY MUST SET
 //Order::set_modifiers(array("MyModifierOne", "MyModifierTwo"));
 
@@ -40,26 +44,14 @@ Buyable::add_class("Product");
 //Payment::set_site_currency('NZD');
 //Geoip::$default_country_code = 'NZ';
 
-// * * * ECOMMERCE I18N SETTINGS
-// * * * for Currency &  Date Formats get this module: http://code.google.com/p/silverstripe-i18n-fieldtypes/
-//Object::useCustomClass('Currency','I18nCurrency',true);
-//Object::useCustomClass('Money','CustomMoney',true);
-// * * * FOR DATE FORMATS SET F.E.
-//setlocale (LC_TIME, 'en_NZ@dollar', 'en_NZ.UTF-8', 'en_NZ', 'nz', 'nz');
-//Object::useCustomClass('SS_Datetime','I18nDatetime',true);
-//OR
-//i18n::set_locale('en_NZ');
-//Object::useCustomClass('SS_Datetime','ZendDate',true);
-//Currency::setCurrencySymbol("€");
-
-// * * * SHOPPING CART AND ORDER
-//EcomQuantityField::set_hide_plus_and_minus(true);
-//Order::set_table_overview_fields(array('Total' => 'Total','Status.Name'));//
+// * * * SHOPPING CART, ORDER, AND CHECKOUT
 //Order::set_maximum_ignorable_sales_payments_difference(0.001);//sometimes there are small discrepancies in total (for various reasons)- here you can set the max allowed differences
 //Order::set_order_id_start_number(1234567);//sets a start number for order ID, so that they do not start at one.
 
-// * * * CHECKOUT
+
+// * * * FIELDS
 //ExpiryDateField::set_short_months(true); //uses short months (e.g. Jan instead of january) for credit card expiry date.
+//EcomQuantityField::set_hide_plus_and_minus(true);
 
 // * * * MEMBER AND ADDRESS
 //OrderAddress::set_use_separate_shipping_address(true);
@@ -76,12 +68,12 @@ Buyable::add_class("Product");
 // * * * MODIFIERS
 //FlatTaxModifier::set_tax("0.15", "GST", $exclusive = false);
 //SimpleShippingModifier::set_default_charge(10);
-//SimpleShippingModifier::::set_charges_for_countries(array('US' => 10,'NZ' => 5));
-//TaxModifier::::set_for_country($country = "NZ", $rate = 0.15, $name = "GST", $inclexcl = "inclusive"))
+//SimpleShippingModifier::set_charges_for_countries(array('US' => 10,'NZ' => 5));
+//TaxModifier::set_for_country($country = "NZ", $rate = 0.15, $name = "GST", $inclexcl = "inclusive");
 
 // * * * SPECIAL CASES
 //OrderItem::disable_quantity_js();
-//ShoppingCart_Controller::set_response_class("EcommerceResponse");
+//ShoppingCart::set_response_class("EcommerceResponse");
 
 // * * * PRODUCTS
 //ProductsAndGroupsModelAdmin::set_managed_models(array("Product", "ProductGroup"));
@@ -91,18 +83,14 @@ Buyable::add_class("Product");
 //Product_Image::set_thumbnail_size(140, 100);
 //Product_Image::set_content_image_width(200);
 //Product_Image::set_large_image_width(500);
-//ProductGroup::set_include_child_groups(true);
-//ProductGroup::set_only_show_products_that_can_purchase(true);
 //ProductGroup::add_sort_option( $key = "price", $title = "Lowest Price", $sql = "Price ASC");
 //ProductGroup::remove_sort_option( $key = "title");
-//ProductGroup::set_sort_options_default( $key = "price");
 
 // * * * EMAILS
 //Email::setAdminEmail("cool@bool.com");
 //Order_Email::set_css_file_location("themes/mytheme_ecommerce/css/OrderReport.css");
 //Order_Email::set_send_all_emails_plain(true);
 //Order_Email::set_copy_to_admin_for_all_emails(false);
-
 
 // * * * PROCESS
 //OrderStep::set_order_steps_to_include(array("OrderStep_Created", "OrderStep_Submitted","OrderStep_SentInvoice", "OrderStep_Confirmed","OrderStep_Archived"));
@@ -114,12 +102,24 @@ Buyable::add_class("Product");
 
 
 // * * * SALES
-//SalesAdmin::add_managed_model("MyOtherLogThing")
+//SalesAdmin::add_managed_model("MyOtherLogThing");
 
 // * * * MAINTENANCE
 //CartCleanupTask::set_clear_days(5);
 //CartCleanupTask::set_maximum_number_of_objects_deleted(100);
 //CartCleanupTask::set_never_delete_if_linked_to_member(true);
+
+// * * * ECOMMERCE I18N SETTINGS
+// * * * for Currency &  Date Formats get this module: http://code.google.com/p/silverstripe-i18n-fieldtypes/
+//Object::useCustomClass('Currency','I18nCurrency',true);
+//Object::useCustomClass('Money','CustomMoney',true);
+// * * * FOR DATE FORMATS SET F.E.
+//setlocale (LC_TIME, 'en_NZ@dollar', 'en_NZ.UTF-8', 'en_NZ', 'nz', 'nz');
+//Object::useCustomClass('SS_Datetime','I18nDatetime',true);
+//OR
+//i18n::set_locale('en_NZ');
+//Object::useCustomClass('SS_Datetime','ZendDate',true);
+//Currency::setCurrencySymbol("€");
 
 
 // __________________________________ END ECOMMERCE MODULE CONFIG __________________________________

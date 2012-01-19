@@ -14,7 +14,7 @@
 class OrderFilters_AroundDateFilter extends ExactMatchFilter {
 
 	protected static $how_many_days_around = 31;
-		static function set_how_many_days_around(integer $i){self::$how_many_days_around = $i;}
+		static function set_how_many_days_around($i){self::$how_many_days_around = $i;}
 		static function get_how_many_days_around(){return self::$how_many_days_around;}
 
 	/**

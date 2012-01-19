@@ -43,7 +43,7 @@ class ShoppingCart extends Object{
 	 *@var Array
 	 **/
 	protected static $default_param_filters = array();
-		static function set_default_param_filters(array $paramarray){self::$default_param_filters = $paramarray;}
+		static function set_default_param_filters($paramarray){self::$default_param_filters = $paramarray;}
 
 	/**
 	 * Feedback message to user (e.g. cart updated, could not delete item, someone in standing behind you).
@@ -56,7 +56,7 @@ class ShoppingCart extends Object{
 	 *@var string
 	 **/
 	protected static $response_class = "CartResponse";
-		static function set_response_class(string $s) {self::$response_class = $s;}
+		static function set_response_class($s) {self::$response_class = $s;}
 		static function get_response_class() {return self::$response_class;}
 
 	/**

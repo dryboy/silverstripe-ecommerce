@@ -23,7 +23,7 @@ class OrderModifierForm extends Form {
 	 *@var String
 	 **/
 	protected static $controller_class = "OrderModifierForm_Controller";
-		static function set_controller_class(String $s) {self::$controller_class = $s;}
+		static function set_controller_class($s) {self::$controller_class = $s;}
 		static function get_controller_class() {return self::$controller_class;}
 
 	/**
@@ -32,7 +32,7 @@ class OrderModifierForm extends Form {
 	 *@var String
 	 **/
 	protected static $validator_class = "OrderModifierForm_Validator";
-		static function set_validator_class(String $s) {self::$validator_class = $s;}
+		static function set_validator_class($s) {self::$validator_class = $s;}
 		static function get_validator_class() {return self::$validator_class;}
 
 	protected $order;
@@ -113,7 +113,7 @@ class OrderModifierForm_Controller extends Controller{
 
 	public function init() {
 		parent::init();
-		$this->currentOrder = ShoppingCart::current_order();	
+		$this->currentOrder = ShoppingCart::current_order();
 		$this->initVirtualMethods();
 	}
 
@@ -140,7 +140,7 @@ class OrderModifierForm_Controller extends Controller{
 	 */
 	protected function getOrderModifierForm($name) {
 		if($this->currentOrder) {
-			if($forms = $this->currentOrder->getModifierForms($this)) {		
+			if($forms = $this->currentOrder->getModifierForms($this)) {
 				foreach($forms as $form) {
 					if($form->Name() == $name) return $form;
 				}

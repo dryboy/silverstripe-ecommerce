@@ -21,7 +21,7 @@ class StoreAdmin extends ModelAdmin{
 	//static $url_priority = 50;
 
 	public static $managed_models = array('OrderStep', 'EcommerceCountry', 'EcommerceRegion');
-		public static function set_managed_models(array $array) {self::$managed_models = $array;}
+		public static function set_managed_models($array) {self::$managed_models = $array;}
 		public static function add_managed_model($s) {self::$managed_models[] = $s;}
 		public static function remove_managed_model($s) {
 			if(self::$managed_models && count(self::$managed_models)){

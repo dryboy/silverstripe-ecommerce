@@ -47,8 +47,8 @@ class FlatTaxModifier extends OrderModifier {
 
 	static function set_tax($rate, $name = null, $exclusive = true) {
 		self::$rate = $rate;
-		self::$name = (string)$name;
-		self::$exclusive = (bool)$exclusive;
+		self::$name = $name;
+		self::$exclusive = $exclusive;
 	}
 // ######################################## *** CRUD functions (e.g. canEdit)
 // ######################################## *** init and update functions

@@ -39,11 +39,18 @@ class ProductGroup extends Page {
 		);
 		static function add_sort_option($key, $title, $sql){self::$sort_options[$key] = array("Title" => $title, "SQL" => $sql);}
 		static function remove_sort_option($key){unset(self::$sort_options[$key]);}
-		static function set_sort_options(array $a){self::$sort_options = $a;}
+		static function set_sort_options($a){self::$sort_options = $a;}
 		static function get_sort_options(){return self::$sort_options;}
+		protected function getDefaultSortKey(){
+			if(isset(self::$sort_options["default"])) {
+				return "default";
+			}
+			$keys = array_keys(self::$sort_options);
+			return $keys[0];
+		}
 		//NON-STATIC
 		protected function getSortOptionsForDropdown(){
-			$array = array();
+			$array = array("0" => "Inherit");
 			if(is_array(self::$sort_options) && count(self::$sort_options)) {
 				foreach(self::$sort_options as $key => $sort_option) {
 					$array[$key] = $sort_option["Title"];
@@ -78,14 +85,17 @@ class ProductGroup extends Page {
 
 	function getCMSFields() {
 		$fields = parent::getCMSFields();
+		$numberOfProductsPerPageExplanation = $this->MyNumberOfProductsPerPage() != $this->NumberOfProductsPerPage ? _t("ProductGroup.CURRENTLVALUE", " - current value: ").$this->MyNumberOfProductsPerPage()." "._t("ProductGroup.INHERITED", " (inherited from parent page)") : "";
+		$defaultSortOrderName = self::$sort_options[$this->MyDefaultSortOrder()]["Title"];
+		$defaultSortOrderExplanation = $this->MyDefaultSortOrder() != $this->DefaultSortOrder ? _t("ProductGroup.CURRENTLVALUE", " - current value: ").$defaultSortOrderName." "._t("ProductGroup.INHERITED", " (inherited from parent page)") : "";
 		$fields->addFieldToTab(
 			'Root.Content',
 			new Tab(
 				'Products',
 				new DropdownField("LevelOfProductsToShow", _t("ProductGroup.PRODUCTSTOSHOW", "Products to show ..."), $this->showProductLevels),
-				new HeaderField("whatproductsshown", _t("ProductGroup.WHATPRODUCTSSHOWN", _t("ProductGroup.OPTIONSSELECTEDBELOWAPPLYTOCHILDGROUPS", "Options selected below apply to child product group pages as well as this product group page."))),
-				new NumericField("NumberOfProductsPerPage", _t("ProductGroup.PRODUCTSPERPAGE", "Number of products per page")),
-				new DropdownField("DefaultSortOrder", _t("ProductGroup.DEFAULTSORTORDER", "Default Sort Order"), $this->getSortOptionsForDropdown())
+				new HeaderField("whatproductsshown", _t("ProductGroup.WHATPRODUCTSSHOWN", _t("ProductGroup.OPTIONSSELECTEDBELOWAPPLYTOCHILDGROUPS", "Inherited options"))),
+				new NumericField("NumberOfProductsPerPage", _t("ProductGroup.PRODUCTSPERPAGE", "Number of products per page").$numberOfProductsPerPageExplanation),
+				new DropdownField("DefaultSortOrder", _t("ProductGroup.DEFAULTSORTORDER", "Default Sort Order").$defaultSortOrderExplanation, $this->getSortOptionsForDropdown())
 			)
 		);
 		return $fields;
@@ -284,13 +294,14 @@ class ProductGroup extends Page {
 	 **/
 	function MyDefaultSortOrder() {
 		$defaultSortOrder = "";
-		if($this->DefaultSortOrder) {
+		if($this->DefaultSortOrder && array_key_exists($defaultSortOrder, self::get_sort_options())) {
 			$defaultSortOrder = $this->DefaultSortOrder;
 		}
-		else {
-			if($parent = $this->ParentGroup()) {
-				$defaultSortOrder = $parent->MyDefaultSortOrder();
-			}
+		if(!$defaultSortOrder && $parent = $this->ParentGroup()) {
+			$defaultSortOrder = $parent->MyDefaultSortOrder();
+		}
+		elseif(!$defaultSortOrder) {
+			$defaultSortOrder = $this->getDefaultSortKey();
 		}
 		return $defaultSortOrder;
 	}
