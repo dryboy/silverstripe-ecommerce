@@ -289,9 +289,11 @@ EcomCart = {
 					if(parameter == "hide") {
 						if(change.value) {
 							jQuery(id).hide();
+							jQuery(id).addClass("hideForNow");
 						}
 						else {
 							jQuery(id).show();
+							jQuery(id).removeClass("hideForNow");
 						}
 					}
 					//general message
