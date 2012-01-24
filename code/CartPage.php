@@ -187,9 +187,10 @@ class CartPage_Controller extends Page_Controller{
 		parent::init();
 		//Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js"); VIA EcommerceSiteTreeExtension::initcontentcontroller()
 		Requirements::javascript('ecommerce/javascript/EcomCart.js');
-		Requirements::themedCSS('Cart');
-		// find the current order if any
+		//NOTE: we do not need the line below because that goes via ShoppingCartRequirements.css!
+		//Requirements::themedCSS('Cart');
 
+		// find the current order if any
 		$orderID = 0;
 		//WE HAVE THIS FOR SUBMITTING FORMS!
 		if(isset($_REQUEST['OrderID'])) {
