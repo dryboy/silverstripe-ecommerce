@@ -1,32 +1,40 @@
 # Customising the eCommerce module
 
-It is most likely that you as a website developer/designer will want to customise the eCommerce module to look and work as your client would like.
-Fortunately it is very easy to do so with the SilverStripe eCommerce module.
+It is most likely that you as a website developer/designer will want to customise the eCommerce module to look and work as your client would like.  Fortunately it is very easy to do so with the SilverStripe eCommerce module.
 
-There are a number of configuration options to be set in your _config.php file. See [Configuration](Configuration)
+There are a number of configuration options to be set in your /mysite/_config.php file. See [Configuration](Configuration)  Forthis you can copy the options from the ecomerce/_config.php file (it is better to edit the mysite _config file then the original ecommerce one so that you can update the ecommerce module without having to "re-apply" the configurations.)
 
-## Theming / Templates
+## Theme-ing / Templates
 
-There are a number of templates you can customise to create your desired look for the eCommerce module.
-The Order template has been modularised using SilverStripe's <% include TemplateName %> tag to provide varying degrees of freedom to customise. The order template is used in both the Account page to display summaries of past orders, and it is also used with the email template.
-To make your customisations you need to create your own corresponding version of the template/partial-template with the same name in your mysite/templates folder or the themes folder.
+The easiest way to create your own look-and-feel for e-commerce is to create your own css files. The following css files can be themed:
+ * ProductGroup.css  - used on the Product Group Pages
+ * Products.css - used on the Product Pages but also on the ProductGroup pages.
+ * Cart.css - used for CartPage, CheckoutPage and OrderConfirmationPage.css AND anywhere else the cart is being displayed!
+ * AccountPage.css - used on the AccountPage.css
+ * Order.css - used where an uncompleted order is shown
+ * Order_Print.css - print version of Order.css
+ * Order_PackingSlip.css - print version of Order.css
+ * [OrderModiferName].css - for any OrderModifier that uses a form
+ * Cart.css - anywhere the cart appears
+ * OrderReport.css - used where a completed order is shown
+ * OrderReport_Print.css - print only version for OrderReport.css
+ * OrderStepField.css - specifically for the OrderStepField
+
+An easy way to do this is to copy a file like (for example) /ecommerce/css/Products.css to /ecommerce/nameofmytheme_ecommerce/css/Products.css. Firstly, you need to work out the name of your theme, then you add a folder called themes/ in the root directory. Next, you work out the name of your theme (e.g. main or default or mytheme or nameofclientgoeshere). Now you can create a folder called /themes/nameofmytheme_ecommerce.  The "_ecommerce" addition is important - because it allows you to keep the e-commerce theme-ing separate from the general theme of the website.  Now, you can add the css folder and the copy of the css file. To create your own styles, you will edit this version of the Products.css file.
+
+Secondly, all of the templates in the ecommerce/templates folder you can customise as well to create your desired look for the eCommerce module. To make your customisations you need to create your own corresponding version of the template/partial-template with the same name in your mysite/templates (e.g. /mysite/templates/Layout/CheckoutPage.ss) folder or the themes folder (e.g. /themes/nameofmytheme_ecommerce/templates/Layout/CheckoutPage.ss)
 
 More about developing themes [here](http://doc.silverstripe.org/sapphire/en/topics/theme-development).
-Note: some templates are needed in multiple places to work.
+
+
 
 ## Sub modules
 
 Sub-modules provide additional functionality that remains separate from the main eCommerce module to keep the core code as minimal as possible.
 
-Here is a list of current sub-modules, along with their purpose:
+When using a module, please make sure that it is intended to work with your version of e-commerce.
 
-* [Product Variations](https://silverstripe-ecommerce.googlecode.com/svn/modules/ecommerce_product_variation/trunk) 
-* [Stock Control](https://silverstripe-ecommerce.googlecode.com/svn/modules/ecommerce_stockcontrol/branches/simple)
-* [Discount Coupons](https://silverstripe-ecommerce.googlecode.com/svn/modules/ecommerce_coupon/trunk)
-* [Brand browsing](http://silverstripe-ecommerce.googlecode.com/svn/modules/ecommerce_brandbrowsing/trunk/)
-
-More unannounced modules can be found [here](https://code.google.com/p/silverstripe-ecommerce/source/browse/#svn%2Fmodules).
-
+Modules can be found [here](https://code.google.com/p/silverstripe-ecommerce/source/browse/#svn%2Fmodules).
 
 If you are interested in developing your own sub-module, see [contributing](Contributing) docs.
 
