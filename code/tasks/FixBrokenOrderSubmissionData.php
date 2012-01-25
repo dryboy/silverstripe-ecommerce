@@ -19,7 +19,7 @@ class FixBrokenOrderSubmissionData extends BuildTask{
 		if($problem->value()) {
 			DB::alteration_message("the size of the problem is: ".$problem->value(), "deleted");
 		}
-		$rows = DB::query("Select ID from \"Order\" WHERE StatusID > 1");
+		$rows = DB::query("Select \"ID\" from \"Order\" WHERE \"StatusID\" > 1");
 		if($rows) {
 			foreach($rows as $row) {
 				$orderID = $row["ID"];
@@ -37,7 +37,7 @@ class FixBrokenOrderSubmissionData extends BuildTask{
 					if($innerInners = DB::query($sql)) {
 						foreach($innerInners as $innerInnerRow) {
 							DB::alteration_message( "FOUND ".$innerInnerRow["ID"], "created");
-							DB::query("UPDATE OrderStatusLog SET OrderID = $orderID WHERE OrderStatusLog.ID = ".$innerInnerRow["ID"]." AND OrderID < 1");
+							DB::query("UPDATE \"OrderStatusLog\" SET \"OrderID\" = $orderID WHERE \"OrderStatusLog\".\"ID\" = ".$innerInnerRow["ID"]." AND \"OrderID\" < 1");
 						}
 					}
 				}

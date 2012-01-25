@@ -7,6 +7,15 @@
  * You can customise this menu by using the "decorating" this class
  * and adding the method: "updateEcommerceDevMenu".
  *
+ * SECTIONS
+ *
+ * 1. ecommerce setup
+ * 2. maintance
+ * 3. debug
+ * 4. data cleanup
+ * 5. migration
+ * 6. tests
+ *
  * @author jeremy, nicolaas
  * @todo: work out a standard "silent" option and a display option the "display" options shows all output when running it from ecommerce/dev/
  *
@@ -56,6 +65,42 @@ class EcommerceDatabaseAdmin extends Controller{
 	}
 
 	//##############################
+	// ECOMMERCE SETUP
+	//##############################
+
+	protected $ecommerceSetup = array(
+		"setorderidstartingnumber",
+		"createecommercemembergroups",
+		"ecommercedefaultrecords"
+	);
+
+	/**
+	 * @return DataObjectSet list of data cleanup tasks
+	 *
+	 */
+	function EcommerceSetup() {
+		return $this->createMenuDOSFromArray($this->ecommerceSetup, $type = "EcommerceSetup");
+	}
+
+	function setorderidstartingnumber($request){
+		$buildTask = new SetOrderIDStartingNumber($request);
+		$buildTask->run($request);
+		$this->displayCompletionMessage($buildTask);
+	}
+
+	function createecommercemembergroups($request){
+		$buildTask = new CreateEcommerceMemberGroups($request);
+		$buildTask->run($request);
+		$this->displayCompletionMessage($buildTask);
+	}
+
+	function ecommercedefaultrecords($request){
+		$buildTask = new EcommerceDefaultRecords($request);
+		$buildTask->run($request);
+		$this->displayCompletionMessage($buildTask);
+	}
+
+	//##############################
 	// REGULAR MAINTENANCE
 	//##############################
 
@@ -73,7 +118,7 @@ class EcommerceDatabaseAdmin extends Controller{
 	}
 
 	/**
-	 * executes build task: UpdateProductGroups
+	 * executes build task
 	 *
 	 */
 	function clearoldcarts($request) {
@@ -83,7 +128,7 @@ class EcommerceDatabaseAdmin extends Controller{
 	}
 
 	/**
-	 * executes build task: UpdateProductGroups
+	 * executes build task
 	 *
 	 */
 	function recalculatethenumberofproductssold($request) {
@@ -113,7 +158,8 @@ class EcommerceDatabaseAdmin extends Controller{
 	//##############################
 
 	protected $dataCleanups = array(
-		"deleteecommerceproductstask"
+		"deleteecommerceproductstask",
+		"fixbrokenordersubmissiondata"
 	);
 
 	/**
@@ -135,15 +181,23 @@ class EcommerceDatabaseAdmin extends Controller{
 		$this->displayCompletionMessage($buildTask);
 	}
 
+	/**
+	 * executes build task: FixBrokenOrderSubmissionData
+	 *
+	 */
+	function fixbrokenordersubmissiondata($request) {
+		$buildTask = new FixBrokenOrderSubmissionData();
+		$buildTask->run($request);
+		$this->displayCompletionMessage($buildTask);
+	}
+
 
 	//##############################
 	// MIGRATIONS
 	//##############################
 
 	protected $migrations = array(
-		"updateproductgroups",
-		"setfixedpriceforsubmittedorderitems",
-		"fixbrokenordersubmissiondata"
+		"ecommercemigration"
 	);
 
 	/**
@@ -167,34 +221,17 @@ class EcommerceDatabaseAdmin extends Controller{
 		$this->displayCompletionMessage($buildTask);
 	}
 
-	/**
-	 * executes build task: UpdateProductGroups
-	 *
-	 */
-	function updateproductgroups($request) {
-		$buildTask = new UpdateProductGroups();
-		$buildTask->run($request);
-		$this->displayCompletionMessage($buildTask);
-	}
 
-	/**
-	 * executes build task: SetFixedPriceForSubmittedOrderItems
-	 *
-	 */
-	function setfixedpriceforsubmittedorderitems($request) {
-		$buildTask = new SetFixedPriceForSubmittedOrderItems();
-		$buildTask->run($request);
-		$this->displayCompletionMessage($buildTask);
-	}
 	/**
 	 * executes build task: FixBrokenOrderSubmissionData
 	 *
 	 */
-	function fixbrokenordersubmissiondata($request) {
-		$buildTask = new FixBrokenOrderSubmissionData();
+	function ecommercemigration($request) {
+		$buildTask = new EcommerceMigration();
 		$buildTask->run($request);
 		$this->displayCompletionMessage($buildTask);
 	}
+
 
 	//##############################
 	// TESTS
