@@ -350,7 +350,7 @@ class Order extends DataObject {
 		if($this->StatusID) {
 			//do nothing
 		}
-		elseif(DataObject::get_on("OrderStep")) {
+		elseif(DataObject::get_one("OrderStep")) {
 			//return new ValidationResult(false, _t("Order.MUSTSETSTATUS", "You must set a status.  This could not be set..."));
 		}
 		return parent::validate();
