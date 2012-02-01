@@ -410,7 +410,7 @@ class Product_OrderItem extends OrderItem {
 	 **/
 	function hasSameContent($orderItem) {
 		$parentIsTheSame = parent::hasSameContent($orderItem);
-		return $parentIsTheSame && $orderItem instanceOf Product_OrderItem;
+		return $parentIsTheSame && $orderItem instanceOf $this->class;
 	}
 
 	/**
