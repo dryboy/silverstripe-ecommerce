@@ -233,6 +233,11 @@ class EcommerceRole extends DataObjectDecorator {
 		parent::populateDefaults();
 	}
 
+	function requireDefaultRecords(){
+		$task = new CreateEcommerceMemberGroups();
+		$task->run();
+	}
+
 }
 
 
