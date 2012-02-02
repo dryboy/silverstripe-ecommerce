@@ -9,7 +9,7 @@
  *
  * SECTIONS
  *
- * 1. ecommerce setup
+ * 1. ecommerce setup (default records)
  * 2. maintance
  * 3. debug
  * 4. data cleanup
@@ -65,13 +65,14 @@ class EcommerceDatabaseAdmin extends Controller{
 	}
 
 	//##############################
-	// ECOMMERCE SETUP
+	// 1. ECOMMERCE SETUP (DEFAULT RECORDS)
 	//##############################
 
 	protected $ecommerceSetup = array(
 		"setorderidstartingnumber",
 		"createecommercemembergroups",
-		"ecommercedefaultrecords"
+		"ecommercedefaultrecords",
+		"adddefaultecommerceproducts"
 	);
 
 	/**
@@ -100,13 +101,20 @@ class EcommerceDatabaseAdmin extends Controller{
 		$this->displayCompletionMessage($buildTask);
 	}
 
+	function adddefaultecommerceproducts($request){
+		$buildTask = new AddDefaultEcommerceProducts($request);
+		$buildTask->run($request);
+		$this->displayCompletionMessage($buildTask);
+	}
+
 	//##############################
-	// REGULAR MAINTENANCE
+	// 2. REGULAR MAINTENANCE
 	//##############################
 
 	protected $regularMaintenance = array(
 		"clearoldcarts",
-		"recalculatethenumberofproductssold"
+		"recalculatethenumberofproductssold",
+		"addcustomerstocustomergroups"
 	);
 
 	/**
@@ -133,6 +141,15 @@ class EcommerceDatabaseAdmin extends Controller{
 	 */
 	function recalculatethenumberofproductssold($request) {
 		$buildTask = new RecalculateTheNumberOfProductsSold($request);
+		$buildTask->run($request);
+		$this->displayCompletionMessage($buildTask);
+	}
+	/**
+	 * executes build task
+	 *
+	 */
+	function addcustomerstocustomergroups($request) {
+		$buildTask = new AddCustomersToCustomerGroups($request);
 		$buildTask->run($request);
 		$this->displayCompletionMessage($buildTask);
 	}
