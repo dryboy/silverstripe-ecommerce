@@ -111,38 +111,6 @@ class EcommerceRole extends DataObjectDecorator {
 	}
 
 
-	protected static function add_members_to_customer_group() {
-		$gp = DataObject::get_one("Group", "\"Title\" = '".self::get_customer_group_name()."'");
-		if($gp) {
-			$allCombos = DB::query("
-				SELECT \"Group_Members\".\"ID\", \"Group_Members\".\"MemberID\", \"Group_Members\".\"GroupID\"
-				FROM \"Group_Members\"
-				WHERE \"Group_Members\".\"GroupID\" = ".$gp->ID.";"
-			);
-			//make an array of all combos
-			$alreadyAdded = array();
-			$alreadyAdded[-1] = -1;
-			if($allCombos) {
-				foreach($allCombos as $combo) {
-					$alreadyAdded[$combo["MemberID"]] = $combo["MemberID"];
-				}
-			}
-			$unlistedMembers = DataObject::get(
-				"Member",
-				$where = "\"Member\".\"ID\" NOT IN (".implode(",",$alreadyAdded).")",
-				$sort = "",
-				$join = "INNER JOIN \"Order\" ON \"Order\".\"MemberID\" = \"Member\".\"ID\""
-			);
-
-			//add combos
-			if($unlistedMembers) {
-				$existingMembers = $gp->Members();
-				foreach($unlistedMembers as $member) {
-					$existingMembers->add($member);
-				}
-			}
-		}
-	}
 
 	/**
 	 * get CMS fields describing the member in the CMS when viewing the order.
@@ -214,7 +182,14 @@ class EcommerceRole extends DataObjectDecorator {
 	//this method needs to be tested!
 	public function onAfterWrite() {
 		parent::onAfterWrite();
-		self::add_members_to_customer_group();
+		//...
+		$customerGroup = EcommerceRole::get_customer_group();
+		if($customerGroup){
+			$existingMembers = $customerGroup->Members();
+			if($existingMembers){
+				$existingMembers->add($this->owner);
+			}
+		}
 	}
 
 	/**
@@ -233,10 +208,7 @@ class EcommerceRole extends DataObjectDecorator {
 		parent::populateDefaults();
 	}
 
-	function requireDefaultRecords(){
-		$task = new CreateEcommerceMemberGroups();
-		$task->run();
-	}
+
 
 }
 
