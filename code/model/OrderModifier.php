@@ -3,18 +3,18 @@
 /**
  * which returns an array of IDs
  * SEQUENCE - USE FOR ALL MODIFIERS!!!
- * *** model defining static variables (e.g. $db, $has_one)
- * *** cms variables + functions (e.g. getCMSFields, $searchableFields)
- * *** other (non) static variables (e.g. protected static $special_name_for_something, protected $order)
- * *** CRUD functions (e.g. canEdit)
- * *** init and update functions
- * *** form functions (e. g. showform and getform)
- * *** template functions (e.g. ShowInTable, TableTitle, etc...) ... USES DB VALUES
- * ***  inner calculations.... USES CALCULATED VALUES
- * *** calculate database fields: protected function Live[field name]  ... USES CALCULATED VALUES
- * *** standard database related functions (e.g. onBeforeWrite, onAfterWrite, etc...)
- * *** AJAX related functions
- * *** debug functions
+ * *** 1. model defining static variables (e.g. $db, $has_one)
+ * *** 2. cms variables + functions (e.g. getCMSFields, $searchableFields)
+ * *** 3. other (non) static variables (e.g. protected static $special_name_for_something, protected $order)
+ * *** 4. CRUD functions (e.g. canEdit)
+ * *** 5. init and update functions
+ * *** 6. form functions (e. g. showform and getform)
+ * *** 7. template functions (e.g. ShowInTable, TableTitle, etc...) ... USES DB VALUES
+ * *** 8. inner calculations.... USES CALCULATED VALUES
+ * *** 9. calculate database fields: protected function Live[field name]  ... USES CALCULATED VALUES
+ * *** 10. standard database related functions (e.g. onBeforeWrite, onAfterWrite, etc...)
+ * *** 11. AJAX related functions
+ * *** 12. debug functions
  *
  * FAQs
  *
@@ -49,7 +49,9 @@ class OrderModifier extends OrderAttribute {
 				"Order"
 			)
 	 );
-// ########################################  *** model defining static variables (e.g. $db, $has_one)
+
+// ########################################  *** 1. model defining static variables (e.g. $db, $has_one)
+
 	public static $db = array(
 		'Name' => 'Varchar(255)', // we use this to create the TableTitle, CartTitle and TableSubTitle
 		'TableValue' => 'Currency', //the $$ shown in the checkout table
@@ -61,7 +63,7 @@ class OrderModifier extends OrderAttribute {
 		'Name' => 'Modifier' //making sure that you choose a different name for any class extensions.
 	);
 
-// ########################################  *** cms variables  + functions (e.g. getCMSFields, $searchableFields)
+// ########################################  *** 2. cms variables  + functions (e.g. getCMSFields, $searchableFields)
 
 	public static $searchable_fields = array(
 		'OrderID' => array(
@@ -123,7 +125,7 @@ class OrderModifier extends OrderAttribute {
 		return $fields;
 	}
 
-// ########################################  *** other static variables (e.g. special_name_for_something)
+// ########################################  *** 3. other static variables (e.g. special_name_for_something)
 
 	/**
 	 * $do_not_add_automatically Identifies whether a modifier is NOT automatically added
@@ -176,7 +178,7 @@ class OrderModifier extends OrderAttribute {
 	protected $mustUpdate = false;
 
 
-// ######################################## *** CRUD functions (e.g. canEdit)
+// ######################################## *** 4. CRUD functions (e.g. canEdit)
 
 
 
@@ -249,7 +251,7 @@ class OrderModifier extends OrderAttribute {
 		return $this->CalculatedTotal;
 	}
 
-// ########################################  *** form functions (showform and getform)
+// ########################################  *** 5. form functions (showform and getform)
 
 	/**
 	 * This determines whether the OrderModifierForm is shown or not. {@link OrderModifier::get_form()}.
@@ -280,7 +282,7 @@ class OrderModifier extends OrderAttribute {
 
 
 
-// ######################################## *** template functions (e.g. ShowInTable, TableTitle, etc...)
+// ######################################## *** 6. template functions (e.g. ShowInTable, TableTitle, etc...)
 
 	/**
 	* tells you whether the modifier shows up on the checkout  / cart form.
@@ -395,10 +397,10 @@ class OrderModifier extends OrderAttribute {
 	}
 
 
-// ######################################## ***  inner calculations....
+// ######################################## ***  7. inner calculations....
 
 
-// ######################################## ***  calculate database fields ( = protected function Live[field name]() { ....}
+// ######################################## ***  8. calculate database fields ( = protected function Live[field name]() { ....}
 
 	protected function LiveName() {
 		user_error("The \"LiveName\" method has be defined in ...".$this->ClassName, E_USER_NOTICE);
@@ -424,7 +426,7 @@ class OrderModifier extends OrderAttribute {
 	}
 
 
-// ######################################## ***  Type Functions (IsChargeable, IsDeductable, IsNoChange, IsRemoved)
+// ######################################## ***  9. Type Functions (IsChargeable, IsDeductable, IsNoChange, IsRemoved)
 
 	/**
 	 * should be extended if it is true in child class
@@ -460,7 +462,7 @@ class OrderModifier extends OrderAttribute {
 
 
 
-// ######################################## ***  standard database related functions (e.g. onBeforeWrite, onAfterWrite, etc...)
+// ######################################## ***  10. standard database related functions (e.g. onBeforeWrite, onAfterWrite, etc...)
 
 	/**
 	 */
@@ -477,7 +479,7 @@ class OrderModifier extends OrderAttribute {
 	}
 
 
-// ######################################## ***  AJAX related functions
+// ######################################## ***  11. AJAX related functions
 
 	/**
 	 *
@@ -503,7 +505,7 @@ class OrderModifier extends OrderAttribute {
 	}
 
 
-// ######################################## ***  debug functions
+// ######################################## ***  12. debug functions
 
 	/**
 	 * Debug helper method.
