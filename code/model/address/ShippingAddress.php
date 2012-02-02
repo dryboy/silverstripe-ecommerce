@@ -67,6 +67,8 @@ class ShippingAddress extends OrderAddress {
 		)
 	);
 
+	public static $default_sort = "\"OrderID\" DESC";
+
 	public static $casting = array(
 		"ShippingFullCountryName" => "Varchar(200)"
 	);
