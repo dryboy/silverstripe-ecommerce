@@ -7,7 +7,7 @@ class CreateEcommerceMemberGroups extends BuildTask{
 	protected $description = "Create the member groups and members for e-commerce.";
 
 	function run($request){
-		$customerGroup = DataObject::get_one("Group", "\"Code\" = '".EcommerceRole::get_customer_group_code()."' ");
+		$customerGroup = EcommerceRole::get_customer_group();
 		if(!$customerGroup) {
 			$customerGroup = new Group();
 			$customerGroup->Code = EcommerceRole::get_customer_group_code();
@@ -20,7 +20,13 @@ class CreateEcommerceMemberGroups extends BuildTask{
 			Permission::grant($customerGroup->ID, EcommerceRole::get_customer_permission_code());
 			DB::alteration_message(EcommerceRole::get_customer_group_name().' permissions granted',"created");
 		}
-		$adminGroup = DataObject::get_one("Group", "\"Code\" = '".EcommerceRole::get_admin_group_code()."' ");
+		if(!$customerGroup = EcommerceRole::get_customer_group()) {
+			die("ERROR");
+		}
+		else {
+			DB::alteration_message(EcommerceRole::get_customer_group_name().' is ready for use',"created");
+		}
+		$adminGroup = EcommerceRole::get_admin_group();
 		if(!$adminGroup) {
 			$adminGroup = new Group();
 			$adminGroup->Code = EcommerceRole::get_admin_group_code();
