@@ -151,7 +151,6 @@ class CartCleanupTask extends HourlyTask {
 	 * @param Boolean $verbose - show output?
 	 *
 	 */
-
 	protected function linkOrderWithBillingAndShippingAddress($verbose = false) {
 		DB::query("
 			UPDATE \"Order\"
