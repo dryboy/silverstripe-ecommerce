@@ -2,7 +2,7 @@
 <table id="StatusLogs" class="infotable">
 	<thead>
 		<tr class="gap mainHeader">
-			<th class="left" colspan="4" scope="col"><% _t("UPDATES","Updates") %></th>
+			<th class="left" colspan="4" scope="col"><% _t("Order.UPDATES","Updates") %></th>
 		</tr>
 	</thead>
 	<tbody>

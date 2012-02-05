@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" >
 <head>
 	<% base_tag %>
-	<title><% _t("PAGETITLE","Print Orders") %></title>
+	<title><% _t("Order.PRINTORDERS","Print Orders") %></title>
 </head>
 <body>
 	<!-- todo: allow printing multiple invoices at once -->
