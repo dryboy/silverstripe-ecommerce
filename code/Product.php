@@ -263,7 +263,7 @@ class Product_Controller extends Page_Controller {
 			$fields = new FieldSet($farray);
 			$fields->push(new NumericField('Quantity','Quantity',1)); //TODO: perhaps use a dropdown instead (elimiates need to use keyboard)
 			$actions = new FieldSet(
-				new FormAction('addproductfromform', _t("ProductWithVariationDecorator.ADDLINK","Add this item to cart"))
+				new FormAction('addproductfromform', _t("Product.ADDLINK","Add this item to cart"))
 			);
 			$requiredfields[] = 'Quantity';
 			$validator = new RequiredFields($requiredfields);
