@@ -117,7 +117,7 @@ class Buyable extends DataObjectDecorator {
 	 *
 	 * @return boolean
 	 */
-	function IsInCart() {
+	function IsInCart(){
 		return ($this->owner->OrderItem() && $this->owner->OrderItem()->Quantity > 0) ? true : false;
 	}
 
