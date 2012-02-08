@@ -64,6 +64,9 @@ class Product extends Page {
 	public static $searchable_fields = array(
 		'Title' => "PartialMatchFilter",
 		'InternalItemID' => "PartialMatchFilter",
+		'ShowInSearch',
+		'AllowPurchase',
+		'FeaturedProduct',
 		'Price'
 	);
 
