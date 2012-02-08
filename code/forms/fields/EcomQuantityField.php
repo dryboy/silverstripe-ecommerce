@@ -102,7 +102,8 @@ class EcomQuantityField extends NumericField {
 			'name' => $this->orderItem->QuantityFieldName(),
 			'value' => ($this->orderItem->Quantity) ? $this->orderItem->Quantity : "",
 			'maxlength' => $maxlength,
-			'size' => $size
+			'size' => $size,
+			'rel' => $this->getQuantityLink(),
 		);
 		//IMPROVE ME: hack to use the form field createTag method ...perhaps this should become a form field instead
 		$formfield = new FormField('hack');
@@ -113,7 +114,7 @@ class EcomQuantityField extends NumericField {
 	 * Used for storing the quantity update link for ajax use.
 	 */
 	function AJAXLinkHiddenField(){
-		if($quantitylink = ShoppingCart_Controller::set_quantity_item_link($this->orderItem->BuyableID, $this->orderItem->Buyable()->ClassName,$this->parameters)){
+		if($quantitylink = $this->getQuantityLink()){
 			$attributes = array(
 				'type' => 'hidden',
 				'class' => 'ajaxQuantityField_qtylink',
@@ -146,4 +147,12 @@ class EcomQuantityField extends NumericField {
 		return $this->renderWith($this->template);
 	}
 
+	/**
+	 *
+	 * @return String
+	 */
+
+	protected function getQuantityLink(){
+		return ShoppingCart_Controller::set_quantity_item_link($this->orderItem->BuyableID, $this->orderItem->Buyable()->ClassName,$this->parameters);
+	}
 }

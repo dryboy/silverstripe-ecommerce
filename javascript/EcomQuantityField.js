@@ -70,10 +70,11 @@ EcomQuantityField = {
 
 	getSetQuantityURLSegment: function (inputField) {
 		var name = jQuery(inputField).attr('name')+EcomQuantityField.URLSegmentHiddenFieldSelectorAppendix ;
-		if(jQuery('[name=' + name + ']').length == 1) {
+		if(jQuery('[name=' + name + ']').length > 0) {
 			return jQuery('[name=' + name + ']').val();
 		};
-		return "";
+		//backup!
+		return jQuery(inputField).attr("rel");
 	},
 
 	debug: function() {
