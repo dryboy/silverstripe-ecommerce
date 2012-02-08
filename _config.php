@@ -90,6 +90,8 @@ Buyable::add_class("Product");
 //Product_Image::set_large_image_width(500);
 //ProductGroup::add_sort_option( $key = "price", $title = "Lowest Price", $sql = "Price ASC");
 //ProductGroup::remove_sort_option( $key = "title");
+//ProductGroup::add_filter_option( $key = "isonsale", $title = "Is On Sale", $sql = "IsOnSale = 1");
+//ProductGroup::remove_filter_option( $key = "isonsale");
 
 
 // * * * EMAILS

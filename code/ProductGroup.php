@@ -13,29 +13,63 @@
 
 class ProductGroup extends Page {
 
+	/**
+	 * standard SS variable
+	 * @static Array
+	 *
+	 */
 	public static $db = array(
 		"NumberOfProductsPerPage" => "Int",
 		"DefaultSortOrder" => "Varchar(50)",
+		"DefaultFilter" => "Varchar(50)",
 		"LevelOfProductsToShow" => "Int"
 	);
 
+	/**
+	 * standard SS variable
+	 * @static Array
+	 *
+	 */
 	public static $belongs_many_many = array(
 		'Products' => 'Product'
 	);
 
+	/**
+	 * standard SS variable
+	 * @static Array
+	 *
+	 */
 	public static $defaults = array(
 		"DefaultSortOrder" => "default",
+		"DefaultFilter" => "default",
 		"LevelOfProductsToShow" => 99
 	);
 
+	/**
+	 * standard SS variable
+	 * @static String
+	 */
 	public static $default_child = 'Product';
 
+	/**
+	 * standard SS variable
+	 * @static String | Array
+	 *
+	 */
 	public static $icon = 'ecommerce/images/icons/productgroup';
 
+	/**
+	 * @static Array
+	 *
+	 * List of sort options.  Each option has a key an array of Title and SQL.
+	 *
+	 * With it, we provide a bunch of methods to access and edit the options.
+	 *
+	 */
 	protected static $sort_options = array(
-			'default' => array("Title" => 'Default Order', "SQL" => "\"Sort\" ASC, \"Title\" ASC"),
-			'title' => array("Title" => 'Alphabetical', "SQL" => "\"Title\" ASC"),
-			'price' => array("Title" => 'Lowest Price', "SQL" => "\"Price\" ASC, \"Title\" ASC"),
+			'default' =>  array(  "Title" => 'Default Order',  "SQL" => "\"Sort\" ASC, \"Title\" ASC"),
+			'title' =>    array(  "Title" => 'Alphabetical',   "SQL" => "\"Title\" ASC"),
+			'price' =>    array(  "Title" => 'Lowest Price',   "SQL" => "\"Price\" ASC, \"Title\" ASC"),
 		);
 		static function add_sort_option($key, $title, $sql){self::$sort_options[$key] = array("Title" => $title, "SQL" => $sql);}
 		static function remove_sort_option($key){unset(self::$sort_options[$key]);}
@@ -50,7 +84,8 @@ class ProductGroup extends Page {
 		}
 		//NON-STATIC
 		protected function getSortOptionsForDropdown(){
-			$array = array("0" => "Inherit");
+			$inheritTitle = _t("ProductGroup.INHERIT", "inherit");
+			$array = array("inherit" => $inheritTitle);
 			if(is_array(self::$sort_options) && count(self::$sort_options)) {
 				foreach(self::$sort_options as $key => $sort_option) {
 					$array[$key] = $sort_option["Title"];
@@ -71,16 +106,79 @@ class ProductGroup extends Page {
 			}
 		}
 
-	protected $standardFilter = " AND \"ShowInSearch\" = 1";
-	public function getStandardFilter(){return $this->standardFilter;}
+	/**
+	 * @static Array
+	 *
+	 * List of filter options.  Each option has a key an array of Title and SQL.
+	 *
+	 * With it, we provide a bunch of methods to access and edit the options.
+	 *
+	 */
+	protected static $filter_options = array(
+			'default' => array(
+				"Title" => 'All Searchable Products (default)',
+				"SQL" => "\"ShowInSearch\"  = 1"
+			),
+			'featuredonly' => array(
+				"Title" => 'Featured Only',
+				"SQL" => "\"ShowInSearch\"  = 1 AND \"Featured\" = 1"
+			),
+			'nonfeaturedonly' => array(
+				"Title" => 'Non Featured Only',
+				"SQL" => "\"ShowInSearch\"  = 1 AND \"Featured\" = 0"
+			)
+		);
+		static function add_filter_option($key, $title, $sql){self::$filter_options[$key] = array("Title" => $title, "SQL" => $sql);}
+		static function remove_filter_option($key){unset(self::$filter_options[$key]);}
+		static function set_filter_options($a){self::$filter_options = $a;}
+		static function get_filter_options(){return self::$filter_options;}
+		protected function getDefaultFilterKey(){
+			if(isset(self::$filter_options["default"])) {
+				return "default";
+			}
+			$keys = array_keys(self::$filter_options);
+			return $keys[0];
+		}
+		//NON-STATIC
+		protected function getFilterOptionsForDropdown(){
+			$inheritTitle = _t("ProductGroup.INHERIT", "inherit");
+			$array = array("inherit" => $inheritTitle);
+			if(is_array(self::$filter_options) && count(self::$filter_options)) {
+				foreach(self::$filter_options as $key => $filter_option) {
+					$array[$key] = $filter_option["Title"];
+				}
+			}
+			return $array;
+		}
+		protected function getFilterOptionSQL($key = ""){ // NOT STATIC
+			if($key && isset(self::$filter_options[$key])) {
+				return self::$filter_options[$key]["SQL"];
+			}
+			elseif(is_array(self::$filter_options) && count(self::$filter_options)) {
+				$firstItem = array_shift(self::$filter_options);
+				return $firstItem["SQL"];
+			}
+			else {
+				return " \"ShowInSearch\" = 1";
+			}
+		}
 
+	/**
+	 * @static Array
+	 *
+	 * List of options to show products.
+	 *
+	 * With it, we provide a bunch of methods to access and edit the options.
+	 *
+	 */
 	protected $showProductLevels = array(
+	 -1 => "All products on site",
 		0 => "None",
 		1 => "Direct Child Products",
 		2 => "Direct Child Products + Grand Child Products",
 		3 => "Direct Child Products + Grand Child Products + Great Grand Child Products",
 		4 => "Direct Child Products + Grand Child Products + Great Grand Child Products + Great Great Grand Child Products",
-		99 => "All Child Products"
+		99 => "All Child Products (default)"
 	);
 
 	function getCMSFields() {
@@ -88,6 +186,8 @@ class ProductGroup extends Page {
 		$numberOfProductsPerPageExplanation = $this->MyNumberOfProductsPerPage() != $this->NumberOfProductsPerPage ? _t("ProductGroup.CURRENTLVALUE", " - current value: ").$this->MyNumberOfProductsPerPage()." "._t("ProductGroup.INHERITED", " (inherited from parent page)") : "";
 		$defaultSortOrderName = self::$sort_options[$this->MyDefaultSortOrder()]["Title"];
 		$defaultSortOrderExplanation = $this->MyDefaultSortOrder() != $this->DefaultSortOrder ? _t("ProductGroup.CURRENTLVALUE", " - current value: ").$defaultSortOrderName." "._t("ProductGroup.INHERITED", " (inherited from parent page)") : "";
+		$defaultFilterName = self::$sort_options[$this->MyDefaultFilter()]["Title"];
+		$defaultFilterNameExplanation = $this->MyDefaultFilter() != $this->DefaultFilter ? _t("ProductGroup.CURRENTLVALUE", " - current value: ").$defaultFilterName." "._t("ProductGroup.INHERITED", " (inherited from parent page)") : "";
 		$fields->addFieldToTab(
 			'Root.Content',
 			new Tab(
@@ -95,7 +195,8 @@ class ProductGroup extends Page {
 				new DropdownField("LevelOfProductsToShow", _t("ProductGroup.PRODUCTSTOSHOW", "Products to show ..."), $this->showProductLevels),
 				new HeaderField("whatproductsshown", _t("ProductGroup.WHATPRODUCTSSHOWN", _t("ProductGroup.OPTIONSSELECTEDBELOWAPPLYTOCHILDGROUPS", "Inherited options"))),
 				new NumericField("NumberOfProductsPerPage", _t("ProductGroup.PRODUCTSPERPAGE", "Number of products per page").$numberOfProductsPerPageExplanation),
-				new DropdownField("DefaultSortOrder", _t("ProductGroup.DEFAULTSORTORDER", "Default Sort Order").$defaultSortOrderExplanation, $this->getSortOptionsForDropdown())
+				new DropdownField("DefaultSortOrder", _t("ProductGroup.DEFAULTSORTORDER", "Default Sort Order").$defaultSortOrderExplanation, $this->getSortOptionsForDropdown()),
+				new DropdownField("DefaultFilter", _t("ProductGroup.DEFAULTFILTER", "Default Filter").$defaultFilterNameExplanation, $this->getFilterOptionsForDropdown())
 			)
 		);
 		return $fields;
@@ -137,30 +238,39 @@ class ProductGroup extends Page {
 	 **/
 	protected function currentInitialProducts($extraFilter = '', $recursive = true){
 	//GROUPS FILTER
-		if($this->LevelOfProductsToShow == 0) {
-			return null;
-		}
+
 		// STANDARD FILTER
 		$filter = $this->getStandardFilter(); //
-		$join = "";
+
 		// EXTRA FILTER
 		if($extraFilter) {
 			$filter.= " AND $extraFilter";
 		}
 		//PARENT ID
-		$groupIDs = array();
-		$groupIDs[$this->ID] = $this->ID;
-		if($this->LevelOfProductsToShow > 1) {
+		$join = "";
+		$groupFilter = "";
+		if($this->LevelOfProductsToShow < 0) {
+			//all products
+			$groupFilter = " (1 = 1) ";
+		}
+		elseif($this->LevelOfProductsToShow == 0) {
+			//no produts
+			$groupFilter = " (1 = 2) " ;
+		}
+		elseif($this->LevelOfProductsToShow > 1) {
+			$groupIDs = array();
+			$groupIDs[$this->ID] = $this->ID;
 			$childGroups = $this->ChildGroups($this->LevelOfProductsToShow);
 			if($childGroups) {
 				$groupIDs = array_merge($groupIDs,$childGroups->map('ID','ID'));
 			}
+			//OTHER GROUPS MANY-MANY
+			$join = $this->getManyManyJoin('Products','Product');
+			$multiCategoryFilter = $this->getManyManyFilter('Products','Product');
+			$groupFilter = " ( \"ParentID\" IN (".implode(",", $groupIDs).")  OR $multiCategoryFilter )";
 		}
-		//OTHER GROUPS MANY MANY
-		$join = $this->getManyManyJoin('Products','Product');
-		$multiCategoryFilter = $this->getManyManyFilter('Products','Product');
 		// GET PRODUCTS
-		$where = "(\"ParentID\" IN (".implode(",", $groupIDs).") OR $multiCategoryFilter) $filter";
+		$where = "$groupFilter $filter";
 		$allProducts = DataObject::get('Product',$where,null,$join);
 		return $allProducts;
 	}
@@ -208,6 +318,24 @@ class ProductGroup extends Page {
 		return "Product";
 	}
 
+
+	/**
+	 * returns the filter SQL, based on the $_GET or default entry.
+	 * The standard filter excludes the product group filter.
+	 * The default would be something like "ShowInSearch = 1"
+	 * @return String
+	 */
+	protected function getStandardFilter(){
+		if(isset($_GET['filterfor'])) {
+			$filterKey = Convert::raw2sqL($_GET['filterfor']);
+		}
+		else {
+			$filterKey = $this->MyDefaultFilter();
+		}
+		$filter = $this->getFilterOptionSQL($filterKey);
+		return $filter;
+	}
+
 	/**
 	 * returns the WHERE part of the final selection of products.
 	 * @param Object $allProducts - list of ALL products showable (without the applied LIMIT)
@@ -228,11 +356,12 @@ class ProductGroup extends Page {
 	 * @return String
 	 */
 	protected function currentSortSQL() {
-		if(!isset($_GET['sortby'])) {
-			$sortKey = $this->MyDefaultSortOrder();
+		if(isset($_GET['sortby'])) {
+			$sortKey = Convert::raw2sqL($_GET['sortby']);
+
 		}
 		else {
-			$sortKey = Convert::raw2sqL($_GET['sortby']);
+			$sortKey = $this->MyDefaultSortOrder();
 		}
 		$sort = $this->getSortOptionSQL($sortKey);
 		return $sort;
@@ -304,6 +433,25 @@ class ProductGroup extends Page {
 			$defaultSortOrder = $this->getDefaultSortKey();
 		}
 		return $defaultSortOrder;
+	}
+
+	/**
+	 * returns the code of the default sort order.
+	 *
+	 * @return String
+	 **/
+	function MyDefaultFilter() {
+		$defaultFilter = "";
+		if($this->DefaultFilter && array_key_exists($defaultFilter, self::get_filter_options())) {
+			$defaultFilter = $this->DefaultFilter;
+		}
+		if(!$defaultFilter && $parent = $this->ParentGroup()) {
+			$defaultFilter = $parent->MyDefaultFilter();
+		}
+		elseif(!$defaultFilter) {
+			$defaultFilter = $this->getDefaultFilterKey();
+		}
+		return $defaultFilter;
 	}
 
 

@@ -18,7 +18,7 @@
  *
  * @author jeremy, nicolaas
  * @todo: work out a standard "silent" option and a display option the "display" options shows all output when running it from ecommerce/dev/
- *
+ * We also have to work out an easy way to extend this.
  */
 
 class EcommerceDatabaseAdmin extends Controller{

@@ -549,9 +549,42 @@ class EcommerceMigration extends BuildTask {
 		DB::alteration_message("<h1>110. Update Product Groups: Sets the product groups 'show products' to the default.</h1>");
 		$checkIfAnyLevelsAreSetAtAll = DB::query("SELECT COUNT(ID) FROM \"ProductGroup\" WHERE \"LevelOfProductsToShow\" <> 0 AND \"LevelOfProductsToShow\" IS NOT NULL")->value();
 		if($checkIfAnyLevelsAreSetAtAll == 0 && ProductGroup::$defaults["LevelOfProductsToShow"] != 0) {
-			DB::query("UPDATE \"ProductGroup\" SET \"LevelOfProductsToShow\" = ".ProductGroup::$defaults["LevelOfProductsToShow"]);
-			DB::query("UPDATE \"ProductGroup_Live\" SET \"LevelOfProductsToShow\" = ".ProductGroup::$defaults["LevelOfProductsToShow"]);
+			//level of products to show
+			DB::query("
+				UPDATE \"ProductGroup\"
+				SET \"LevelOfProductsToShow\" = ".ProductGroup::$defaults["LevelOfProductsToShow"]."
+				WHERE \"LevelOfProductsToShow\" = 0 OR \"LevelOfProductsToShow\" IS NULL "
+			);
+			DB::query("
+				UPDATE \"ProductGroup_Live\"
+				SET \"LevelOfProductsToShow\" = ".ProductGroup::$defaults["LevelOfProductsToShow"]."
+				WHERE \"LevelOfProductsToShow\" = 0 OR \"LevelOfProductsToShow\" = IS NULL "
+			);
 			DB::alteration_message("resetting product 'show' levels", "created");
+			//default sort order
+			DB::query("
+				UPDATE \"ProductGroup\"
+				SET \"DefaultSortOrder\" = ".ProductGroup::$defaults["DefaultSortOrder"]."
+				WHERE \"DefaultSortOrder\" = 0 OR  \"DefaultSortOrder\" = '' OR  \"DefaultSortOrder\" IS NULL "
+			);
+			DB::query("
+				UPDATE \"ProductGroup_Live\"
+				SET \"DefaultSortOrder\" = ".ProductGroup::$defaults["DefaultSortOrder"]."
+				WHERE \"DefaultSortOrder\" = 0 OR  \"DefaultSortOrder\" = '' OR  \"DefaultSortOrder\" IS NULL "
+			);
+			DB::alteration_message("resetting product default sort order", "created");
+			//default filter
+			DB::query("
+				UPDATE \"ProductGroup\"
+				SET \"DefaultFilter\" = ".ProductGroup::$defaults["DefaultFilter"]."
+				WHERE \"DefaultFilter\" = 0 OR  \"DefaultFilter\" = '' OR  \"DefaultFilter\" IS NULL "
+			);
+			DB::query("
+				UPDATE \"ProductGroup_Live\"
+				SET \"DefaultFilter\" = ".ProductGroup::$defaults["DefaultFilter"]."
+				WHERE \"DefaultFilter\" = 0 OR  \"DefaultFilter\" = '' OR  \"DefaultFilter\" IS NULL "
+			);
+			DB::alteration_message("resetting product default filter", "created");
 		}
 		else {
 			DB::alteration_message("there is no need for resetting product 'show' levels");
