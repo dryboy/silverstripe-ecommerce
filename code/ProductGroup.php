@@ -210,10 +210,10 @@ class ProductGroup extends Page {
 		$numberOfProductsPerPageExplanation = $this->MyNumberOfProductsPerPage() != $this->NumberOfProductsPerPage ? _t("ProductGroup.CURRENTLVALUE", " - current value: ").$this->MyNumberOfProductsPerPage()." "._t("ProductGroup.INHERITED", " (inherited from parent page)") : "";
 		$sortOrderKey = $this->MyDefaultSortOrder();
 		$defaultSortOrderName = $this->getSortOptionTitle($sortOrderKey);
-		$defaultSortOrderExplanation = $sortOrderKey != $this->DefaultSortOrder ? _t("ProductGroup.CURRENTLVALUE", " - current value: ").$defaultSortOrderName." "._t("ProductGroup.INHERITED", " (inherited from parent page)") : "";
+		$defaultSortOrderExplanation = $sortOrderKey != $this->DefaultSortOrder ? _t("ProductGroup.CURRENTLVALUE", " - current value: ").$defaultSortOrderName." "._t("ProductGroup.INHERITED", " - inherited from parent page.") : "";
 		$filterKey = $this->MyDefaultFilter();
 		$defaultFilterName = $this->getFilterOptionTitle($filterKey);
-		$defaultFilterNameExplanation = $filterKey != $this->DefaultFilter ? _t("ProductGroup.CURRENTLVALUE", " - current value: ").$defaultFilterName." "._t("ProductGroup.INHERITED", " (inherited from parent page)") : "";
+		$defaultFilterNameExplanation = $filterKey != $this->DefaultFilter ? _t("ProductGroup.CURRENTLVALUE", " - current value: ").$defaultFilterName." "._t("ProductGroup.INHERITED", " - inherited from parent page.") : "";
 		$fields->addFieldToTab(
 			'Root.Content',
 			new Tab(
@@ -279,7 +279,7 @@ class ProductGroup extends Page {
 			//no produts
 			$groupFilter = " (1 = 2) " ;
 		}
-		elseif($this->LevelOfProductsToShow > 1) {
+		elseif($this->LevelOfProductsToShow > 0) {
 			$groupIDs = array();
 			$groupIDs[$this->ID] = $this->ID;
 			$childGroups = $this->ChildGroups($this->LevelOfProductsToShow);
