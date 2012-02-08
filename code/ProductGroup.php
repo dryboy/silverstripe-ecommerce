@@ -84,7 +84,7 @@ class ProductGroup extends Page {
 		}
 		//NON-STATIC
 		protected function getSortOptionsForDropdown(){
-			$inheritTitle = _t("ProductGroup.INHERIT", "inherit");
+			$inheritTitle = _t("ProductGroup.INHERIT", "Inherit");
 			$array = array("inherit" => $inheritTitle);
 			if(is_array(self::$sort_options) && count(self::$sort_options)) {
 				foreach(self::$sort_options as $key => $sort_option) {
@@ -105,6 +105,18 @@ class ProductGroup extends Page {
 				return "\"Sort\" ASC";
 			}
 		}
+		protected function getSortOptionTitle($key = ""){ // NOT STATIC
+			if($key && isset(self::$sort_options[$key])) {
+				return self::$sort_options[$key]["Title"];
+			}
+			elseif(is_array(self::$sort_options) && count(self::$sort_options)) {
+				$firstItem = array_shift(self::$sort_options);
+				return $firstItem["Title"];
+			}
+			else {
+				return _t("ProductGroup.UNKNOWN", "UNKNOWN");
+			}
+		}
 
 	/**
 	 * @static Array
@@ -121,11 +133,11 @@ class ProductGroup extends Page {
 			),
 			'featuredonly' => array(
 				"Title" => 'Featured Only',
-				"SQL" => "\"ShowInSearch\"  = 1 AND \"Featured\" = 1"
+				"SQL" => "\"ShowInSearch\"  = 1 AND \"FeaturedProduct\" = 1"
 			),
 			'nonfeaturedonly' => array(
 				"Title" => 'Non Featured Only',
-				"SQL" => "\"ShowInSearch\"  = 1 AND \"Featured\" = 0"
+				"SQL" => "\"ShowInSearch\"  = 1 AND \"FeaturedProduct\" = 0"
 			)
 		);
 		static function add_filter_option($key, $title, $sql){self::$filter_options[$key] = array("Title" => $title, "SQL" => $sql);}
@@ -141,7 +153,7 @@ class ProductGroup extends Page {
 		}
 		//NON-STATIC
 		protected function getFilterOptionsForDropdown(){
-			$inheritTitle = _t("ProductGroup.INHERIT", "inherit");
+			$inheritTitle = _t("ProductGroup.INHERIT", "Inherit");
 			$array = array("inherit" => $inheritTitle);
 			if(is_array(self::$filter_options) && count(self::$filter_options)) {
 				foreach(self::$filter_options as $key => $filter_option) {
@@ -160,6 +172,18 @@ class ProductGroup extends Page {
 			}
 			else {
 				return " \"ShowInSearch\" = 1";
+			}
+		}
+		protected function getFilterOptionTitle($key = ""){ // NOT STATIC
+			if($key && isset(self::$filter_options[$key])) {
+				return self::$filter_options[$key]["Title"];
+			}
+			elseif(is_array(self::$filter_options) && count(self::$filter_options)) {
+				$firstItem = array_shift(self::$filter_options);
+				return $firstItem["Title"];
+			}
+			else {
+				return _t("ProductGroup.UNKNOWN", "UNKNOWN");
 			}
 		}
 
@@ -184,10 +208,12 @@ class ProductGroup extends Page {
 	function getCMSFields() {
 		$fields = parent::getCMSFields();
 		$numberOfProductsPerPageExplanation = $this->MyNumberOfProductsPerPage() != $this->NumberOfProductsPerPage ? _t("ProductGroup.CURRENTLVALUE", " - current value: ").$this->MyNumberOfProductsPerPage()." "._t("ProductGroup.INHERITED", " (inherited from parent page)") : "";
-		$defaultSortOrderName = self::$sort_options[$this->MyDefaultSortOrder()]["Title"];
-		$defaultSortOrderExplanation = $this->MyDefaultSortOrder() != $this->DefaultSortOrder ? _t("ProductGroup.CURRENTLVALUE", " - current value: ").$defaultSortOrderName." "._t("ProductGroup.INHERITED", " (inherited from parent page)") : "";
-		$defaultFilterName = self::$sort_options[$this->MyDefaultFilter()]["Title"];
-		$defaultFilterNameExplanation = $this->MyDefaultFilter() != $this->DefaultFilter ? _t("ProductGroup.CURRENTLVALUE", " - current value: ").$defaultFilterName." "._t("ProductGroup.INHERITED", " (inherited from parent page)") : "";
+		$sortOrderKey = $this->MyDefaultSortOrder();
+		$defaultSortOrderName = $this->getSortOptionTitle($sortOrderKey);
+		$defaultSortOrderExplanation = $sortOrderKey != $this->DefaultSortOrder ? _t("ProductGroup.CURRENTLVALUE", " - current value: ").$defaultSortOrderName." "._t("ProductGroup.INHERITED", " (inherited from parent page)") : "";
+		$filterKey = $this->MyDefaultFilter();
+		$defaultFilterName = $this->getFilterOptionTitle($filterKey);
+		$defaultFilterNameExplanation = $filterKey != $this->DefaultFilter ? _t("ProductGroup.CURRENTLVALUE", " - current value: ").$defaultFilterName." "._t("ProductGroup.INHERITED", " (inherited from parent page)") : "";
 		$fields->addFieldToTab(
 			'Root.Content',
 			new Tab(
@@ -237,16 +263,12 @@ class ProductGroup extends Page {
 	 * @return DataObjectSet | Null
 	 **/
 	protected function currentInitialProducts($extraFilter = '', $recursive = true){
-	//GROUPS FILTER
-
 		// STANDARD FILTER
-		$filter = $this->getStandardFilter(); //
-
+		$filter = $this->getStandardFilter();
 		// EXTRA FILTER
 		if($extraFilter) {
 			$filter.= " AND $extraFilter";
-		}
-		//PARENT ID
+		}		//PARENT ID
 		$join = "";
 		$groupFilter = "";
 		if($this->LevelOfProductsToShow < 0) {
@@ -270,7 +292,7 @@ class ProductGroup extends Page {
 			$groupFilter = " ( \"ParentID\" IN (".implode(",", $groupIDs).")  OR $multiCategoryFilter )";
 		}
 		// GET PRODUCTS
-		$where = "$groupFilter $filter";
+		$where = "($groupFilter) AND ($filter)";
 		$allProducts = DataObject::get('Product',$where,null,$join);
 		return $allProducts;
 	}
@@ -418,12 +440,12 @@ class ProductGroup extends Page {
 
 	/**
 	 * returns the code of the default sort order.
-	 *
+	 * @param $field "", "Title", "SQL"
 	 * @return String
 	 **/
 	function MyDefaultSortOrder() {
 		$defaultSortOrder = "";
-		if($this->DefaultSortOrder && array_key_exists($defaultSortOrder, self::get_sort_options())) {
+		if($this->DefaultSortOrder && array_key_exists($this->DefaultSortOrder, self::get_sort_options())) {
 			$defaultSortOrder = $this->DefaultSortOrder;
 		}
 		if(!$defaultSortOrder && $parent = $this->ParentGroup()) {
@@ -437,12 +459,12 @@ class ProductGroup extends Page {
 
 	/**
 	 * returns the code of the default sort order.
-	 *
+	 * @param $field "", "Title", "SQL"
 	 * @return String
 	 **/
 	function MyDefaultFilter() {
 		$defaultFilter = "";
-		if($this->DefaultFilter && array_key_exists($defaultFilter, self::get_filter_options())) {
+		if($this->DefaultFilter && array_key_exists($this->DefaultFilter, self::get_filter_options())) {
 			$defaultFilter = $this->DefaultFilter;
 		}
 		if(!$defaultFilter && $parent = $this->ParentGroup()) {
