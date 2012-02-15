@@ -270,6 +270,13 @@ class ShoppingCart extends Object{
 	}
 
 	/**
+	 * alias for clear
+	 */
+	public function reset(){
+		$this->clear();
+	}
+
+	/**
 	 * Removes a modifier from the cart
 	 */
 	public function removeModifier($modifier){

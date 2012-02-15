@@ -228,6 +228,23 @@ class OrderStep extends DataObject {
 		return $fields;
 	}
 
+
+	/**
+	 * tells the order to display itself with an alternative display page.
+	 * in that way, orders can be displayed differently for certain steps
+	 * for example, in a print step, the order can be displayed in a
+	 * PRINT ONLY format.
+	 *
+	 * When the method return null, the order is displayed using the standard display page
+	 * @see Order::DisplayPage
+	 *
+	 *
+	 * @return Null|Object (Page)
+	 **/
+	public function AlternativeDisplayPage() {
+		return null;
+	}
+
 	/**
 	 * Allows the opportunity for the Order Step to add any fields to Order::getCMSFields
 	 * Usually this is added before ActionNextStepManually
@@ -235,7 +252,7 @@ class OrderStep extends DataObject {
 	 *@param Order $order
 	 *@return FieldSet
 	 **/
-	function addOrderStepFields(&$fields, $order) {
+	public function addOrderStepFields(&$fields, $order) {
 		return $fields;
 	}
 

@@ -1887,6 +1887,9 @@ class Order extends DataObject {
 				$page = DataObject::get_one("CheckoutPage");
 			}
 		}
+		if($this->MyStep() && $this->MyStep()->AlternativeDisplayPage()) {
+			$page = $this->MyStep()->AlternativeDisplayPage();
+		}
 		return $page;
 	}
 
