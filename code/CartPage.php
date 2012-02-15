@@ -220,8 +220,8 @@ class CartPage_Controller extends Page_Controller{
 		if($this->currentOrder) {
 			//IMPORTANT SECURITY QUESTION!
 			if($this->currentOrder->canView()) {
-				if($this->ID != $this->DisplayPage->ID) {
-					Director::redirect($this->currentOrder->Link());
+				if($this->ID != $this->DisplayPage()->ID) {
+					//Director::redirect($this->currentOrder->Link());
 				}
 			}
 			else {
