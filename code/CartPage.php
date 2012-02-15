@@ -220,21 +220,8 @@ class CartPage_Controller extends Page_Controller{
 		if($this->currentOrder) {
 			//IMPORTANT SECURITY QUESTION!
 			if($this->currentOrder->canView()) {
-				if($this->currentOrder->IsSubmitted()) {
-					if($this->isOrderConfirmationPage()) {
-						//do nothing
-					}
-					else {
-						Director::redirect($this->currentOrder->Link());
-					}
-				}
-				else {
-					if($this->isOrderConfirmationPage()) {
-						Director::redirect($this->currentOrder->Link());
-					}
-					else {
-						//do nothing
-					}
+				if($this->Link() != $this->currentOrder->Link()) {
+					Director::redirect($this->currentOrder->Link());
 				}
 			}
 			else {
