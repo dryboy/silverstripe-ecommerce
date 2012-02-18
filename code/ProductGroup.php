@@ -248,8 +248,8 @@ class ProductGroup extends Page {
 	 * @param boolean $recursive
 	 * @return DataObjectSet | Null
 	 */
-	public function ProductsShowable($extraFilter = '', $recursive = true){
-		$allProducts = $this->currentInitialProducts($extraFilter, $recursive);
+	public function ProductsShowable($extraFilter = ''){
+		$allProducts = $this->currentInitialProducts($extraFilter);
 		return $this->currentFinalProducts($allProducts);
 	}
 
@@ -260,70 +260,52 @@ class ProductGroup extends Page {
 	 * This is THE pivotal method that probably changes for classes that
 	 * extend ProductGroup as here you can determine what products or other buyables are shown.
 	 *
-	 * The return from this method will then be sorted and filtered to product the final product list
+	 * The return from this method will then be sorted and limited to produce the final product list.
+	 *
+	 * NOTE: there is no sort and limit for the initial retrieval
 	 *
 	 * @param string $extraFilter Additional SQL filters to apply to the Product retrieval
-	 * @param boolean $recursive
 	 * @return DataObjectSet | Null
 	 **/
-	protected function currentInitialProducts($extraFilter = '', $recursive = true){
+	protected function currentInitialProducts($extraFilter = ''){
 		// STANDARD FILTER
 		$filter = $this->getStandardFilter();
 		// EXTRA FILTER
 		if($extraFilter) {
 			$filter.= " AND $extraFilter";
 		}		//PARENT ID
-		$join = "";
 		$groupFilter = $this->getGroupFilter();
-		$join = $this->getManyManyJoin('Products','Product');
 		// GET PRODUCTS
+		$class = $this->getClassNameSQL();
 		$where = "($groupFilter) AND ($filter)";
-		$allProducts = DataObject::get('Product',$where,null,$join);
+		$sort = null;
+		$join = $this->getGroupJoin();
+		$limit = null;
+		$allProducts = DataObject::get($class,$where, $sort, $join, $limit);
 		return $allProducts;
 	}
 
-	/**
-	 * returns the final products, based on the all the eligile products
-	 * for the page.
-	 *
-	 * @param Object $allProducts DataObjectSet of all eligile products before sorting and limiting
-	 * @returns Object DataObjectSet of products
-	 **/
-	protected function currentFinalProducts($buyables){
-		if($buyables && $buyables instanceOf DataObjectSet) {
-			$buyables->removeDuplicates();
-			$siteConfig = SiteConfig::current_site_config();
-			if($siteConfig->OnlyShowProductsThatCanBePurchased) {
-				foreach($buyables as $buyable) {
-					if(!$buyables->canPurchase()) {
-						$buyables->remove($buyable);
-					}
-				}
-			}
-		}
-		if($buyables) {
-			$this->totalCount = $buyables->Count();
-			if($this->totalCount) {
-				return DataObject::get(
-					$this->currentClassNameSQL(),
-					$this->currentWhereSQL($buyables),
-					$this->currentSortSQL(),
-					$this->currentJoinSQL(),
-					$this->currentLimitSQL()
-				);
-			}
-		}
-
-	}
 
 
 	/**
-	 * returns the CLASSNAME part of the final selection of products.
+	 * Returns the class we are working with
 	 * @return String
 	 */
-	protected function currentClassNameSQL() {
+	protected function getClassNameSQL(){
 		return "Product";
 	}
+
+
+	/**
+	 * Do products occur in more than one group
+	 * @return Boolean
+	 */
+	protected function getProductsAlsoInOtherGroups(){
+		$siteConfig = SiteConfig::current_site_config();
+		return $siteConfig->ProductsAlsoInOtherGroups;
+	}
+
+
 
 
 	/**
@@ -367,10 +349,71 @@ class ProductGroup extends Page {
 				$groupIDs = array_merge($groupIDs,$childGroups->map('ID','ID'));
 			}
 			//OTHER GROUPS MANY-MANY
-			$multiCategoryFilter = $this->getManyManyFilter('Products','Product');
-			$groupFilter = " ( \"ParentID\" IN (".implode(",", $groupIDs).")  OR $multiCategoryFilter )";
+			$groupFilter = " ( \"ParentID\" IN (".implode(",", $groupIDs).") ";
+			if($this->getProductsAlsoInOtherGroups()) {
+				$multiCategoryFilter = $this->getManyManyFilter('Products','Product');
+				$groupFilter .= " ( OR $multiCategoryFilter  ) ";
+			}
+			$groupFilter .= " ) ";
 		}
 		return $groupFilter;
+	}
+
+	/**
+	 * Join statement for the product groups.
+	 * @return Null | String
+	 */
+	protected function getGroupJoin() {
+		if($this->getProductsAlsoInOtherGroups()) {
+			return $this->getManyManyJoin('Products','Product');
+		}
+		return null;
+	}
+
+
+	/**
+	 * returns the final products, based on the all the eligile products
+	 * for the page.
+	 *
+	 * All of the 'current' methods are to support the currentFinalProducts Method.
+	 *
+	 * @param Object $allProducts DataObjectSet of all eligile products before sorting and limiting
+	 * @returns Object DataObjectSet of products
+	 **/
+	protected function currentFinalProducts($buyables){
+		if($buyables && $buyables instanceOf DataObjectSet) {
+			$buyables->removeDuplicates();
+			$siteConfig = SiteConfig::current_site_config();
+			if($siteConfig->OnlyShowProductsThatCanBePurchased) {
+				foreach($buyables as $buyable) {
+					if(!$buyables->canPurchase()) {
+						$buyables->remove($buyable);
+					}
+				}
+			}
+		}
+		if($buyables) {
+			$this->totalCount = $buyables->Count();
+			if($this->totalCount) {
+				return DataObject::get(
+					$this->currentClassNameSQL(),
+					$this->currentWhereSQL($buyables),
+					$this->currentSortSQL(),
+					$this->currentJoinSQL(),
+					$this->currentLimitSQL()
+				);
+			}
+		}
+
+	}
+
+
+	/**
+	 * returns the CLASSNAME part of the final selection of products.
+	 * @return String
+	 */
+	protected function currentClassNameSQL() {
+		return "Product";
 	}
 
 	/**
