@@ -204,6 +204,10 @@ class ProductGroup extends Page {
 		4 => "Direct Child Products + Grand Child Products + Great Grand Child Products + Great Great Grand Child Products",
 		99 => "All Child Products (default)"
 	);
+		public function SetShowProductLevels($a) {$this->showProductLevels = $a;}
+		public function RemoveShowProductLevel($i) {unset($this->showProductLevels[$i]);}
+		public function AddShowProductLevel($key, $value) {$this->showProductLevels[$key] = $value; ksort($this->showProductLevels);}
+
 
 	function getCMSFields() {
 		$fields = parent::getCMSFields();
@@ -270,27 +274,8 @@ class ProductGroup extends Page {
 			$filter.= " AND $extraFilter";
 		}		//PARENT ID
 		$join = "";
-		$groupFilter = "";
-		if($this->LevelOfProductsToShow < 0) {
-			//all products
-			$groupFilter = " (1 = 1) ";
-		}
-		elseif($this->LevelOfProductsToShow == 0) {
-			//no produts
-			$groupFilter = " (1 = 2) " ;
-		}
-		elseif($this->LevelOfProductsToShow > 0) {
-			$groupIDs = array();
-			$groupIDs[$this->ID] = $this->ID;
-			$childGroups = $this->ChildGroups($this->LevelOfProductsToShow);
-			if($childGroups) {
-				$groupIDs = array_merge($groupIDs,$childGroups->map('ID','ID'));
-			}
-			//OTHER GROUPS MANY-MANY
-			$join = $this->getManyManyJoin('Products','Product');
-			$multiCategoryFilter = $this->getManyManyFilter('Products','Product');
-			$groupFilter = " ( \"ParentID\" IN (".implode(",", $groupIDs).")  OR $multiCategoryFilter )";
-		}
+		$groupFilter = $this->getGroupFilter();
+		$join = $this->getManyManyJoin('Products','Product');
 		// GET PRODUCTS
 		$where = "($groupFilter) AND ($filter)";
 		$allProducts = DataObject::get('Product',$where,null,$join);
@@ -356,6 +341,35 @@ class ProductGroup extends Page {
 		}
 		$filter = $this->getFilterOptionSQL($filterKey);
 		return $filter;
+	}
+
+	/**
+	 * works out the group filter baswed on the LevelOfProductsToShow value
+	 * it also considers the other group many-many relationship
+	 * @return String
+	 */
+	protected function getGroupFilter(){
+		$groupFilter = "";
+		if($this->LevelOfProductsToShow < 0) {
+			//all products
+			$groupFilter = " (1 = 1) ";
+		}
+		elseif($this->LevelOfProductsToShow == 0) {
+			//no produts
+			$groupFilter = " (1 = 2) " ;
+		}
+		elseif($this->LevelOfProductsToShow > 0) {
+			$groupIDs = array();
+			$groupIDs[$this->ID] = $this->ID;
+			$childGroups = $this->ChildGroups($this->LevelOfProductsToShow);
+			if($childGroups) {
+				$groupIDs = array_merge($groupIDs,$childGroups->map('ID','ID'));
+			}
+			//OTHER GROUPS MANY-MANY
+			$multiCategoryFilter = $this->getManyManyFilter('Products','Product');
+			$groupFilter = " ( \"ParentID\" IN (".implode(",", $groupIDs).")  OR $multiCategoryFilter )";
+		}
+		return $groupFilter;
 	}
 
 	/**
