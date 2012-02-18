@@ -346,6 +346,7 @@ class ProductGroup extends Page {
 	/**
 	 * works out the group filter baswed on the LevelOfProductsToShow value
 	 * it also considers the other group many-many relationship
+	 * this filter ALWAYS returns something: 1 = 1 if nothing else.
 	 * @return String
 	 */
 	protected function getGroupFilter(){
