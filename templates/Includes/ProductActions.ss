@@ -2,13 +2,15 @@
 	$VariationForm
 <% else %>
 	<% if canPurchase %>
-	<% if Price != 0 %><p class="priceDisplay">
+	<% if Price != 0 %>
+		<p class="priceDisplay">
 		<% if HasDiscount %>
 			<del>$Price.Nice</del> $CalculatedPrice.Nice
 		<% else %>
 			$CalculatedPrice.Nice
 		<% end_if %>
-		 $Currency $TaxInfo.PriceSuffix</p>
+			$Currency $TaxInfo.PriceSuffix
+		</p>
 	<% end_if %>
 	<ul class="productActions">
 		<li class=" <% if IsInCart %>show<% else %>hide<% end_if %>">
