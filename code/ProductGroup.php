@@ -418,16 +418,20 @@ class ProductGroup extends Page {
 
 	/**
 	 * returns the WHERE part of the final selection of products.
-	 * @param Object $allProducts - list of ALL products showable (without the applied LIMIT)
+	 * @param Object | Array $buyables - list of ALL products showable (without the applied LIMIT)
 	 * @return String
 	 */
 	protected function currentWhereSQL($buyables) {
+		if($buyables instanceOf DataObjectSet) {
+			$buyables = $buyables->map("ID", "ID");
+		}
 		$className = $this->currentClassNameSQL();
 		$stage = '';
+		//@to do - make sure products are versioned!
 		if(Versioned::current_stage() == "Live") {
 			$stage = "_Live";
 		}
-		$where = "\"{$className}{$stage}\".\"ID\" IN (".implode(",", $buyables->map("ID", "ID")).")";
+		$where = "\"{$className}{$stage}\".\"ID\" IN (".implode(",", $buyables).")";
 		return $where;
 	}
 
