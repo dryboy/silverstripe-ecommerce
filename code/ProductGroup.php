@@ -544,7 +544,7 @@ class ProductGroup extends Page {
 	 * Returns children ProductGroup pages of this group.
 	 * @return DataObjectSet | null
 	 */
-	function ChildGroups($maxRecursiveLevel = 99, $filter = "", $numberOfRecursions = 1) {
+	function ChildGroups($maxRecursiveLevel = 99, $filter = "", $numberOfRecursions = 0, $output = null) {
 		$numberOfRecursions++;
 		$filterWithAND = '';
 		if($filter) {
@@ -552,18 +552,15 @@ class ProductGroup extends Page {
 		}
 		if($numberOfRecursions < $maxRecursiveLevel){
 			if($children = DataObject::get('ProductGroup', "\"ParentID\" = '$this->ID' $filterWithAND")){
-				//what is this serialize stuff for?????
-				$output = unserialize(serialize($children));
-				foreach($children as $group){
-					$output->merge($group->ChildGroups($maxRecursiveLevel, $filter, $numberOfRecursions));
+				if($output == null) {
+					$output = $children;
 				}
-				return $output;
+				foreach($children as $group){
+					$output->merge($group->ChildGroups($maxRecursiveLevel, $filter, $numberOfRecursions, $output));
+				}
 			}
-			return null;
 		}
-		else{
-			return DataObject::get('ProductGroup', "\"ParentID\" = '$this->ID' $filterWithAND");
-		}
+		return $output;
 	}
 
 	/**
