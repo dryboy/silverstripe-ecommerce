@@ -9,7 +9,9 @@
 		<% else %>
 			$CalculatedPrice.Nice
 		<% end_if %>
-			$Currency $TaxInfo.PriceSuffix
+			<% if Currency %><span class="currencyQuantifier">$Currency</span><% end_if %>
+			<% if TaxInfo.PriceSuffix %><span class="taxQuantifier">$TaxInfo.PriceSuffix</span><% end_if %>
+			<% if Quantifier %><span class="mainQuantifier">$Quantifier</span><% end_if %>
 		</p>
 	<% end_if %>
 	<ul class="productActions">
