@@ -698,10 +698,21 @@ class ProductGroup extends Page {
 }
 class ProductGroup_Controller extends Page_Controller {
 
+	/**
+	 * standard SS method
+	 */
 	function init() {
 		parent::init();
 		Requirements::themedCSS('Products');
 		Requirements::themedCSS('ProductGroup');
+	}
+
+	/**
+	 * tells us if the current page is part of e-commerce.
+	 * @return Boolean
+	 */
+	function IsEcommercePage() {
+		return true;
 	}
 
 	/**
