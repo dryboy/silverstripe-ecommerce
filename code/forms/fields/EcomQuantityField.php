@@ -106,7 +106,7 @@ class EcomQuantityField extends NumericField {
 	 *@return String (HTML)
 	 **/
 	function Field() {
-		$name = this->orderItem->MainID() . '_Quantity_SetQuantityLink';
+		$name = $this->orderItem->MainID() . '_Quantity_SetQuantityLink';
 		$attributes = array(
 			'type' => 'text',
 			'class' => implode(' ',$this->classes),
