@@ -129,8 +129,8 @@ EcomCart = {
 	/**
 	 * turn on / off the ajax buttons outside of the cart (e.g. add this product to cart, delete from cart)
 	 */
-	ajaxButtonsOn: false,
-		set_ajaxButtonsOn: function(b) {this.confirmDeleteText = b;},
+	ajaxButtonsOn: true,
+		set_ajaxButtonsOn: function(b) {this.ajaxButtonsOn = b;},
 
 	/**
 	 * NOTE: set to empty string to bypass confirmation step
