@@ -34,7 +34,19 @@ class EcomQuantityField extends NumericField {
 	/**
 	 *@var $classes Array()
 	 **/
-	protected $classes = array('ajaxQuantityField');
+	protected $classes = array('ajaxQuantityField', 'removeDisabledWithJS');
+
+	/**
+	 * max length in digits
+	 *@var Integer
+	 **/
+	protected $maxLength = 3;
+
+	/**
+	 * max length in digits
+	 *@var Integer
+	 **/
+	protected $fieldSize = 3;
 
 	/**
 	 *@var $template String
@@ -91,37 +103,39 @@ class EcomQuantityField extends NumericField {
 	}
 
 	/**
-	 *@return HTML
+	 *@return String (HTML)
 	 **/
 	function Field() {
-		$size = 3; //make these customisable
-		$maxlength = 3;
+		$name = this->orderItem->MainID() . '_Quantity_SetQuantityLink';
 		$attributes = array(
 			'type' => 'text',
 			'class' => implode(' ',$this->classes),
-			'name' => $this->orderItem->QuantityFieldName(),
+			'name' => $name,
 			'value' => ($this->orderItem->Quantity) ? $this->orderItem->Quantity : "",
-			'maxlength' => $maxlength,
-			'size' => $size,
+			'maxlength' => $this->maxLength,
+			'size' => $this->fieldSize,
+			'disabled' => 'disabled',
 			'rel' => $this->getQuantityLink(),
 		);
 		//IMPROVE ME: hack to use the form field createTag method ...perhaps this should become a form field instead
-		$formfield = new FormField('hack');
+		$formfield = new FormField($name);
 		return $formfield->createTag('input', $attributes);
 	}
 
 	/**
 	 * Used for storing the quantity update link for ajax use.
+	 * @return String (HTML)
 	 */
 	function AJAXLinkHiddenField(){
+		$name = this->orderItem->MainID() . '_Quantity_SetQuantityLink';
 		if($quantitylink = $this->getQuantityLink()){
 			$attributes = array(
 				'type' => 'hidden',
 				'class' => 'ajaxQuantityField_qtylink',
-				'name' => $this->orderItem->MainID() . '_Quantity_SetQuantityLink',
+				'name' => $name,
 				'value' => $quantitylink
 			);
-			$formfield = new FormField('hack');
+			$formfield = new FormField($name);
 			return $formfield->createTag('input', $attributes);
 		}
 	}
