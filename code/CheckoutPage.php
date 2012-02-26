@@ -237,7 +237,6 @@ class CheckoutPage_Controller extends CartPage_Controller {
 	 **/
 	protected $checkoutSteps = array(
 		"orderitems",
-		"ordermodifiers",
 		"orderconfirmation",
 		"orderformandpayment"
 	);
