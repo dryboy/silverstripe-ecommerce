@@ -1,5 +1,6 @@
-<% if Variations %>
-	$VariationForm
+<div class="productActionsHolder">
+<% if HasVariations %>
+	<% if VariationForm %>$VariationForm<% end_if %>
 <% else %>
 	<% if canPurchase %>
 	<% if Price != 0 %>
@@ -22,8 +23,10 @@
 			<a class="ajaxBuyableAdd" href="$AddLink"><% _t("Product.ADDLINK","Add to cart") %></a>
 		</li>
 		<li class=" <% if IsInCart %>show<% else %>hide<% end_if %>">
-			<a href="$CheckoutLink"><% _t("Product.GOTOCHECKOUTLINK","Go to the checkout") %></a>
+			<a class="goToCheckoutLink" href="$CheckoutLink"><% _t("Product.GOTOCHECKOUTLINK","Go to the checkout") %></a>
 		</li>
 	</ul>
 	<% end_if %>
 <% end_if %>
+</div>
+
