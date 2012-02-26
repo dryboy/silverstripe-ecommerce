@@ -155,6 +155,7 @@ class OrderStatusLog extends DataObject {
 	function getCMSFields() {
 		$fields = parent::getCMSFields();
 		$fields->dataFieldByName("Note")->setRows(3);
+		$fields->dataFieldByName("Title")->setTitle("Subject");
 		$fields->replaceField("EmailSent", $fields->dataFieldByName("EmailSent")->performReadonlyTransformation());
 		$fields->replaceField("AuthorID", $fields->dataFieldByName("AuthorID")->performReadonlyTransformation());
 		if($this->OrderID) {
@@ -163,6 +164,7 @@ class OrderStatusLog extends DataObject {
 		if($this->InternalUseOnly) {
 			$fields->removeByName("EmailCustomer");
 		}
+		//get dropdown for ClassNames
 		$classes = ClassInfo::subclassesFor("OrderStatusLog");
 		$dropdownArray = array();
 		$availableLogs = self::get_available_log_classes_array();
@@ -182,6 +184,9 @@ class OrderStatusLog extends DataObject {
 		}
 		if(count($dropdownArray)) {
 			$fields->addFieldToTab("Root.Main", new DropdownField("ClassName", "Type", $dropdownArray), "Title");
+			if($this->ClassName) {
+				$fields->replaceField("ClassName", $fields->dataFieldByName("ClassName")->performReadonlyTransformation());
+			}
 		}
 		return $fields;
 	}
