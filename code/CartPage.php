@@ -220,7 +220,10 @@ class CartPage_Controller extends Page_Controller{
 		if($this->currentOrder) {
 			//IMPORTANT SECURITY QUESTION!
 			if($this->currentOrder->canView()) {
-				if($this->ID != $this->currentOrder->DisplayPage()->ID) {
+				if(!$this->currentOrder->IsSubmitted() && $this->ClassName == "CartPage") {
+					//always allow to view with cart page if not submitted
+				}
+				elseif($this->ID != $this->currentOrder->DisplayPage()->ID) {
 					Director::redirect($this->currentOrder->Link());
 				}
 			}
