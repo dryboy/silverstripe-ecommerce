@@ -132,6 +132,9 @@ Buyable::add_class("Product");
 //Object::useCustomClass('SS_Datetime','ZendDate',true);
 //Currency::setCurrencySymbol("€");
 
+//JAVASCRIPT OPTIONS:
+#EcomCart.set_ajaxButtonsOn(false);
+#see lots of other options! in ecommerce/javascript/EcomCart.js
 
 // __________________________________ END ECOMMERCE MODULE CONFIG __________________________________
 

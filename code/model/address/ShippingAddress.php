@@ -120,7 +120,7 @@ class ShippingAddress extends OrderAddress {
 
 	/**
 	 * Puts together the fields for the Order Form (and other front-end purposes).
-	 *@return Fieldset
+	 * @return Fieldset
 	 **/
 	public function getFields() {
 		$fields = parent::getEcommerceFields();
