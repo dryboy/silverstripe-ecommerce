@@ -92,6 +92,8 @@ Buyable::add_class("Product");
 //ProductGroup::remove_sort_option( $key = "title");
 //ProductGroup::add_filter_option( $key = "isonsale", $title = "Is On Sale", $sql = "IsOnSale = 1");
 //ProductGroup::remove_filter_option( $key = "isonsale");
+//ProductGroup::set_allow_more_detail_display_style(true); //make sure to format / theme ProductGroupItemMoreDetail
+//ProductGroup::set_allow_short_display_style(true);//make sure to format / theme ProductGroupItemShort
 
 
 // * * * EMAILS
