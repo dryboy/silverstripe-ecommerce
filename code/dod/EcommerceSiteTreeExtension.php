@@ -159,4 +159,13 @@ class EcommerceSiteTreeExtension_Controller extends Extension {
 		return OrderConfirmationPage::find_link();
 	}
 
+
+	/**
+	 * tells us if the current page is part of e-commerce.
+	 * @return Boolean
+	 */
+	function IsEcommercePage () {
+		return false;
+	}
+
 }
