@@ -41,11 +41,11 @@ class OrderConfirmationPage extends CartPage{
 	 **/
 	function getCMSFields(){
 		$fields = parent::getCMSFields();
-		$fields->removeFieldFromTab('Root.Content.Actions',"ProceedToCheckoutLabel");
-		$fields->removeFieldFromTab('Root.Content.Actions',"ContinueShoppingLabel");
-		$fields->removeFieldFromTab('Root.Content.Actions',"ContinuePageID");
-		$fields->removeFieldFromTab('Root.Content.Actions',"SaveOrderLinkLabel");
-		$fields->removeFieldFromTab('Root.Content.Errors',"NoItemsInOrderMessage");
+		$fields->removeFieldFromTab('Root.Content.Messages.Messages.Actions',"ProceedToCheckoutLabel");
+		$fields->removeFieldFromTab('Root.Content.Messages.Messages.Actions',"ContinueShoppingLabel");
+		$fields->removeFieldFromTab('Root.Content.Messages.Messages.Actions',"ContinuePageID");
+		$fields->removeFieldFromTab('Root.Content.Messages.Messages.Actions',"SaveOrderLinkLabel");
+		$fields->removeFieldFromTab('Root.Content.Messages.Messages.Errors',"NoItemsInOrderMessage");
 		$fields->addFieldToTab('Root.Content.Messages.Messages.Actions', new TextField('StartNewOrderLinkLabel', 'Label for starting new order - e.g. click here to start new order'));
 		$fields->addFieldToTab('Root.Content.Messages.Messages.Actions', new TextField('CopyOrderLinkLabel', 'Label for copying order items into a new one  - e.g. click here start a new order with the current order items'));
 		return $fields;
