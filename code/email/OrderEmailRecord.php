@@ -76,7 +76,7 @@ class OrderEmailRecord extends DataObject {
 	function getCMSFields() {
 		$fields = parent::getCMSFields();
 		$fields->replaceField("OrderID", $fields->dataFieldByName("OrderID")->performReadonlyTransformation());
-		$fields->addFieldToTab("Root.Main", new ReadonlyField("OrderStepNice", "Order Step", $this->OrderStepNice()));
+		$fields->replaceField("OrderStep", new ReadonlyField("OrderStepNice", "Order Step", $this->OrderStepNice()));
 		return $fields;
 	}
 
