@@ -20,9 +20,10 @@ class ProductGroup extends Page {
 	 */
 	public static $db = array(
 		"NumberOfProductsPerPage" => "Int",
+		"LevelOfProductsToShow" => "Int",
 		"DefaultSortOrder" => "Varchar(50)",
 		"DefaultFilter" => "Varchar(50)",
-		"LevelOfProductsToShow" => "Int"
+		"DisplayStyle" => "Varchar(50)"
 	);
 
 	/**
@@ -83,7 +84,7 @@ class ProductGroup extends Page {
 			return $keys[0];
 		}
 		//NON-STATIC
-		protected function getSortOptionsForDropdown(){
+		public function getSortOptionsForDropdown(){
 			$inheritTitle = _t("ProductGroup.INHERIT", "Inherit");
 			$array = array("inherit" => $inheritTitle);
 			if(is_array(self::$sort_options) && count(self::$sort_options)) {
@@ -152,7 +153,7 @@ class ProductGroup extends Page {
 			return $keys[0];
 		}
 		//NON-STATIC
-		protected function getFilterOptionsForDropdown(){
+		public function getFilterOptionsForDropdown(){
 			$inheritTitle = _t("ProductGroup.INHERIT", "Inherit");
 			$array = array("inherit" => $inheritTitle);
 			if(is_array(self::$filter_options) && count(self::$filter_options)) {
@@ -187,6 +188,66 @@ class ProductGroup extends Page {
 			}
 		}
 
+
+	/**
+	 * @static Array
+	 *
+	 * Get list of available views
+	 *
+	 * These can be set in the site config.
+	 *
+	 */
+
+	/**
+	 * @static Boolean
+	 *
+	 * Allow the shop administrator to show the products as a SHORT list in product group pages.
+	 *
+	 */
+	protected static $allow_short_display_style = false;
+		static function set_allow_short_display_style($b){self::$allow_short_display_style = $b;}
+		static function get_allow_short_display_style(){return self::$allow_short_display_style;}
+
+	/**
+	 * @static Boolean
+	 *
+	 * Allow the shop administrator to show the products as a MORE DETAIL list in product group pages.
+	 *
+	 */
+	protected static $allow_more_detail_display_style = false;
+		static function set_allow_more_detail_display_style($b){self::$allow_more_detail_display_style = $b;}
+		static function get_allow_more_detail_display_style(){return self::$allow_more_detail_display_style;}
+
+	/**
+	 * @static Array
+	 *
+	 * Get list of available views
+	 *
+	 * These can be set in the site config.
+	 *
+	 */
+	public function getDisplayStyleForDropdown(){
+		//inherit
+		$array = array(
+			"inherit" => _t("ProductGroup.INHERIT", "Inherit"),
+		);
+		//short
+		if(self::get_allow_short_display_style()) {
+			$array["Short"] = _t("ProductGroup.SHORT", "Short");
+		}
+		//standard / default
+		$array["Default"] = _t("ProductGroup.DEFAULT", "Standard");
+		//more details
+		if(self::get_allow_more_detail_display_style()) {
+			$array["MoreDetail"] = _t("ProductGroup.MOREDETAIL", "More Detail");
+		}
+		return $array;
+	}
+	protected function getDefaultDisplayStyle(){
+		return "Default";
+	}
+
+
 	/**
 	 * @static Array
 	 *
@@ -211,24 +272,56 @@ class ProductGroup extends Page {
 
 	function getCMSFields() {
 		$fields = parent::getCMSFields();
-		$numberOfProductsPerPageExplanation = $this->MyNumberOfProductsPerPage() != $this->NumberOfProductsPerPage ? _t("ProductGroup.CURRENTLVALUE", " - current value: ").$this->MyNumberOfProductsPerPage()." "._t("ProductGroup.INHERITED", " (inherited from parent page)") : "";
-		$sortOrderKey = $this->MyDefaultSortOrder();
-		$defaultSortOrderName = $this->getSortOptionTitle($sortOrderKey);
-		$defaultSortOrderExplanation = $sortOrderKey != $this->DefaultSortOrder ? _t("ProductGroup.CURRENTLVALUE", " - current value: ").$defaultSortOrderName." "._t("ProductGroup.INHERITED", " - inherited from parent page.") : "";
-		$filterKey = $this->MyDefaultFilter();
-		$defaultFilterName = $this->getFilterOptionTitle($filterKey);
-		$defaultFilterNameExplanation = $filterKey != $this->DefaultFilter ? _t("ProductGroup.CURRENTLVALUE", " - current value: ").$defaultFilterName." "._t("ProductGroup.INHERITED", " - inherited from parent page.") : "";
+		//number of products
+		$numberOfProductsPerPageExplanation = $this->MyNumberOfProductsPerPage() != $this->NumberOfProductsPerPage ? _t("ProductGroup.CURRENTLVALUE", " - current value: ").$this->MyNumberOfProductsPerPage()." "._t("ProductGroup.INHERITEDFROMPARENTSPAGE", " (inherited from parent page because it is set to zero)") : "";
 		$fields->addFieldToTab(
 			'Root.Content',
 			new Tab(
-				'Products',
+				'ProductDisplay',
 				new DropdownField("LevelOfProductsToShow", _t("ProductGroup.PRODUCTSTOSHOW", "Products to show ..."), $this->showProductLevels),
 				new HeaderField("whatproductsshown", _t("ProductGroup.WHATPRODUCTSSHOWN", _t("ProductGroup.OPTIONSSELECTEDBELOWAPPLYTOCHILDGROUPS", "Inherited options"))),
-				new NumericField("NumberOfProductsPerPage", _t("ProductGroup.PRODUCTSPERPAGE", "Number of products per page").$numberOfProductsPerPageExplanation),
-				new DropdownField("DefaultSortOrder", _t("ProductGroup.DEFAULTSORTORDER", "Default Sort Order").$defaultSortOrderExplanation, $this->getSortOptionsForDropdown()),
-				new DropdownField("DefaultFilter", _t("ProductGroup.DEFAULTFILTER", "Default Filter").$defaultFilterNameExplanation, $this->getFilterOptionsForDropdown())
+				new NumericField("NumberOfProductsPerPage", _t("ProductGroup.PRODUCTSPERPAGE", "Number of products per page").$numberOfProductsPerPageExplanation)
 			)
 		);
+		//sort
+		$sortDropdownList = $this->getSortOptionsForDropdown();
+		if(count($sortDropdownList) > 1) {
+			$sortOrderKey = $this->MyDefaultSortOrder();
+			if($this->DefaultSortOrder == "inherit") {
+				$actualValue = " (".(isset($sortDropdownList[$sortOrderKey]) ? $sortDropdownList[$sortOrderKey] : _t("ProductGroup.ERROR", "ERROR")).")";
+				$sortDropdownList["inherit"] = _t("ProductGroup.INHERIT", "Inherit").$actualValue;
+			}
+			$fields->addFieldToTab(
+				"Root.Content.ProductDisplay",
+				new DropdownField("DefaultSortOrder", _t("ProductGroup.DEFAULTSORTORDER", "Default Sort Order"), $sortDropdownList)
+			);
+		}
+		//filter
+		$filterDropdownList = $this->getFilterOptionsForDropdown();
+		if(count($filterDropdownList) > 1) {
+			$filterKey = $this->MyDefaultFilter();
+			if($this->DefaultFilter == "inherit") {
+				$actualValue = " (".(isset($filterDropdownList[$filterKey]) ? $filterDropdownList[$filterKey] : _t("ProductGroup.ERROR", "ERROR")).")";
+				$filterDropdownList["inherit"] = _t("ProductGroup.INHERIT", "Inherit").$actualValue;
+			}
+			$fields->addFieldToTab(
+				"Root.Content.ProductDisplay",
+				new DropdownField("DefaultFilter", _t("ProductGroup.DEFAULTFILTER", "Default Filter"), $filterDropdownList)
+			);
+		}
+		//displa style
+		$displayStyleDropdownList = $this->getDisplayStyleForDropdown();
+		if(count($displayStyleDropdownList) > 2) {
+			$displayStyleKey = $this->MyDefaultDisplayStyle();
+			if($this->DisplayStyle == "inherit") {
+				$actualValue = " (".(isset($displayStyleDropdownList[$displayStyleKey]) ? $displayStyleDropdownList[$displayStyleKey] : _t("ProductGroup.ERROR", "ERROR")).")";
+				$displayStyleDropdownList["inherit"] = _t("ProductGroup.INHERIT", "Inherit").$actualValue;
+			}
+			$fields->addFieldToTab(
+				"Root.Content.ProductDisplay",
+				new DropdownField("DisplayStyle", _t("ProductGroup.DEFAULTDISPLAYSTYLE", "Default Display Style"), $displayStyleDropdownList)
+			);
+		}
 		return $fields;
 	}
 
@@ -273,7 +366,8 @@ class ProductGroup extends Page {
 		// EXTRA FILTER
 		if($extraFilter) {
 			$filter.= " AND $extraFilter";
-		}		//PARENT ID
+		}
+		//PARENT ID
 		$groupFilter = $this->getGroupFilter();
 		// GET PRODUCTS
 		$class = $this->getClassNameSQL();
@@ -442,7 +536,6 @@ class ProductGroup extends Page {
 	protected function currentSortSQL() {
 		if(isset($_GET['sortby'])) {
 			$sortKey = Convert::raw2sqL($_GET['sortby']);
-
 		}
 		else {
 			$sortKey = $this->MyDefaultSortOrder();
@@ -521,7 +614,6 @@ class ProductGroup extends Page {
 
 	/**
 	 * returns the code of the default sort order.
-	 * @param $field "", "Title", "SQL"
 	 * @return String
 	 **/
 	function MyDefaultFilter() {
@@ -538,6 +630,23 @@ class ProductGroup extends Page {
 		return $defaultFilter;
 	}
 
+	/**
+	 * returns the code of the default style for template.
+	 * @return String
+	 **/
+	function MyDefaultDisplayStyle() {
+		$displayStyle = "";
+		if($this->DisplayStyle != "inherit") {
+			$displayStyle = $this->DisplayStyle;
+		}
+		if($displayStyle == "inherit" && $parent = $this->ParentGroup()) {
+			$displayStyle = $parent->MyDefaultDisplayStyle();
+		}
+		if(!$displayStyle) {
+			$displayStyle = $this->getDefaultDisplayStyle();
+		}
+		return $displayStyle;
+	}
 
 
 	/**
@@ -630,6 +739,7 @@ class ProductGroup_Controller extends Page_Controller {
 	 */
 	function SortLinks(){
 		if(count(ProductGroup::get_sort_options()) <= 0) return null;
+		if($this->totalCount < 3) return null;
 		$sort = (isset($_GET['sortby'])) ? Convert::raw2sql($_GET['sortby']) : $this->MyDefaultSortOrder();
 		$dos = new DataObjectSet();
 		foreach(ProductGroup::get_sort_options() as $key => $array){
