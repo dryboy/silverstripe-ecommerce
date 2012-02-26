@@ -183,6 +183,10 @@ class CartPage_Controller extends Page_Controller{
 
 	public static function set_message($s) {Session::set(self::get_session_code(), $s);}
 
+	/**
+	 *
+	 * @standard SS method
+	 */
 	public function init() {
 		parent::init();
 		//Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js"); VIA EcommerceSiteTreeExtension::initcontentcontroller()
@@ -242,6 +246,15 @@ class CartPage_Controller extends Page_Controller{
 		else {
 			$this->message = _t('CartPage.ORDERNOTFOUND', 'Order can not be found.');
 		}
+	}
+
+
+	/**
+	 * tells us if the current page is part of e-commerce.
+	 * @return Boolean
+	 */
+	function IsEcommercePage () {
+		return true;
 	}
 
 	/**
