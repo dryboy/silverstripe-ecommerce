@@ -241,9 +241,21 @@ class Product_Controller extends Page_Controller {
 	//to do: why do we need this?
 	static $allowed_actions = array();
 
+	/**
+	 *
+	 * Standard SS method.
+	 */
 	function init() {
 		parent::init();
 		Requirements::themedCSS('Products');
+	}
+
+	/**
+	 * tells us if the current page is part of e-commerce.
+	 * @return Boolean
+	 */
+	function IsEcommercePage () {
+		return true;
 	}
 
 	function index(){
