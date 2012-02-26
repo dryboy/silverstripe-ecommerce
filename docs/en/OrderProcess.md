@@ -9,7 +9,7 @@ Customer
  - Visit product group / category page.
  - Browse, Filter, and Search catalogue.
  - Add desired products to cart
- - Update / remove products
+ - Update / remove products (quantities)
  - Enter shipping details
  - Choose shipping method
  - Enter promotion code(s)
@@ -19,13 +19,24 @@ Customer
  - Receive goods
  - (Return goods)
  - (Cancel order)
- 
+
 Store Manager
 -------------
- 
+
  - Receive new order
  - Package
  - Send
  - (Cancel order)
- 
+
 Possibly notify the customer of changes at each stage
+
+The Checkout Process
+=============
+Within the checkout page the process is as follows:
+
+1. review + edit products
+2. enter details that may influence the total cost (e.g. country, postal code)
+2. review + edit extras
+3. enter billing and shipping address
+4. review total cost
+

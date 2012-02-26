@@ -20,12 +20,13 @@ for developers
 * [Development](Development) - Mission/aim, Coding style/conventions, Release process
  * [Testing](Testing) - infrastructure / instructions
  * [Contribution Guidelines](Contributing)
- 
+
 ## External Links
 
 * [SilverStripe eCommerce project on Google Code](http://code.google.com/p/silverstripe-ecommerce/)
 * [API Docs](http://www.incharge.co.uk/ss-ecommerce-doc/)
 * [Demo 1](http://ecommerce-demo.burnbright.co.nz/)
+* [Demo 2](http://www.silverstripe-ecommerce.com/)
 * [Silverstripe Forums](http://silverstripe.org/e-commerce-module-forum/)
 * [User Documetation](http://ecommerce-demo.burnbright.co.nz/docs/user)
 
