@@ -52,8 +52,8 @@ class Order_Email extends Email {
 	 **/
 	protected function createRecord($result, $order) {
 		$obj = new OrderEmailRecord();
-		$obj->From = $this->from;
-		$obj->To = $this->to;
+		$obj->From = $this->emailToVarchar($this->from);
+		$obj->To = $this->emailToVarchar($this->to);
 		$obj->Subject = $this->subject;
 		$obj->Content = $this->body;
 		$obj->Result = $result ? 1 : 0;
@@ -64,6 +64,11 @@ class Order_Email extends Email {
 		}
 		$obj->write();
 		return $obj;
+	}
+
+	function emailToVarchar($email) {
+		$email = str_replace(array("<", ">", '"', "'"), " - ", $email);
+		return $email;
 	}
 
 	/**
