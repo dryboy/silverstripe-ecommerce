@@ -1873,22 +1873,23 @@ class Order extends DataObject {
 	 * WHY NOT CHECKOUT PAGE: first we check for cart page.
 	 * If a cart page has been created then we refer through to Cart Page.
 	 * Otherwise it will default to the checkout page
-	 *@return Object - Page
+	 * @return Object - Page
 	 */
 	function DisplayPage() {
-		if($this->IsSubmitted()) {
+		if($this->MyStep() && $this->MyStep()->AlternativeDisplayPage()) {
+			$page = $this->MyStep()->AlternativeDisplayPage();
+		}
+		elseif($this->IsSubmitted()) {
 			$page = DataObject::get_one("OrderConfirmationPage", "\"ClassName\" = 'OrderConfirmationPage'");
 		}
 		else {
 			//make sure to get a Cart page and not some other extension of Cart Page
-			$page = DataObject::get_one("CartPage", "\"ClassName\" = 'CartPage'");
+			$page = DataObject::get_one("CheckoutPage");
 			if(!$page) {
 				//lets get the checkout page
-				$page = DataObject::get_one("CheckoutPage");
+				$page = DataObject::get_one("CartPage", "\"ClassName\" = 'CartPage'");
+
 			}
-		}
-		if($this->MyStep() && $this->MyStep()->AlternativeDisplayPage()) {
-			$page = $this->MyStep()->AlternativeDisplayPage();
 		}
 		return $page;
 	}
