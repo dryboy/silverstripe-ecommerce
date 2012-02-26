@@ -127,7 +127,7 @@ class EcomQuantityField extends NumericField {
 	 * @return String (HTML)
 	 */
 	function AJAXLinkHiddenField(){
-		$name = this->orderItem->MainID() . '_Quantity_SetQuantityLink';
+		$name = $this->orderItem->MainID() . '_Quantity_SetQuantityLink';
 		if($quantitylink = $this->getQuantityLink()){
 			$attributes = array(
 				'type' => 'hidden',
