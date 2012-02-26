@@ -792,6 +792,22 @@ class OrderStep_Paid extends OrderStep {
 
 class OrderStep_Confirmed extends OrderStep {
 
+	protected static $list_of_things_to_check = "
+		<div id=\"ExamplesOfThingsToConfirm\">
+			<h4>Examples of things to confirm</h4>
+			<ul>
+				<li>Postal code is correct</li>
+				<li>Address exists (use google maps)</li>
+				<li>Payment has arrived in Bank Account</li>
+				<li>Products are available</li>
+				<li>Credit Card details match delivery address</li>
+				<li>Tax, delivery fees, etc... are correct</li>
+			</ul>
+		</div>
+	";
+		static function set_list_of_things_to_check($s){self::$list_of_things_to_check = $s;}
+		static function get_list_of_things_to_check(){return self::$list_of_things_to_check;}
+
 	public static $defaults = array(
 		"CustomerCanEdit" => 0,
 		"CustomerCanCancel" => 0,
@@ -832,6 +848,7 @@ class OrderStep_Confirmed extends OrderStep {
 	function addOrderStepFields(&$fields, $order) {
 		$msg = _t("OrderStep.MUSTDOPAYMENTCHECK", " ... To move this order to the next step you must carry out a payment check (is the money in the bank?) by creating a record here (click me)");
 		$fields->addFieldToTab("Root.Next", $order->OrderStatusLogsTable("OrderStatusLog_PaymentCheck", $msg),"ActionNextStepManually");
+		$fields->addFieldToTab("Root.Next", new LiteralField("ExampleOfThingsToCheck", self::get_list_of_things_to_check()));
 		return $fields;
 	}
 
