@@ -163,6 +163,19 @@ class EcommercePayment extends DataObjectDecorator {
 	}
 
 	/**
+	 * standard SS method
+	 * try to finalise order if payment has been made.
+	 */
+	function onAfterWrite() {
+		parent::onAfterWrite();
+		$order = $this->owner->PaidObject();
+		if($order && $order instanceof Order && $order->IsSubmitted()) {
+		 $order->tryToFinaliseOrder();
+		}
+	}
+
+
+	/**
 	 *@return String
 	 **/
 	function Status() {
