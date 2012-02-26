@@ -1907,7 +1907,7 @@ class Order extends DataObject {
 			return $page->getOrderLink($this->ID);
 		}
 		else {
-			user_error("A Cart Page or similar needs to be setup for the e-commerce module to work.", E_USER_NOTICE);
+			user_error("A Cart / Checkout Page + an Order Confirmation Page needs to be setup for the e-commerce module to work.", E_USER_NOTICE);
 			$page = DataObject::get_one("ErrorPage", "ErrorCode = '404'");
 			if($page) {
 				return $page->Link();
