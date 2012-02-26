@@ -10,8 +10,8 @@
 	<% if CanShowStep(orderitems) %>
 	<div id="OrderItemsOuter" class="orderStep">
 
-		<% control Order %><% include Order_Content_Editable %><% end_control %>
 		<% if ModifierForms %><% control ModifierForms %><div class="modifierFormInner">$Me</div><% end_control %><% end_if %>
+		<% control Order %><% include Order_Content_Editable %><% end_control %>
 
 		<% if HasOrderSteps %>
 		<div class="orderStepPrevNextHolder next">
@@ -21,8 +21,6 @@
 
 	</div>
 	<% end_if %>
-
-
 
 	<!-- step 2 OrderConfirmation -->
 	<% if CanShowStep(orderconfirmation) %>
