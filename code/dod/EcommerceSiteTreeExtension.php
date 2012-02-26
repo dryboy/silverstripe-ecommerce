@@ -79,6 +79,7 @@ class EcommerceSiteTreeExtension_Controller extends Extension {
 
 	function onAfterInit() {
 		Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js");
+		Requirements::javascript("ecommerce/javascript/EcomCart.js");
 		$checkoutPages = DataObject::get("CartPage");
 		$jsArray = Array();
 		if($checkoutPages) {
