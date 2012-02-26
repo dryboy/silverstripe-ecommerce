@@ -12,9 +12,8 @@
  * 1. ecommerce setup (default records)
  * 2. maintance
  * 3. debug
- * 4. data cleanup
- * 5. migration
- * 6. tests
+ * 4. migration
+ * 5. tests
  *
  * @author jeremy, nicolaas
  * @todo: work out a standard "silent" option and a display option the "display" options shows all output when running it from ecommerce/dev/
@@ -64,6 +63,12 @@ class EcommerceDatabaseAdmin extends Controller{
 		return Controller::join_links(Director::absoluteBaseURL(), 'dev/ecommerce/'.$action);
 	}
 
+
+
+
+
+
+
 	//##############################
 	// 1. ECOMMERCE SETUP (DEFAULT RECORDS)
 	//##############################
@@ -107,6 +112,12 @@ class EcommerceDatabaseAdmin extends Controller{
 		$this->displayCompletionMessage($buildTask);
 	}
 
+
+
+
+
+
+
 	//##############################
 	// 2. REGULAR MAINTENANCE
 	//##############################
@@ -114,7 +125,9 @@ class EcommerceDatabaseAdmin extends Controller{
 	protected $regularMaintenance = array(
 		"clearoldcarts",
 		"recalculatethenumberofproductssold",
-		"addcustomerstocustomergroups"
+		"addcustomerstocustomergroups",
+		"setdefaultproductgroupvalues",
+		"fixbrokenordersubmissiondata"
 	);
 
 	/**
@@ -145,7 +158,7 @@ class EcommerceDatabaseAdmin extends Controller{
 		$this->displayCompletionMessage($buildTask);
 	}
 	/**
-	 * executes build task
+	 * executes build task: AddCustomersToCustomerGroups
 	 *
 	 */
 	function addcustomerstocustomergroups($request) {
@@ -153,47 +166,12 @@ class EcommerceDatabaseAdmin extends Controller{
 		$buildTask->run($request);
 		$this->displayCompletionMessage($buildTask);
 	}
-
-	//##############################
-	// DEBUG ACTIONS
-	//##############################
-
-	protected $debugActions = array(
-	);
-
 	/**
-	 * @return DataObjectSet list of data debug actions
+	 * executes build task: SetDefaultProductGroupValues
 	 *
 	 */
-	function DebugActions() {
-		return $this->createMenuDOSFromArray($this->debugActions, $type = "debugActions");
-	}
-
-
-	//##############################
-	// DATA CLEANUPS
-	//##############################
-
-	protected $dataCleanups = array(
-		"deleteecommerceproductstask",
-		"fixbrokenordersubmissiondata"
-	);
-
-	/**
-	 * @return DataObjectSet list of data cleanup tasks
-	 *
-	 */
-	function DataCleanups() {
-		return $this->createMenuDOSFromArray($this->dataCleanups, $type = "DataCleanups");
-	}
-
-
-	/**
-	 * executes build task: DeleteEcommerceProductsTask
-	 *
-	 */
-	function deleteecommerceproductstask($request){
-		$buildTask = new DeleteEcommerceProductsTask($request);
+	function setdefaultproductgroupvalues($request) {
+		$buildTask = new SetDefaultProductGroupValues($request);
 		$buildTask->run($request);
 		$this->displayCompletionMessage($buildTask);
 	}
@@ -208,9 +186,29 @@ class EcommerceDatabaseAdmin extends Controller{
 		$this->displayCompletionMessage($buildTask);
 	}
 
+	//##############################
+	// 3. DEBUG ACTIONS
+	//##############################
+
+	protected $debugActions = array(
+	);
+
+	/**
+	 * @return DataObjectSet list of data debug actions
+	 *
+	 */
+	function DebugActions() {
+		return $this->createMenuDOSFromArray($this->debugActions, $type = "debugActions");
+	}
+
+
+
+
+
+
 
 	//##############################
-	// MIGRATIONS
+	// 4. MIGRATIONS
 	//##############################
 
 	protected $migrations = array(
@@ -250,8 +248,14 @@ class EcommerceDatabaseAdmin extends Controller{
 	}
 
 
+
+
+
+
+
+
 	//##############################
-	// TESTS
+	// 5. TESTS
 	//##############################
 
 	protected $tests = array(
