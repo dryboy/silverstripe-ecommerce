@@ -13,7 +13,12 @@
 		<div class="resultsBar">
 			<% if SortLinks %><span class="sortOptions"><% _t('ProductGroup.SORTBY','Sort by') %> <% control SortLinks %><a href="$Link" class="sortlink $Current">$Name</a> <% end_control %></span><% end_if %>
 		</div>
-		<ul class="productList"><% control Products %><% include ProductGroupItem %><% end_control %></ul>
+		<ul class="productList displayStyle$MyDefaultDisplayStyle">
+		<% if MyDefaultDisplayStyle = Short %><% control Products %><% include ProductGroupItemShort %><% end_control %>
+		<% else %><% if MyDefaultDisplayStyle = MoreDetail %><% control Products %><% include ProductGroupItemMoreDetail %><% end_control %>
+		<% else %><% control Products %><% include ProductGroupItem %><% end_control %>
+		<% end_if %><% end_if %>
+		</ul>
 		<div class="clear"><!-- --></div>
 	</div>
 <% include ProductGroupPagination %>
