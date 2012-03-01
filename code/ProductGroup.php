@@ -446,7 +446,7 @@ class ProductGroup extends Page {
 			$groupFilter = " ( \"ParentID\" IN (".implode(",", $groupIDs).") ";
 			if($this->getProductsAlsoInOtherGroups()) {
 				$multiCategoryFilter = $this->getManyManyFilter('Products','Product');
-				$groupFilter .= " ( OR $multiCategoryFilter  ) ";
+				$groupFilter .= "  OR ( $multiCategoryFilter  ) ";
 			}
 			$groupFilter .= " ) ";
 		}
