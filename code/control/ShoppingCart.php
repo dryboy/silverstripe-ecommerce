@@ -34,7 +34,7 @@ class ShoppingCart extends Object{
 	 * indicates where carts are cleaned up all the time (the alternative is to setup a cron job).
 	 *@var Boolean
 	 **/
-	protected static $cleanup_every_time = true;
+	protected static $cleanup_every_time = false;
 		static function set_cleanup_every_time($bool = false){self::$cleanup_every_time = $bool;}
 
 
@@ -223,14 +223,21 @@ class ShoppingCart extends Object{
 			return false;
 		}
 		if(!$buyable->canPurchase()) {
-			if($item->ID) {
+			if($item->exists()) {
 				$item->delete();
+				$item->destroy();
 			}
 			return false;
 		}
 		return $item;
 	}
 
+	/**
+	 * @todo: what does this method do???
+	 * @return Integer
+	 * @param Integer $quantity
+	 * @param Object ($buyable)
+	 */
 	protected function prepareQuantity($quantity, $buyable) {
 		$quantity = round($quantity, $buyable->QuantityDecimals());
 		if($quantity < 0 || (!$quantity && $quantity !== 0)) {
@@ -244,6 +251,7 @@ class ShoppingCart extends Object{
 	 * Helper function for making / retrieving order items.
 	 * we do not need things like "canPurchase" here, because that is with the "addBuyable" method.
 	 * NOTE: does not write!
+	 *@todo: WHY IS THIS PUBLIC?
 	 *@param DataObject $buyable
 	 *@param Array $parameters
 	 *@return OrderItem
@@ -278,6 +286,7 @@ class ShoppingCart extends Object{
 
 	/**
 	 * Removes a modifier from the cart
+	 * @param Object(modifier)
 	 */
 	public function removeModifier($modifier){
 		$modifier = (is_numeric($modifier)) ? DataObject::get_by_id('OrderModifier',$modifier) : $modifier;
@@ -303,7 +312,7 @@ class ShoppingCart extends Object{
 
 	/**
 	 * Sets an order as the current order.
-	 *
+	 * @param Object (Order) $order
 	 */
 	public function loadOrder($order){
 		//TODO: how to handle existing order
@@ -320,7 +329,7 @@ class ShoppingCart extends Object{
 
 	/**
 	 * NOTE: tried to copy part to the Order Class - but that was not much of a go-er.
-	 *@return DataObject(Order)
+	 * @return DataObject(Order)
 	 **/
 	public function copyOrder($oldOrderID) {
 		$oldOrder = Order::get_by_id_if_can_view($oldOrderID);
@@ -349,11 +358,11 @@ class ShoppingCart extends Object{
 
 	/**
 	 * sets country in order so that modifiers can be recalculated, etc...
-	 *@param String - $countryCode
+	 * @param String - $countryCode
 	 **/
 	public function setCountry($countryCode) {
 		if(EcommerceCountry::code_allowed($countryCode)) {
-			$this->currentOrder()->SetRegionFields($countryCode);
+			$this->currentOrder()->SetCountryFields($countryCode);
 		}
 		else {
 			//user_error("country not allowed", E_USER_NOTICE);
@@ -429,10 +438,12 @@ class ShoppingCart extends Object{
 				}
 			}
 			//if you are not logged in but the order belongs to a member then clear the cart.
+			/***** THIS IS NOT CORRECT, BECAUSE YOU CAN CREATE AN ORDER FOR A USER AND NOT BE LOGGED IN!!! ***
 			elseif($this->order->MemberID && !$member) {
 				$this->clear();
 				return false;
 			}
+			*/
 			$this->order->calculateOrderAttributes();
 		}
 		return $this->order;
