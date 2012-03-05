@@ -14,20 +14,35 @@
 class EcommerceRole extends DataObjectDecorator {
 
 	/**
-	 *
-	 *@var Boolean - $automatic_membership = automatically add new customer as a member.
+	 * allow customers to setup an account - when set to false customer can NEVER set up an account at all.
+	 * @var Boolean
+	 **/
+	protected static $allow_customers_to_setup_accounts = true;
+		static function set_allow_customers_to_setup_accounts($b){self::$allow_customers_to_setup_accounts = $b;}
+		static function get_allow_customers_to_setup_accounts(){return self::$allow_customers_to_setup_accounts;}
+
+	/**
+	 * automatically add new customer as a member, when set to false members that do not enter a password
+	 * are not added as members.
+	 * @var Boolean
 	 **/
 	protected static $automatic_membership = true;
 		static function set_automatic_membership($b){self::$automatic_membership = $b;}
 		static function get_automatic_membership(){return self::$automatic_membership;}
+
 	/**
-	 *
-	 *@var Boolean - $automatically_update_member_details = automatically update member details for a logged-in user.
+	 * automatically update member details for a logged-in user
+	 * when set to TRUE, the member details are updated based on the values in the Billing Address.
+	 * @var Boolean
 	 **/
-	protected static $automatically_update_member_details = false;
+	protected static $automatically_update_member_details = true;
 		static function set_automatically_update_member_details($b){self::$automatically_update_member_details = $b;}
 		static function get_automatically_update_member_details(){return self::$automatically_update_member_details;}
 
+	/**
+	 * standard SS method
+	 * defines additional statistics
+	 */
 	function extraStatics() {
 		return array(
 			'db' => array(
@@ -44,14 +59,26 @@ class EcommerceRole extends DataObjectDecorator {
 	}
 
 
+	/**
+	 * code used for the customer Member group
+	 * @var String
+	 **/
 	protected static $customer_group_code = 'shopcustomers';
 		static function set_customer_group_code($s) {self::$customer_group_code = $s;}
 		static function get_customer_group_code() {return ereg_replace("[^A-Za-z0-9]", "", self::$customer_group_code);}
 
+	/**
+	 * name used for the customer Member group
+	 * @var String
+	 **/
 	protected static $customer_group_name = "shop customers";
 		static function set_customer_group_name($s) {self::$customer_group_name = $s;}
 		static function get_customer_group_name() {return self::$customer_group_name;}
 
+	/**
+	 * permission code used for the customer Member group
+	 * @var String
+	 **/
 	protected static $customer_permission_code = "SHOPCUSTOMER";
 		static function set_customer_permission_code($s) {self::$customer_permission_code = $s;}
 		static function get_customer_permission_code() {return ereg_replace("[^A-Za-z0-9]", "", self::$customer_permission_code);}
@@ -79,22 +106,43 @@ class EcommerceRole extends DataObjectDecorator {
 		return false;
 	}
 
+	/**
+	 * code used for the shop admin Member group
+	 * @var String
+	 **/
 	protected static $admin_group_code = "shopadministrators";
 		static function set_admin_group_code($s) {self::$admin_group_code = $s;}
 		static function get_admin_group_code() {return ereg_replace("[^A-Za-z0-9]", "", self::$admin_group_code);}
 
+	/**
+	 * name used for the shop admin Member group
+	 * @var String
+	 **/
 	protected static $admin_group_name = "shop administrators";
 		static function set_admin_group_name($s) {self::$admin_group_name = $s;}
 		static function get_admin_group_name() {return self::$admin_group_name;}
 
+	/**
+	 * permission code used for the shop admin Member group
+	 * @var String
+	 **/
 	protected static $admin_permission_code = "SHOPADMIN";
 		static function set_admin_permission_code($s) {self::$admin_permission_code = $s;}
 		static function get_admin_permission_code() {return ereg_replace("[^A-Za-z0-9]", "", self::$admin_permission_code);}
 
+	/**
+	 * title for the admin role
+	 * @var String
+	 **/
 	protected static $admin_role_title = "managing store";
 		static function set_admin_role_title($s){self::$admin_role_title = $s;}
 		static function get_admin_role_title(){return self::$admin_role_title;}
 
+
+	/**
+	 * the permission codes that get granted to the shop administrator
+	 * @var Array
+	 **/
 	protected static $admin_role_permission_codes = array(
 		"CMS_ACCESS_ProductsAndGroupsModelAdmin",
 		"CMS_ACCESS_SalesAdmin",
@@ -129,6 +177,11 @@ class EcommerceRole extends DataObjectDecorator {
 		return $fields;
 	}
 
+	/**
+	 * returns content for a literal field for the CMS that links through to the member.
+	 * @return String
+	 **/
+
 	function getEcommerceFieldsForCMSAsString() {
 		$v = "<address>";
 		$v = "Name: ". $this->owner->getTitle();
@@ -143,7 +196,7 @@ class EcommerceRole extends DataObjectDecorator {
 
 
 	/**
-	 *
+	 * @param Boolean $additionalFields: extra fields to be added.
 	 * @return FieldSet
 	 */
 	function getEcommerceFields($additionalFields = false) {
@@ -179,7 +232,10 @@ class EcommerceRole extends DataObjectDecorator {
 	}
 
 
-	//this method needs to be tested!
+	/**
+	 * standard SS method
+	 * Make sure the member is added as a customer
+	 */
 	public function onAfterWrite() {
 		parent::onAfterWrite();
 		//...
@@ -193,6 +249,7 @@ class EcommerceRole extends DataObjectDecorator {
 	}
 
 	/**
+	 * Is the member a member of the ShopAdmin Group
 	 *@return Boolean
 	 **/
 	function IsShopAdmin() {
@@ -203,11 +260,6 @@ class EcommerceRole extends DataObjectDecorator {
 			return Permission::checkMember($this->owner, self::get_admin_permission_code());
 		}
 	}
-
-	function populateDefaults() {
-		parent::populateDefaults();
-	}
-
 
 
 }
