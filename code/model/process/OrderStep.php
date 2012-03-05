@@ -213,7 +213,7 @@ class OrderStep extends DataObject {
 		$fields->addFieldToTab("Root.InternalDescription", new TextareaField("Description", _t("OrderStep.DESCRIPTION", "Explanation for internal use only"), 5));
 		$fields->addFieldToTab("Root.CustomerMessage", new HTMLEditorField("CustomerMessage", _t("OrderStep.CUSTOMERMESSAGE", "Customer Message"), 5));
 		//adding
-		if(!$this->ID || !$this->isDefaultStatusOption()) {
+		if(!$this->exists() || !$this->isDefaultStatusOption()) {
 			$fields->removeFieldFromTab("Root.Main", "Code");
 			$fields->addFieldToTab("Root.Main", new DropdownField("ClassName", _t("OrderStep.TYPE", "Type"), self::get_not_created_codes_for_order_steps_to_include()), "Name");
 		}
