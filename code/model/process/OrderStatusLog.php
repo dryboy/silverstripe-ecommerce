@@ -214,7 +214,7 @@ class OrderStatusLog extends DataObject {
 		parent::onBeforeWrite();
 		//START HACK TO PREVENT LOSS OF ORDERID CAUSED BY COMPLEX TABLE FIELDS....
 		// THIS MEANS THAT A LOG CAN NEVER SWITCH FROM ONE ORDER TO ANOTHER...
-		if($this->ID) {
+		if($this->exists()) {
 			$orderID = $this->getField("OrderID");
 			if($orderID) {
 				$this->OrderID = $orderID;
