@@ -153,7 +153,7 @@ class ProductBulkLoader extends CsvBulkLoader{
 	function imageByFilename(&$obj, $val, $record){
 		$filename = strtolower(Convert::raw2sql($val));
 		if($filename && $image = DataObject::get_one('Image',"LOWER(\"Filename\") LIKE '%$filename%'")){ //ignore case
-			if($image->ID){
+			if($image->exists()){
 				$image->ClassName = self::get_product_class_name().'_Image'; //must be this type of image
 				$image->write();
 				return $image;
