@@ -353,7 +353,7 @@ class ShoppingCart extends Object{
 	 **/
 	public function setCountry($countryCode) {
 		if(EcommerceCountry::code_allowed($countryCode)) {
-			$this->currentOrder()->SetCountry($countryCode);
+			$this->currentOrder()->SetRegionFields($countryCode);
 		}
 		else {
 			//user_error("country not allowed", E_USER_NOTICE);
@@ -364,7 +364,7 @@ class ShoppingCart extends Object{
 	 *@param Integer - $regionID - EcommerceRegion.ID
 	 **/
 	public function setRegion($regionID) {
-		$this->currentOrder()->SetRegion($regionID);
+		$this->currentOrder()->SetRegionFields($regionID);
 	}
 
 	/**

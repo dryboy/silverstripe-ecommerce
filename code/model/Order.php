@@ -172,14 +172,16 @@ class Order extends DataObject {
 	 * Returns a set of modifier forms for use in the checkout order form,
 	 * Controller is optional, because the orderForm has its own default controller.
 	 *
-	 *@return DataObjectSet of OrderModiferForms
+	 * @param Controller $optionalController
+	 * @param Validator $optionalValidator
+	 * @return DataObjectSet of OrderModiferForms
 	 **/
-	public function getModifierForms($optionalController = null) {
+	public function getModifierForms($optionalController = null, $optionalValidator = null) {
 		$dos = new DataObjectSet();
 		if($modifiers = $this->Modifiers()) {
 			foreach($modifiers as $modifier) {
 				if($modifier->showForm()) {
-					if($form = $modifier->getModifierForm($optionalController)) {
+					if($form = $modifier->getModifierForm($optionalController, $optionalValidator)) {
 						$dos->push($form);
 					}
 				}
