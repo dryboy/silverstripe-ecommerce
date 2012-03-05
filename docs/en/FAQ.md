@@ -4,9 +4,9 @@ If you have a common question needing a common answer, hopefully you can find it
 
 *Also see the user documentation FAQ.*
 
-### Which version of Silverstripe / eCommerce / payment should I use?
+### Which version of Silverstripe / e-commerce / payment should I use?
 
-Please refer to the requirements on this page: [http://silverstripe.org/ecommerce-module/](http://silverstripe.org/ecommerce-module/)
+Please refer to the requirements on this page: [http://silverstripe.org/e-commerce-module/](http://silverstripe.org/e-commerce-module/)
 
 
 ### How do I customise the country field? - change country list, remove field completely, set default
@@ -22,7 +22,7 @@ see [payment](Payment)
 
 ### How do I add shipping calculation to the checkout process? How do I customise fees for different locations / delivery zones?
 
-The default eCommerce module provides a few shipping [modifiers](OrderModifiers). You can also have one custom built for your needs.
+The default e-commerce module provides a few shipping [modifiers](OrderModifiers). You can also have one custom built for your needs.
 
 
 ### How do I use in a different language?
