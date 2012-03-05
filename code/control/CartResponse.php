@@ -66,6 +66,12 @@ class CartResponse extends EcommerceResponse {
 			);
 		}
 
+		//add basic cart
+		$js[] = array(
+			"id" => $currentOrder->SideBarCartID(),
+			"parameter" => "innerHTML",
+			"value" => $currentOrder->renderWith("CartShortInner")
+		);
 
 		//merge and return
 		if(is_array($data)) {
