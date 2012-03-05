@@ -182,7 +182,7 @@ class OrderModifier extends OrderAttribute {
 
 
 
-// ########################################  *** init and update functions
+// ########################################  *** 5. init and update functions
 
 
 	public static function init_for_order($className) {
@@ -251,7 +251,7 @@ class OrderModifier extends OrderAttribute {
 		return $this->CalculatedTotal;
 	}
 
-// ########################################  *** 5. form functions (showform and getform)
+// ########################################  *** 6. form functions (showform and getform)
 
 	/**
 	 * This determines whether the OrderModifierForm is shown or not. {@link OrderModifier::get_form()}.
@@ -259,7 +259,7 @@ class OrderModifier extends OrderAttribute {
 	 * An example would be a form allowing the user to select the delivery option.
 	 * @return boolean
 	 */
-	public function showForm() {
+	public function ShowForm() {
 		return false;
 	}
 
@@ -267,28 +267,88 @@ class OrderModifier extends OrderAttribute {
 	 * This function returns a form that allows a user
 	 * to change the modifier to the order.
 	 *
+	 * We have mainly added this function as an example!
 	 *
-	 * @param String $name- name for the modifier form
 	 * @param Controller $optionalController  - optional custom controller class
 	 * @param Validator $optionalValidator  - optional custom validator class
 	 * @return OrderModifierForm or subclass
 	 */
-	public function getModifierForm($name = 'ModifierForm', $optionalController = null, $optionalValidator = null) {
+	public function getModifierForm($optionalController = null, $optionalValidator = null) {
 		if($this->showForm()) {
-			return new OrderModifierForm($optionalController, $name, $fields = new FieldSet(), $actions = new FieldSet(), $optionalValidator);
+			$fields = new FieldSet();
+			$fields->push($this->headingField());
+			$fields->push($this->descriptionField());
+			return new OrderModifierForm($optionalController, "ModifierForm", $fields, $actions = new FieldSet(), $optionalValidator);
 		}
 	}
 
-
-
-
-// ######################################## *** 6. template functions (e.g. ShowInTable, TableTitle, etc...)
+	/**
+	 *
+	 * @return Object (HeadingField)
+	 */
+	protected function headingField(){
+		$name = $this->ClassName.'Heading';
+		if($this->Heading()) {
+			return new HeaderField($name, $this->Heading(), 4);
+		}
+		return new LiteralField($name, "<!-- EmptyHeading -->", "<!-- EmptyHeading -->");
+	}
 
 	/**
-	* tells you whether the modifier shows up on the checkout  / cart form.
-	* this is also the place where we check if the modifier has been updated.
-	*@return Boolean
-	**/
+	 *
+	 * @return Object (LiteralField)
+	 */
+	protected function descriptionField(){
+		$name = $this->ClassName.'Description';
+		if($this->Description()) {
+
+			return new LiteralField($name, "<div id=\"{$name}DescriptionHolder\" class=\"descriptionHolder\">".$this->Description()."</div>");
+		}
+		return new LiteralField($name, "<!-- EmptyDescription -->","<!-- EmptyDescription -->");
+	}
+
+
+// ######################################## *** 7. template functions (e.g. ShowInTable, TableTitle, etc...)
+
+	/**
+	 * returns a heading if there is one.
+	 * @return String
+	 **/
+	public function Heading(){
+		if($obj = DataObject::get_one("OrderModifier_Descriptor", "\"ModifierClassName\" = '".$this->ClassName."'")) {
+			return $obj->Heading;
+		}
+		return "";
+	}
+
+	/**
+	 * returns a description if there is one.
+	 * @return String (html)
+	 **/
+	public function Description(){
+		if($obj = DataObject::get_one("OrderModifier_Descriptor", "\"ModifierClassName\" = '".$this->ClassName."'")) {
+			return $obj->Description;
+		}
+		return "";
+	}
+
+	/**
+	 * returns a page for a more info link... (if there is one)
+	 * @return Object (SiteTree)
+	 **/
+	public function Link(){
+		if($obj = DataObject::get_one("OrderModifier_Descriptor", "\"ModifierClassName\" = '".$this->ClassName."'")) {
+			return $obj->Link();
+		}
+		return null;
+	}
+
+
+	/**
+	 * tells you whether the modifier shows up on the checkout  / cart form.
+	 * this is also the place where we check if the modifier has been updated.
+	 * @return Boolean
+	 */
 	public function ShowInTable() {
 		if(!$this->baseInitCalled && $this->canBeUpdated()) {
 			user_error("While the order can be edited, you must call the runUpdate method everytime you get the details for this modifier", E_USER_ERROR);
@@ -397,10 +457,10 @@ class OrderModifier extends OrderAttribute {
 	}
 
 
-// ######################################## ***  7. inner calculations....
+// ######################################## ***  8. inner calculations....
 
 
-// ######################################## ***  8. calculate database fields ( = protected function Live[field name]() { ....}
+// ######################################## ***  9. calculate database fields ( = protected function Live[field name]() { ....}
 
 	protected function LiveName() {
 		user_error("The \"LiveName\" method has be defined in ...".$this->ClassName, E_USER_NOTICE);
@@ -426,7 +486,7 @@ class OrderModifier extends OrderAttribute {
 	}
 
 
-// ######################################## ***  9. Type Functions (IsChargeable, IsDeductable, IsNoChange, IsRemoved)
+// ######################################## ***  10. Type Functions (IsChargeable, IsDeductable, IsNoChange, IsRemoved)
 
 	/**
 	 * should be extended if it is true in child class
@@ -462,7 +522,7 @@ class OrderModifier extends OrderAttribute {
 
 
 
-// ######################################## ***  10. standard database related functions (e.g. onBeforeWrite, onAfterWrite, etc...)
+// ######################################## ***  11. standard database related functions (e.g. onBeforeWrite, onAfterWrite, etc...)
 
 	/**
 	 */
@@ -476,6 +536,28 @@ class OrderModifier extends OrderAttribute {
 
 	function onAfterRemove(){
 		//you can add more stuff here in sub classes
+	}
+
+
+	function requireDefaultRecords(){
+		parent::requireDefaultRecords();
+		$arrayOfModifiers = Order::get_modifiers();
+		if(is_array($arrayOfModifiers) && count($arrayOfModifiers)) {
+			$obj = DataObject::get_one("OrderModifier_Descriptor", "\"ModifierClassName\" = '".$this->ClassName."'");
+			if(in_array($this->ClassName, $arrayOfModifiers)) {
+				if(!$obj) {
+					$obj = new OrderModifier_Descriptor();
+					$obj->ModifierClassName = $this->ClassName;
+					$obj->write();
+					DB::alteration_message("Creating description for ".$this->ClassName, "created");
+				}
+			}
+			elseif($obj) {
+				$obj->delete();
+				$obj->destroy();
+				DB::alteration_message("Deleting description for ".$this->ClassName, "deleted");
+			}
+		}
 	}
 
 
@@ -528,3 +610,75 @@ class OrderModifier extends OrderAttribute {
 }
 
 
+class OrderModifier_Descriptor extends DataObject {
+
+	static $db = array(
+		"ModifierClassName" => "Varchar(100)",
+		"Heading" => "Varchar",
+		"Description" => "HTMLText"
+	);
+
+	static $has_one = array(
+		"Link" => "SiteTree"
+	);
+
+	//database related settings
+	static $indexes = array(
+		"ModifierClassName" => true
+	);
+
+	public static $searchable_fields = array(
+		"Heading" => "PartialMatchFilter",
+		"Description" => "PartialMatchFilter"
+	);
+
+	public static $field_labels = array(
+		"ModifierClassName" => "Code"
+	);
+
+	public static $summary_fields = array(
+		"RealName" => "Code",
+		"Heading" => "Heading",
+		"Description" => "Description"
+	);
+
+	public static $casting = array(
+		"RealName" => "Varchar"
+	);
+
+	public static $singular_name = "Order Extra Description";
+		function i18n_singular_name() { return _t("OrderModifier.ORDEREXTRADESCRIPTION", "Order Extra Description");}
+
+	public static $plural_name = "Order Extra Descriptions";
+		function i18n_plural_name() { return _t("OrderModifier.ORDEREXTRADESCRIPTIONS", "Order Extra Descriptions");}
+
+	static $can_create = false;
+
+	public function canCreate($member = null) {return false;}
+
+	public function canView($member = null) {return true;}
+
+	public function canEdit($member = null) {return true;}
+
+	public function canDelete($member = null) {return false;}
+
+	function getCMSFields(){
+		$fields = parent::getCMSFields();
+		$fields->replaceField("ModifierClassName", new ReadonlyField("RealName", "Name"));
+		$fields->replaceField("LinkID", new TreeDropdownField("LinkID", "More info link (optional)", "SiteTree"));
+		return $fields;
+	}
+
+	function RealName(){
+		return $this->getRealName();
+	}
+
+	function getRealName(){
+		if(class_exists($this->ModifierClassName)) {
+			$obj = DataObject::get_one($this->ModifierClassName);
+			return $obj->i18n_singular_name(). " (".$this->ModifierClassName.")";
+		}
+		return $this->ModifierClassName;
+	}
+
+}
