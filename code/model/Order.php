@@ -32,31 +32,31 @@ class Order extends DataObject {
 
 	public static $api_access = array(
 		'view' => array(
-				'OrderEmail',
-				'EmailLink',
-				'PrintLink',
-				'RetrieveLink',
-				'Title',
-				'Total',
-				'SubTotal',
-				'TotalPaid',
-				'TotalOutstanding',
-				'TotalItems',
-				'TotalItemsTimesQuantity',
-				'IsCancelled',
-				'Country' ,
-				'FullNameCountry',
-				'IsSubmitted',
-				'CustomerStatus',
-				'CanHaveShippingAddress',
-				"CancelledBy",
-				"BillingAddress",
-				"UseShippingAddress",
-				"ShippingAddress",
-				"Status",
-				"Attributes"
-			)
-	 );
+			'OrderEmail',
+			'EmailLink',
+			'PrintLink',
+			'RetrieveLink',
+			'Title',
+			'Total',
+			'SubTotal',
+			'TotalPaid',
+			'TotalOutstanding',
+			'TotalItems',
+			'TotalItemsTimesQuantity',
+			'IsCancelled',
+			'Country' ,
+			'FullNameCountry',
+			'IsSubmitted',
+			'CustomerStatus',
+			'CanHaveShippingAddress',
+			'CancelledBy',
+			'BillingAddress',
+			'UseShippingAddress',
+			'ShippingAddress',
+			'Status',
+			'Attributes'
+		)
+	);
 
 	public static $db = array(
 		'SessionID' => "Varchar(32)", //so that in the future we can link sessions with Orders.... One session can have several orders, but an order can onnly have one session
@@ -155,6 +155,14 @@ class Order extends DataObject {
 	}
 
 	/**
+	 * returns an array of currently used modifiers.
+	 * @return Array
+	 */
+	public static function get_modifiers(){
+		return self::$modifiers;
+	}
+
+	/**
 	 * Set the modifiers that apply to this site.
 	 *
 	 * @param array $modifiers An array of {@link OrderModifier} subclass names
@@ -172,6 +180,7 @@ class Order extends DataObject {
 	 * Returns a set of modifier forms for use in the checkout order form,
 	 * Controller is optional, because the orderForm has its own default controller.
 	 *
+	 * @return Null | DataObjectSet of OrderModiferForms
 	 * @param Controller $optionalController
 	 * @param Validator $optionalValidator
 	 * @return DataObjectSet of OrderModiferForms
@@ -274,11 +283,7 @@ class Order extends DataObject {
 	 * STANDARD SILVERSTRIPE STUFF
 	 **/
 	public static $summary_fields = array(
-		"Title" => "Title",
-		//'BillingAddress.Surname',
-		//'BillingAddress.Email',
-		//'TotalAsCurrencyObject.Nice' => 'Total',
-		//'Status.Name' => "Status",
+		"Title" => "Title"
 	);
 		public static function get_summary_fields() {return self::$summary_fields;}
 
@@ -364,8 +369,8 @@ class Order extends DataObject {
 	 **/
 	function getCMSFields(){
 		$fields = parent::getCMSFields();
-		if($this->ID) {
-			$submitted = (bool)$this->IsSubmitted();
+		if($this->exists()) {
+			$submitted = $this->IsSubmitted() ? true : false;
 			if($submitted) {
 				$this->tryToFinaliseOrder();
 			}
@@ -382,11 +387,11 @@ class Order extends DataObject {
 			$fields->insertAfter(
 				new Tab(
 					"Next",
-					new HeaderField("MyOrderStepHeader", "Current Status"),
+					new HeaderField("MyOrderStepHeader", _t("Order.CURRENTSTATUS", "Current Status")),
 					$this->OrderStepField(),
-					new HeaderField("OrderStepNextStepHeader", "Action Next Step", 1),
-					new LiteralField("OrderStepNextStepHeaderExtra", "<p><strong>If you have made any changes to the order then you will have to refresh or save this record to see up-to-date options here.</strong></p>"),
-					new LiteralField("ActionNextStepManually", "<br /><br /><br /><h3>Manual Status Change</h3>")
+					new HeaderField("OrderStepNextStepHeader", _t("Order.ACTIONNEXTSTEP", "Action Next Step"), 1),
+					new LiteralField("OrderStepNextStepHeaderExtra", "<p><strong>"._t("Order.NEEDTOREFRESH", "If you have made any changes to the order then you will have to refresh or save this record to see up-to-date options here.")."</strong></p>"),
+					new LiteralField("ActionNextStepManually", "<br /><br /><br /><h3>"._t("Order.MANUALSTATUSCHANGE", "Manual Status Change")."</h3>")
 					//SEE: $this->MyStep()->addOrderStepFields($fields, $this); BELOW
 				),
 				"Main"
@@ -414,8 +419,8 @@ class Order extends DataObject {
 				$paymentsTable->setShowPagination(false);
 				$paymentsTable->setRelationAutoSetting(true);
 				$fields->addFieldToTab('Root.Payments',$paymentsTable);
-				$fields->addFieldToTab("Root.Payments", new ReadOnlyField("TotalPaid", "Total Paid", $this->getTotalPaid()));
-				$fields->addFieldToTab("Root.Payments", new ReadOnlyField("TotalOutstanding", "Total Outstanding", $this->getTotalOutstanding()));
+				$fields->addFieldToTab("Root.Payments", new ReadOnlyField("TotalPaid", _t("Order.TOTALPAID", "Total Paid"), $this->getTotalPaid()));
+				$fields->addFieldToTab("Root.Payments", new ReadOnlyField("TotalOutstanding", _t("Order.TOTALOUTSTANDING", "Total Outstanding"), $this->getTotalOutstanding()));
 				if($this->canPay()) {
 					$link = EcommercePaymentController::make_payment_link($this->ID);
 					$js = "window.open(this.href, 'payment', 'toolbar=0,scrollbars=1,location=1,statusbar=1,menubar=0,resizable=1,width=800,height=600'); return false;";
@@ -448,7 +453,8 @@ class Order extends DataObject {
 				$fields->addFieldToTab('Root.Log', $oldOrderStatusLogs);
 			}
 			else {
-				$fields->addFieldToTab('Root.Main', new LiteralField('MainDetails', _t("Order.NODETAILSSHOWN", '<p>No details are shown here as this order has not been submitted yet. Once you change the status of the order more options will be available.</p>')));
+				$msg = _t("Order.NOSUBMITTEDYET", 'No details are shown here as this order has not been submitted yet. Once you change the status of the order more options will be available.');
+				$fields->addFieldToTab('Root.Main', new LiteralField('MainDetails', '<p>'.$msg.'</p>p>'));
 				$orderItemsTable = new HasManyComplexTableField(
 					$this, //$controller
 					"Attributes", //$name =
@@ -463,7 +469,7 @@ class Order extends DataObject {
 				$orderItemsTable->setShowPagination(false);
 				$orderItemsTable->setRelationAutoSetting(true);
 				$orderItemsTable->addSummary(
-					"Total",
+					_t("Order.TOTAL", "Total"),
 					array("Total" => array("sum","Currency->Nice"))
 				);
 				$fields->addFieldToTab('Root.Items',$orderItemsTable);
@@ -485,43 +491,34 @@ class Order extends DataObject {
 				$array = array();
 				if($this->MemberID) {
 					$array[0] =  "Remove Customer";
-					$array[$this->MemberID] =  "Leave with current customer: ".$this->Member()->getTitle();
+					$array[$this->MemberID] =  _t("Order.LEAVEWITHCURRENTCUSTOMER", "Leave with current customer: ").$this->Member()->getTitle();
 				}
 				else {
 					$array[0] =  " -- Select Customer -- ";
 					$currentMember = Member::currentUser();
 					$currentMemberID = $currentMember->ID;
-					$array[$currentMemberID] = "Assign this order to me: ".Member::currentUser()->getTitle();
+					$array[$currentMemberID] = _t("Order.ASSIGNTHISORDERTOME", "Assign this order to me: ").Member::currentUser()->getTitle();
 				}
 				$group = DataObject::get_one("Group", "\"Code\" = '".EcommerceRole::get_customer_group_code()."'");
 				if($group) {
 					$members = $group->Members();
 					if($members) {
-						$membersArray = $members->toDropDownMap($index = 'ID', $titleField = 'Title', $emptyString = "---- select an existing customer ---", $sort = true);
+						$membersArray = $members->toDropDownMap($index = 'ID', $titleField = 'Title', $emptyString = _t("Order.SELECTEXISTINGCUSTOMER", "---- select an existing customer ---"), $sort = true);
 						$array = array_merge($array, $membersArray);
 					}
 				}
-				$fields->addFieldToTab("Root.Main", new DropdownField("MemberID", "Select Cutomer", $array),"CustomerOrderNote");
+				$fields->addFieldToTab("Root.Main", new DropdownField("MemberID", _t("Order.SELECTCUSTOMER", "Select Cutomer"), $array),"CustomerOrderNote");
 			}
-			$fields->addFieldToTab('Root.Addresses',new HeaderField("BillingAddressHeader", "Billing Address"));
+			$fields->addFieldToTab('Root.Addresses',new HeaderField("BillingAddressHeader", _t("Order.BILLINGADDRESS", "Billing Address")));
 
 			$billingAddressObject = $this->CreateOrReturnExistingAddress("BillingAddress");
-			if($billingAddressObject && !$billingAddressObject->ID) {
-				$billingAddressObject->write();
-				$this->BillingAddressID = $billingAddressObject->ID;
-				$this->write();
-			}
-			elseif($billingAddressObject && ($billingAddressObject->ID != $this->BillingAddressID)) {
-				$this->BillingAddressID = $billingAddressObject->ID;
-				$this->write();
-			}
 			$billingAddressField = new HasOneComplexTableField(
 				$this, //$controller
 				"BillingAddress", //$name =
 				"BillingAddress", //$sourceClass =
 				null, //$fieldList =
 				null, //$detailedFormFields =
-				"\"OrderID\" = ".$this->ID, //$sourceFilter =
+				"\"BillingAddress\".\"ID\" = ".$this->BillingAddressID, //$sourceFilter =
 				"\"Created\" ASC", //$sourceSort =
 				null //"INNER JOIN \"Order\" ON \"Order\".\"BillingAddressID\" = \"BillingAddress\".\"ID\"" //$sourceJoin =
 			);
@@ -540,26 +537,17 @@ class Order extends DataObject {
 			$fields->addFieldToTab('Root.Addresses',$billingAddressField);
 
 			if(OrderAddress::get_use_separate_shipping_address()) {
-				$fields->addFieldToTab('Root.Addresses',new HeaderField("ShippingAddressHeader", "Shipping Address"));
-				$fields->addFieldToTab('Root.Addresses',new CheckboxField("UseShippingAddress", "Use separate shipping address"));
+				$fields->addFieldToTab('Root.Addresses',new HeaderField("ShippingAddressHeader", _t("Order.SHIPPINGADDRESS", "Shipping Address")));
+				$fields->addFieldToTab('Root.Addresses',new CheckboxField("UseShippingAddress", _t("Order.USESEPERATEADDRESS", "Use seperate shipping address?")));
 				if($this->UseShippingAddress) {
 					$shippinggAddressObject = $this->CreateOrReturnExistingAddress("ShippingAddress");
-					if($shippinggAddressObject && !$shippinggAddressObject->ID) {
-						$shippinggAddressObject->write();
-						$this->ShippinggAddressID = $shippinggAddressObject->ID;
-						$this->write();
-					}
-					elseif($shippinggAddressObject && ($shippinggAddressObject->ID != $this->ShippingAddressID)) {
-						$this->ShippingAddressID = $shippinggAddressObject->ID;
-						$this->write();
-					}
 					$shippingAddressField = new HasOneComplexTableField(
 						$this, //$controller
 						"ShippingAddress", //$name =
 						"ShippingAddress", //$sourceClass =
 						null, //$fieldList =
 						null, //$detailedFormFields =
-						"\"OrderID\" = ".$this->ID."", //$sourceFilter =
+						"\"ShippingAddress\".\"ID\" = ".$this->ShippingAddressID, //$sourceFilter =
 						"\"Created\" ASC", //$sourceSort =
 						null //"INNER JOIN \"Order\" ON \"Order\".\"ShippingAddressID\" = \"ShippingAddress\".\"ID\"" //$sourceJoin =
 					);
@@ -578,11 +566,12 @@ class Order extends DataObject {
 				}
 			}
 			$this->MyStep()->addOrderStepFields($fields, $this);
-			$fields->addFieldToTab("Root.Next", new DropdownField("StatusID", "Override Status Manually (not recommended)", DataObject::get("OrderStep")->toDropDownMap()));
+			$fields->addFieldToTab("Root.Next", new DropdownField("StatusID", _t("Order.OVERRIDE", "Override Status Manually (not recommended)"), DataObject::get("OrderStep")->toDropDownMap()));
 		}
 		else {
 			$fields->removeByName("Main");
-			$fields->addFieldToTab("Root.Next", new LiteralField("VeryFirstStep", "<p>The first step in creating an order is to save (<i>add</i>) it.</p>"));
+			$msg = _t("Order.VERYFIRSTSTEP", "The first step in creating an order is to save (<i>add</i>) it.");
+			$fields->addFieldToTab("Root.Next", new LiteralField("VeryFirstStep", "<p>".$msg."</p>"));
 		}
 		$this->extend('updateCMSFields',$fields);
 		return $fields;
@@ -893,46 +882,45 @@ class Order extends DataObject {
 
 
 	/**
-	 * returns a member linked to the order -
-	 * this member is NOT written, if a member is already linked, it will return the existing member.
-	 * also note that if a new member is created, it is not automatically written
-	 *@return: DataObject (Member)
+	 * Returns a member linked to the order.
+	 * If a member is already linked, it will return the existing member.
+	 * Otherwise it will return a new Member.
+	 *
+	 * Any new member is NOT written, because we dont want to create a new member unless we have to!
+	 * We will not add a member to the order unless a new one is created in the checkout
+	 * OR the member is logged in / logs in.
+	 *
+	 * Also note that if a new member is created, it is not automatically written
+	 * @return: DataObject (Member)
 	 **/
 	public function CreateOrReturnExistingMember() {
-		if(!$this->MemberID) {
-			if($member = Member::currentMember()) {
-				$this->write();
-			}
+		if($this->MemberID) {
+			$member = $this->Member();
 		}
-		else {
-			$member = DataObject::get_by_id("Member", $this->MemberID);
+		elseif($member = Member::currentMember()) {
+			$this->MemberID = $member->ID;
+			$this->write();
 		}
 		if(!$member) {
 			$member = new Member();
 		}
-		if($member) {
-			if($member->ID) {
-				$this->MemberID = $member->ID;
-			}
-			return $member;
-		}
-		return null;
+		return $member;
 	}
 
 	/**
-	 * DOES NOT WRITE OrderAddress for the sake of it.
-	 * returns either the existing one or a new one...
+	 * Returns either the existing one or a new Order Address...
+	 * All Orders will have a Shipping and Billing address attached to it.
 	 * Method used to retrieve object e.g. for $order->BillingAddress(); "BillingAddress" is the method name you can use.
 	 * If the method name is the same as the class name then dont worry about providing one.
 	 *
-	 *@param String $className   - ClassName of the Address (e.g. BillingAddress or ShippingAddress)
-	 *@param String $alternativeMethodName  -
+	 * @param String $className   - ClassName of the Address (e.g. BillingAddress or ShippingAddress)
+	 * @param String $alternativeMethodName  - method to retrieve Address
 	 *
-	 * @return DataObject (OrderAddress)
+	 * @return Null | DataObject (OrderAddress)
 	 **/
 
 	public function CreateOrReturnExistingAddress($className, $alternativeMethodName = '') {
-		if($this->ID) {
+		if($this->exists()) {
 			$variableName = $className."ID";
 			$methodName = $className;
 			if($alternativeMethodName) {
@@ -945,15 +933,14 @@ class Order extends DataObject {
 			if(!$address) {
 				$address = new $className();
 				if($member = $this->CreateOrReturnExistingMember()) {
-					$address->FillWithLastAddressFromMember($member, $write = false);
+					if($member->exists()) {
+						$address->FillWithLastAddressFromMember($member, $write = false);
+					}
 				}
 			}
 			if($address) {
-				//save address
-				$address->OrderID = $this->ID;
-				$address->write();
 				//save order
-				$this->$variableName = $address->ID;
+				$this->$variableName = $address->write();
 				$this->write();
 				return $address;
 			}
@@ -964,9 +951,9 @@ class Order extends DataObject {
 	/**
 	 * Sets the country in the billing and shipping address
 	 * TO DO: only set one or the other....
-	 *
+	 * @param String $countryCode - code for the country e.g. NZ
 	 **/
-	public function SetCountry($countryCode) {
+	public function SetCountryFields($countryCode) {
 		if($billingAddress = $this->CreateOrReturnExistingAddress("BillingAddress")) {
 			$billingAddress->SetCountryFields($countryCode);
 		}
@@ -978,14 +965,14 @@ class Order extends DataObject {
 	}
 
 	/**
-	 * Sets the country in the billing and shipping address
-	 *
+	 * Sets the region in the billing and shipping address
+	 * @param Integer $regionID - ID for the region to be set
 	 **/
-	public function SetRegion($regionID) {
+	public function SetRegionFields($regionID) {
 		if($billingAddress = $this->CreateOrReturnExistingAddress("BillingAddress")) {
 			$billingAddress->SetRegionFields($regionID);
 		}
-		if(OrderAddress::get_use_separate_shipping_address()) {
+		if($this->CanHaveShippingAddress()) {
 			if($shippingAddress = $this->CreateOrReturnExistingAddress("ShippingAddress")) {
 				$shippingAddress->SetRegionFields($regionID);
 			}
@@ -1138,7 +1125,7 @@ class Order extends DataObject {
 	 *@return DataObjectSet (OrderItems)
 	 */
 	function Items($filter = "") {
- 		if(!$this->ID){
+ 		if(!$this->exists()){
  			$this->write();
 		}
 		return $this->itemsFromDatabase($filter);
@@ -1346,7 +1333,7 @@ class Order extends DataObject {
 		$member = $this->getMemberForCanFunctions($member);
 		$extended = $this->extendedCan('canCreate', $member->ID);
 		if($extended !== null) {return $extended;}
-		if($member->ID) {
+		if($member->exists()) {
 			return $member->IsShopAdmin();
 		}
 	}
@@ -1357,7 +1344,7 @@ class Order extends DataObject {
 	 *@return Boolean
 	 **/
 	public function canView($member = null) {
-		if(!$this->ID ) {
+		if(!$this->exists()) {
 			return true;
 		}
 		$member = $this->getMemberForCanFunctions($member);
@@ -1412,8 +1399,8 @@ class Order extends DataObject {
 	}
 
 	/**
-	 *
-	 *@return Boolean
+	 * Can a payment be made for this Order?
+	 * @return Boolean
 	 **/
 	function canPay($member = null) {
 		$member = $this->getMemberForCanFunctions($member);
@@ -1477,6 +1464,10 @@ class Order extends DataObject {
 		return null;
 	}
 
+	/**
+	 * returns all the logs that can be viewed by the customer.
+	 * @return null | DataObjectSet
+	 */
 	function CustomerViewableOrderStatusLogs() {
 		$customerViewableOrderStatusLogs = new DataObjectSet();
 		$logs = $this->OrderStatusLogs();
@@ -1505,6 +1496,10 @@ class Order extends DataObject {
    * 8. GET METHODS (e.g. Total, SubTotal, Title, etc...)
 *******************************************************/
 
+	/**
+	 * returns the email to be used for customer communication
+	 * @return String
+	 */
 	function OrderEmail(){return $this->getOrderEmail();}
 	function getOrderEmail() {
 		$email = "";
@@ -1520,6 +1515,11 @@ class Order extends DataObject {
 		return $email;
 	}
 
+
+	/**
+	 * returns the absolute link to the order that can be used in the customer communication (email)
+	 * @return String
+	 */
 	function EmailLink(){return $this->getEmailLink();}
 	function getEmailLink() {
 		if($this->IsSubmitted()) {
@@ -1527,6 +1527,10 @@ class Order extends DataObject {
 		}
 	}
 
+	/**
+	 * returns the absolute link to the order for printing
+	 * @return String
+	 */
 	function PrintLink(){return $this->getPrintLink();}
 	function getPrintLink() {
 		if(!isset($_REQUEST["print"])) {
@@ -1536,9 +1540,14 @@ class Order extends DataObject {
 		}
 	}
 
+	/**
+	 * returns the absolute link that the customer can use to retrieve the email WITHOUT logging in.
+	 * @todo: is this a security risk?
+	 * @return String
+	 */
 	function RetrieveLink(){return $this->getRetrieveLink();}
 	function getRetrieveLink() {
-		if(!$this->IsSubmitted) {
+		if(!$this->IsSubmitted()) {
 			return CheckoutPage::find_link();
 		}
 		else {
@@ -1556,7 +1565,7 @@ class Order extends DataObject {
 	 **/
 	function Title() {return $this->getTitle();}
 	function getTitle() {
-		if($this->ID) {
+		if($this->exists()) {
 			$title = $this->i18n_singular_name(). " #$this->ID - ".$this->dbObject('Created')->Nice();
 			if($this->CancelledByID) {
 				$title .= " - "._t("Order.CANCELLED","CANCELLED");
@@ -1800,21 +1809,24 @@ class Order extends DataObject {
 			"Shipping" => 0
 		);
 		if($this->BillingAddressID) {
-			if($billingAddress = DataObject::get_by_id("BillingAddress", $this->BillingAddressID)) {
+			if($billingAddress = $this->BillingAddress()) {
 				if($billingAddress->RegionID) {
 					$regionIDs["Billing"] = $billingAddress->RegionID;
 				}
 			}
 		}
-		if($this->ShippingAddressID) {
-			if($shippingAddress = DataObject::get_by_id("ShippingAddress", $this->ShippingAddressID)) {
-				if($shippingAddress->ShippingRegionID) {
-					$regionIDs["Shipping"] = $shippingAddress->ShippingRegionID;
+		if($this->CanHaveShippingAddress()) {
+			if($this->ShippingAddressID) {
+				if($shippingAddress = $this->ShippingAddress()) {
+					if($shippingAddress->ShippingRegionID) {
+						$regionIDs["Shipping"] = $shippingAddress->ShippingRegionID;
+					}
 				}
 			}
 		}
 		if(count($regionIDs)) {
-			if(OrderAddress::get_use_shipping_address_for_main_region_and_country() && $regionIDs["Shipping"]) {
+			//note the double-check with $this->CanHaveShippingAddress() and get_use_....
+			if($this->CanHaveShippingAddress() && OrderAddress::get_use_shipping_address_for_main_region_and_country() && $regionIDs["Shipping"]) {
 				return DataObject::get_by_id("EcommerceRegion", $regionIDs["Shipping"]);
 			}
 			else {
@@ -1832,7 +1844,7 @@ class Order extends DataObject {
 	function IsSubmitted(){return $this->getIsSubmitted();}
 	function getIsSubmitted() {
 		$className = OrderStatusLog::get_order_status_log_class_used_for_submitting_order();
-		$submissionLog = DataObject::get_one($className, "\"OrderID\" = ".$this->ID, false);
+		$submissionLog = DataObject::get_one($className, "\"OrderID\" = ".$this->ID, $cache = false);
 		if($submissionLog) {
 			return true;
 		}
@@ -1844,7 +1856,7 @@ class Order extends DataObject {
 	/**
 	 * Casted variable - has the order been submitted?
 	 *
-	 *@return Text
+	 * @return Text
 	 **/
 	function CustomerStatus(){return $this->getCustomerStatus();}
 	function getCustomerStatus($withDetail = true) {
@@ -1922,7 +1934,7 @@ class Order extends DataObject {
 	 * WHY NOT CHECKOUT PAGE: first we check for cart page.
 	 * If a cart page has been created then we refer through to Cart Page.
 	 * Otherwise it will default to the checkout page
-	 *@return String(URLSegment)
+	 * @return String(URLSegment)
 	 */
 	function CheckoutLink() {
 		$page = DataObject::get_one("CheckoutPage");
@@ -1930,7 +1942,7 @@ class Order extends DataObject {
 			return $page->Link();
 		}
 		else {
-			$page = DataObject::get_one("ErrorPage", "ErrorCode = '404'");
+			$page = DataObject::get_one("ErrorPage", "\"ErrorCode\" = '404'");
 			if($page) {
 				return $page->Link();
 			}
@@ -1952,7 +1964,7 @@ class Order extends DataObject {
 
 	/**
 	 * Converts the Order into HTML, based on the Order Template.
-	 *@return String - HTML1
+	 * @return String - HTML1
 	 **/
 	public function ConvertToHTML() {
 		return $this->renderWith("Order");
@@ -2013,7 +2025,7 @@ class Order extends DataObject {
 	 * The IDs are used for setting values in the HTML using the AJAX method with
 	 * the CartResponse providing the DATA (JSON).
 	 *
-	 *@var String
+	 * @var String
 	 **/
 	protected static $template_id_prefix = "";
 		public static function set_template_id_prefix($s) {self::$template_id_prefix = $s;}
@@ -2021,43 +2033,48 @@ class Order extends DataObject {
 
 	/**
 	 * id that is used in templates and in the JSON return @see CartResponse
-	 *@return String
+	 * @return String
+	 **/
+	function SideBarCartID() {return self::$template_id_prefix.'Side_Bar_Cart';}
+	/**
+	 * id that is used in templates and in the JSON return @see CartResponse
+	 * @return String
 	 **/
 	function TableMessageID() {return self::$template_id_prefix.'Table_Order_Message';}
 
 	/**
 	 * id that is used in templates and in the JSON return @see CartResponse
-	 *@return String
+	 * @return String
 	 **/
 	function TableSubTotalID() {return self::$template_id_prefix.'Table_Order_SubTotal';}
 
 	/**
 	 * id that is used in templates and in the JSON return @see CartResponse
-	 *@return String
+	 * @return String
 	 **/
 	function TableTotalID() {return self::$template_id_prefix.'Table_Order_Total';}
 
 	/**
 	 * id that is used in templates and in the JSON return @see CartResponse
-	 *@return String
+	 * @return String
 	 **/
 	function CartSubTotalID() {return self::$template_id_prefix.'Cart_Order_SubTotal';}
 
 	/**
 	 * id that is used in templates and in the JSON return @see CartResponse
-	 *@return String
+	 * @return String
 	 **/
 	function CartTotalID() {return self::$template_id_prefix.'Cart_Order_Total';}
 
 	/**
 	 * id that is used in templates and in the JSON return @see CartResponse
-	 *@return String
+	 * @return String
 	 **/
 	function TotalItemsClass() {return self::$template_id_prefix.'number_of_items_in_cart';}
 
 	/**
 	 * id that is used in templates and in the JSON return @see CartResponse
-	 *@return String
+	 * @return String
 	 **/
 	function OrderForm_OrderForm_AmountID() {return self::$template_id_prefix.'OrderForm_OrderForm_Amount';}
 
@@ -2141,27 +2158,14 @@ class Order extends DataObject {
 	 **/
 	function onBeforeWrite() {
 		parent::onBeforeWrite();
-		if((isset($this->record['ID']) && $this->record['ID'])) {
+		if($this->exists()) {
 			$this->newRecord = false;
-		}
-		//double-check if Billing and Shipping Address are linked correctly.
-		if(!$this->BillingAddressID && $this->ID) {
-			$billingAddress = DataObject::get_one("BillingAddress", "\"OrderID\" = ".intval($this->ID));
-			if($billingAddress) {
-				$this->BillingAddressID = $billingAddress->ID;
-			}
-		}
-		if(!$this->ShippingAddressID && $this->ID) {
-			$shippingAddress = DataObject::get_one("ShippingAddress", "\"OrderID\" = ".intval($this->ID));
-			if($shippingAddress) {
-				$this->ShippingAddressID = $shippingAddress->ID;
-			}
 		}
 	}
 
 	/**
-	 *standard SS method
-	 *
+	 * standard SS method
+	 * adds the ability to
 	 **/
 	function onAfterWrite() {
 		parent::onAfterWrite();
@@ -2184,6 +2188,7 @@ class Order extends DataObject {
 	 *standard SS method
 	 *
 	 * delete attributes, statuslogs, and payments
+	 * THIS SHOULD NOT BE USED AS ORDERS SHOULD BE CANCELLED NOT DELETED
 	 */
 	function onBeforeDelete(){
 		parent::onBeforeDelete();
@@ -2193,7 +2198,6 @@ class Order extends DataObject {
 				$attribute->destroy();
 			}
 		}
-		return;
 
 		//THE REST WAS GIVING ERRORS - POSSIBLY DUE TO THE FUNNY RELATIONSHIP (one-one, two times...)
 		if($billingAddress = $this->BillingAddress()) {
@@ -2209,8 +2213,6 @@ class Order extends DataObject {
 			}
 		}
 
-		/**
-		 * THIS SHOULD NOT BE DELETED - ORDER SHOULD BE CANCELLED - NOT DELETED
 		if($statuslogs = $this->OrderStatusLogs()){
 			foreach($statuslogs as $log){
 				$log->delete();
@@ -2229,8 +2231,6 @@ class Order extends DataObject {
 				$email->destroy();
 			}
 		}
-		*
-		**/
 
 	}
 
