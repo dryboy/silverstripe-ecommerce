@@ -19,17 +19,18 @@ class BillingAddress extends OrderAddress {
 	 */
 	public static $api_access = array(
 		'view' => array(
-				'Prefix',
-				'FirstName',
-				'Surname',
-				'Address',
-				'Address2',
-				'City',
-				'PostalCode',
-				'Country',
-				'Phone',
-				'MobilePhone'
-			)
+			'Prefix',
+			'FirstName',
+			'Surname',
+			'Address',
+			'Address2',
+			'City',
+			'PostalCode',
+			'Country',
+			'Phone',
+			'MobilePhone',
+			'Email'
+		)
 	);
 
 	static $db = array(
@@ -41,9 +42,9 @@ class BillingAddress extends OrderAddress {
 		'City' => 'Varchar(100)',
 		'PostalCode' => 'Varchar(30)',
 		'Country' => 'Varchar(4)',
-		'Phone' => 'Varchar(200)',
-		'MobilePhone' => 'Varchar(200)',
-		'Email' => 'Varchar'
+		'Phone' => 'Varchar(50)',
+		'MobilePhone' => 'Varchar(50)',
+		'Email' => 'Varchar(250)'
 	);
 
 	/**
@@ -54,9 +55,20 @@ class BillingAddress extends OrderAddress {
 	 * (otherwise we ended up with a "has two" relationship in Order)
 	 **/
 	static $has_one = array(
-		"Order" => "Order",
 		"Region" => "EcommerceRegion"
 	);
+
+	/**
+	 * standard SS static definition
+	 **/
+	public static $belongs_to = array(
+		"Order" => "Order"
+	);
+
+	/**
+	 * standard SS static definition
+	 */
+	public static $default_sort = "\"BillingAddress\".\"ID\" DESC";
 
 	static $indexes = array(
 		// "SearchFields" => "fulltext (FirstName, Surname, Address, Address2, City, PostalCode, Email)"
@@ -67,16 +79,14 @@ class BillingAddress extends OrderAddress {
 		)
 	);
 
-	public static $default_sort = "\"OrderID\" DESC";
-
 	public static $casting = array(
 		"FullCountryName" => "Varchar"
 	);
 
 	public static $searchable_fields = array(
-		'OrderID' => array(
-			'field' => 'NumericField',
-			'title' => 'Order Number'
+		"OrderID" => array(
+			"field" => "NumericField",
+			"title" => "Order Number"
 		),
 		"Email" => "PartialMatchFilter",
 		"FirstName" => "PartialMatchFilter",
@@ -99,7 +109,7 @@ class BillingAddress extends OrderAddress {
 		function i18n_plural_name() { return _t("OrderAddress.BILLINGADDRESSES", "Billing Addresses");}
 
 	/**
-	 *
+	 * method for casted variable
 	 *@return String
 	 **/
 	function FullCountryName() {return $this->getFullCountryName();}
@@ -139,14 +149,14 @@ class BillingAddress extends OrderAddress {
 			new TextField('Phone', _t('OrderAddress.PHONE','Phone'))
 		);
 		$billingFields->SetID('BillingFields');
+		$this->makeSelectedFieldsReadOnly($billingFields);
 		$fields->push($billingFields);
 		$this->extend('augmentEcommerceBillingAddressFields', $fields);
 		return $fields;
 	}
 
 	/**
-	 * Return which member fields should be required on {@link OrderForm}
-	 * and {@link ShopAccountForm}.
+	 * Return which billing address fields should be required on {@link OrderFormAddress}
 	 *
 	 * @return array
 	 */
@@ -162,24 +172,15 @@ class BillingAddress extends OrderAddress {
 		return $requiredFieldsArray;
 	}
 
+	/**
+	 * standard SS method
+	 * sets the country to the best known country {@link EcommerceCountry}
+	 **/
 	function populateDefaults() {
 		parent::populateDefaults();
 		$this->Country = EcommerceCountry::get_country();
 	}
 
 
-	/**
-	 * standard SS method
-	 * double-check if Billing Address is linked correctly
-	 */
-	function onBeforeWrite() {
-		parent::onBeforeWrite();
-		if(!$this->OrderID && $this->ID) {
-			$order = DataObject::get_one("Order", "\"ShippingAddressID\" = ".intval($this->ID));
-			if($order) {
-				$this->OrderID = $order->ID;
-			}
-		}
-	}
 
 }
