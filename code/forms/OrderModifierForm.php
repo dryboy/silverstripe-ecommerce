@@ -50,16 +50,16 @@ class OrderModifierForm extends Form {
 	 *@param $validator SS_Validator
 	 **/
 
-	function __construct($optionalController = null, $name,FieldSet $fields, FieldSet $actions,$validator = null){
+	function __construct($optionalController = null, $name, FieldSet $fields, FieldSet $actions,$optionalValidator = null){
 		if(!$optionalController) {
 			$className = self::get_controller_class();
 			$optionalController = new $className();
 		}
-		if(!$validator) {
+		if(!$optionalValidator) {
 			$className = self::get_validator_class();
-			$validator = new $className();
+			$optionalValidator = new $className();
 		}
-		parent::__construct($optionalController, $name, $fields, $actions, $validator);
+		parent::__construct($optionalController, $name, $fields, $actions, $optionalValidator);
 		Requirements::themedCSS($this->ClassName);
 		Requirements::javascript(THIRDPARTY_DIR."/jquery-form/jquery.form.js");
 		//add JS for the modifier - added in modifier
@@ -77,31 +77,9 @@ class OrderModifierForm extends Form {
 }
 
 
-/**
- *NOTE: this extends the standard OrderModifierFor to include AjaxSubmit functionality
- * So that customers can submit the form using AJAX
- *
- **/
-
-class OrderModifierForm_AjaxSubmit extends OrderModifierForm {
-
-	/**
-	 *
-	 *@param $optionalController Controller
-	 *@param $name String
-	 *@param $fields FieldSet
-	 *@param $actions FieldSet
-	 *@param $validator SS_Validator
-	 **/
-
-	function __construct($optionalController = null, $name, FieldSet $fields, FieldSet $actions,$validator = null){
-		parent::__construct($optionalController, $name, $fields, $actions, $validator);
-	}
-
-}
 
 /**
- * This controller allows you to submit modifier forms from anywhere on the site, especially the cart page.
+ * This controller allows you to submit modifier forms from anywhere on the site, especially the cart / checkout page.
  */
 class OrderModifierForm_Controller extends Controller{
 
