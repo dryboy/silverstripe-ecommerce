@@ -7,4 +7,5 @@
 	<% end_if %>
 	</div>
 	<h3 class="productTitle"><a href="$Link">$Title</a></h3>
+	<% include ProductActionsForGroup %>
 </li>

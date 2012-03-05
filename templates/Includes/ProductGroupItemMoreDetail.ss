@@ -7,6 +7,6 @@
 	<% end_if %>
 	</div>
 	<div class="limtedContentHolder">$Content.Summary</div>
-	<% include ProductActions %>
+	<% include ProductActionsForGroup %>
 	<p class="moreInformation"><a href="$Link">more info ...</a></p>
 </li>

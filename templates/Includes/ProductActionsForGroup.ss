@@ -1,6 +1,7 @@
 <div class="productActionsHolder">
 <% if HasVariations %>
-	<% if VariationForm %>$VariationForm<% end_if %>
+	<% if IsInCart %><span class="inCart">in cart</span><% end_if %>
+	<a href="$Link/selectoptions/" class="selectOptions">select options</a>
 <% else %>
 	<% if canPurchase %>
 	<% if Price != 0 %>
