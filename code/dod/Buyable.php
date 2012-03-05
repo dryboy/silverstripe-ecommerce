@@ -38,14 +38,14 @@ class Buyable extends DataObjectDecorator {
 
 	/**
 	 * static variable that "remembers" if the shop is closed.
-	 *@var Boolean
+	 * @var Boolean
 	 **/
 	private static $shop_closed = null;
 
 	/**
 	 * Adds a bit to the end of a buyable to make it into an order item - e.g. Product and Product_OrderItem....
 	 * You sell products, but there is only ONE product A, so customers actually buy an OrderItem linked to ProductA.
-	 *@var String
+	 * @var String
 	 **/
 	protected static $order_item_class_name_post_fix = "_OrderItem";
 		static function get_order_item_class_name_post_fix() {return self::$order_item_class_name_post_fix;}
