@@ -16,25 +16,50 @@ class OrderAddress extends DataObject {
 
 
 
+
+
 	/**
-	 *Do the goods need to he shipped and if so,
-	 * do we allow these goods to be shipped to a different address than the billing address?
+	 * standard SS static definition
+	 */
+	public static $singular_name = "Order Address";
+		function i18n_singular_name() { return _t("OrderAddress.ORDERADDRESS", "Order Address");}
+
+
+	/**
+	 * standard SS static definition
+	 */
+	public static $plural_name = "Order Addresses";
+		function i18n_plural_name() { return _t("OrderAddress.ORDERADDRESSES", "Order Addresses");}
+
+
+	/**
+	 * standard SS static definition
+	 */
+	public static $casting = array(
+		"FullName" => "Text"
+	);
+
+
+	/**
+	 * Do the goods need to he shipped and if so,
+	 * do we allow these goods to be shipped to a
+	 * different address than the billing address?
 	 *
-	 *@var Boolean
+	 * @var Boolean
 	 **/
 	protected static $use_separate_shipping_address = false;
-		static function set_use_separate_shipping_address($b){self::$use_separate_shipping_address = $b;}
-		static function get_use_separate_shipping_address(){return self::$use_separate_shipping_address;}
+		public static function set_use_separate_shipping_address($b){self::$use_separate_shipping_address = $b;}
+		public static function get_use_separate_shipping_address(){return self::$use_separate_shipping_address;}
 
 	/**
 	 * In determing the country/region from which the order originated.
 	 * For, for example, tax purposes - we use the Billing Address (@see Order::Country).
-	 * However, we can also choose the Shipping Address by setting the variable below to TRUE
-	 *@var Boolean
+	 * However, we can also choose the Shipping Address by setting this variable to TRUE
+	 * @var Boolean
 	 **/
 	protected static $use_shipping_address_for_main_region_and_country = false;
-		static function set_use_shipping_address_for_main_region_and_country($b) {self::$use_shipping_address_for_main_region_and_country = $b;}
-		static function get_use_shipping_address_for_main_region_and_country() {return self::$use_shipping_address_for_main_region_and_country;}
+		public static function set_use_shipping_address_for_main_region_and_country($b) {self::$use_shipping_address_for_main_region_and_country = $b;}
+		public static function get_use_shipping_address_for_main_region_and_country() {return self::$use_shipping_address_for_main_region_and_country;}
 
 
 	/**
@@ -43,27 +68,28 @@ class OrderAddress extends DataObject {
 	 * @var String $s
 	 **/
 	protected static $field_class_and_id_prefix = "";
-		static function set_field_class_and_id_prefix($s){self::$field_class_and_id_prefix = $s;}
-		static function get_field_class_and_id_prefix(){return self::$field_class_and_id_prefix;}
+		public static function set_field_class_and_id_prefix($s){self::$field_class_and_id_prefix = $s;}
+		public static function get_field_class_and_id_prefix(){return self::$field_class_and_id_prefix;}
 
 	/**
 	 * e.g. http://www.nzpost.co.nz/Cultures/en-NZ/OnlineTools/PostCodeFinder
 	 * @return String
 	 */
-	static function get_postal_code_url() {$sc = DataObject::get_one('SiteConfig'); if($sc) {return $sc->PostalCodeURL;}  }
+	public static function get_postal_code_url() {$sc = SiteConfig::current_site_config(); if($sc) {return $sc->PostalCodeURL;}  }
 
 	/**
 	 * e.g. "click here to check post code"
 	 * @return String
 	 */
-	static function get_postal_code_label() {$sc = DataObject::get_one('SiteConfig'); if($sc) {return $sc->PostalCodeLabel;}  }
+	public static function get_postal_code_label() {$sc = SiteConfig::current_site_config(); if($sc) {return $sc->PostalCodeLabel;}  }
 
 	/**
 	 * returns the id of the MAIN country field for template manipulation.
 	 * Main means the one that is used as the primary one (e.g. for tax purposes).
+	 * @see OrderAddress::use_shipping_address_for_main_region_and_country
 	 * @return String
 	 */
-	static function get_country_field_ID() {
+	public static function get_country_field_ID() {
 		if(self::get_use_shipping_address_for_main_region_and_country()) {
 			return "ShippingCountry";
 		}
@@ -77,7 +103,7 @@ class OrderAddress extends DataObject {
 	 * Main means the one that is used as the primary one (e.g. for tax purposes).
 	 * @return String
 	 */
-	static function get_region_field_ID() {
+	public static function get_region_field_ID() {
 		if(self::get_use_shipping_address_for_main_region_and_country()) {
 			return "ShippingRegion";
 		}
@@ -86,16 +112,32 @@ class OrderAddress extends DataObject {
 		}
 	}
 
-	public static $singular_name = "Order Address";
-		function i18n_singular_name() { return _t("OrderAddress.ORDERADDRESS", "Order Address");}
 
-	public static $plural_name = "Order Addresses";
-		function i18n_plural_name() { return _t("OrderAddress.ORDERADDRESSES", "Order Addresses");}
+	/**
+	 * There might be times when a modifier needs to make an address field read-only.
+	 * In that case, this is done here.
+	 *
+	 * @var Array
+	 */
+	protected $readOnlyFields = array();
 
-	public static $casting = array(
-		"FullName" => "Text"
-	);
+	/**
+	 * sets a field to readonly state
+	 * we use this when modifiers have been set that require a field to be a certain value
+	 * for example - a PostalCode field maybe set in the modifier.
+	 * @param String $fieldName
+	 */
+	function addReadOnlyField($fieldName) {
+		$this->readOnlyFields[$fieldName] = $fieldName;
+	}
 
+	/**
+	 * removes a field from the readonly state
+	 * @param String $fieldName
+	 */
+	function removeReadOnlyField($fieldName) {
+		unset($this->readOnlyFields[$fieldName]);
+	}
 
 	/**
 	 * save edit status for speed's sake
@@ -127,7 +169,7 @@ class OrderAddress extends DataObject {
 	function canView($member = null) {
 		if($this->_canView === null) {
 			$this->_canView = false;
-			if($this->OrderID) {
+			if($this->Order()) {
 				if($this->Order()->exists()) {
 					if($this->Order()->canView($member)) {
 						$this->_canView = true;
@@ -147,7 +189,7 @@ class OrderAddress extends DataObject {
 	function canEdit($member = null) {
 		if($this->_canEdit === null) {
 			$this->_canEdit = false;
-			if($this->OrderID) {
+			if($this->Order()) {
 				if($this->Order()->exists()) {
 					if($this->Order()->canEdit($member)) {
 						$this->_canEdit = true;
@@ -162,33 +204,26 @@ class OrderAddress extends DataObject {
 	 *
 	 *@return FieldSet
 	 **/
-	function getCMSFields() {
-		$fields = parent::getCMSFields();
-		return $fields;
-	}
-
-	/**
-	 *
-	 *@return FieldSet
-	 **/
 	function scaffoldSearchFields(){
 		$fields = parent::scaffoldSearchFields();
 		$fields->replaceField("OrderID", new NumericField("OrderID", "Order Number"));
 		return $fields;
 	}
 
-	/**
-	 *@return Fieldset
-	 **/
-	function getEcommerceFields() {
-		$fields = new FieldSet();
-		return $fields;
-	}
 
 	/**
-	 *put together a textfield for a postal code field
-	 *@param String $name - name of the field
-	 *@return TextField
+	 *
+	 *
+	 * @return FieldSet
+	 */
+
+	protected function getEcommerceFields() {
+		return new FieldSet();
+	}
+	/**
+	 * put together a textfield for a postal code field
+	 * @param String $name - name of the field
+	 * @return TextField
 	 **/
 	protected function getPostalCodeField($name) {
 		$field = new TextField($name, _t('OrderAddress.POSTALCODE','Postal Code'));
@@ -199,9 +234,9 @@ class OrderAddress extends DataObject {
 	}
 
 	/**
-	 *put together a dropdown for the region field
-	 *@param String $name - name of the field
-	 *@return DropdownField
+	 * put together a dropdown for the region field
+	 * @param String $name - name of the field
+	 * @return DropdownField
 	 **/
 	protected function getRegionField($name) {
 		if(EcommerceRegion::show()) {
@@ -224,9 +259,9 @@ class OrderAddress extends DataObject {
 	}
 
 	/**
-	 *put together a dropdown for the country field
-	 *@param String $name - name of the field
-	 *@return DropdownField
+	 * put together a dropdown for the country field
+	 * @param String $name - name of the field
+	 * @return DropdownField
 	 **/
 	protected function getCountryField($name) {
 		$countriesForDropdown = EcommerceCountry::list_of_allowed_entries_for_dropdown();
@@ -242,10 +277,25 @@ class OrderAddress extends DataObject {
 	}
 
 	/**
-  	 * Saves region - both shipping and billing fields are saved here for convenience sake (only one actually gets saved)
-  	 * NOTE: do not call this method SetCountry as this has a special meaning! *
-  	 * @param Integer -  RegionID
-  	 **/
+	 * makes selected fields into read only using the $this->readOnlyFields array
+	 *
+	 * @param Object(FieldSet)
+	 */
+	protected function makeSelectedFieldsReadOnly(&$fields) {
+		if(is_array($this->readOnlyFields) && count($this->readOnlyFields) ) {
+			foreach($this->readOnlyFields as $readOnlyField) {
+				if($oldField = $fields->fieldByName($readOnlyField)) {
+					$fields->replaceField($readOnlyField, $oldField->performReadonlyTransformation());
+				}
+			}
+		}
+	}
+
+	/**
+	 * Saves region - both shipping and billing fields are saved here for convenience sake (only one actually gets saved)
+	 * NOTE: do not call this method SetCountry as this has a special meaning! *
+	 * @param Integer -  RegionID
+	 **/
 	public function SetRegionFields($regionID) {
 		$this->RegionID = $regionID;
 		$this->ShippingRegionID = $regionID;
@@ -253,16 +303,21 @@ class OrderAddress extends DataObject {
 	}
 
 	/**
-  	 * Saves country - both shipping and billing fields are saved here for convenience sake (only one actually gets saved)
-  	 * NOTE: do not call this method SetCountry as this has a special meaning!
-  	 * @param String - CountryCode - e.g. NZ
-  	 **/
+	 * Saves country - both shipping and billing fields are saved here for convenience sake (only one actually gets saved)
+	 * NOTE: do not call this method SetCountry as this has a special meaning!
+	 * @param String - CountryCode - e.g. NZ
+	 */
 	public function SetCountryFields($countryCode) {
 		$this->Country = $countryCode;
 		$this->ShippingCountry = $countryCode;
 		$this->write();
 	}
 
+	/**
+	 * returns the full name of the person, e.g. "John Smith"
+	 *
+	 * @return String
+	 */
 	public function getFullName() {
 		$fieldNameField = $this->prefix()."FirstName";
 		$fieldFirst = $this->$fieldNameField;
@@ -270,81 +325,8 @@ class OrderAddress extends DataObject {
 		$fieldLast = $this->$lastNameField;
 		return $fieldFirst.' '.$fieldLast;
 	}
+		public function FullName(){ return $this->getFullName();}
 
-	public function FullName(){ return $this->getFullName();}
-
-	/**
-	 * Copies the last address used by the member.
-	 *@return DataObject (OrderAddress / ShippingAddress / BillingAddfress)
-	 **/
-	public function FillWithLastAddressFromMember($member = null, $write = false) {
-		$prefix = $this->prefix();
-		if(!$member) {
-			//cant use "Current Member" here, because the order might be created by the Shop Admin...
-			$member = $this->getMemberFromOrder();
-		}
-		if($member) {
-			$oldAddress = $this->previousAddressFromMember($member);
-			if($oldAddress) {
-				$fieldNameArray = $this->getFieldNameArray($prefix);
-				foreach($fieldNameArray as $field) {
-					if(!$this->$field && isset($oldAddress->$field) && $field != "ID") {
-						$this->$field = $oldAddress->$field;
-					}
-				}
-			}
-			//copy data from  member
-			if($this instanceOf BillingAddress) {
-				$this->Email = $member->Email;
-			}
-			$fieldNameArray = array("FirstName" => $prefix."FirstName", "Surname" => $prefix."Surname");
-			foreach($fieldNameArray as $memberField => $fieldName) {
-				//NOTE, we always override the Billing Address (which does not have a prefix)
-				if(!$this->$fieldName || $this instanceOf BillingAddress) {$this->$fieldName = $member->$memberField;}
-			}
-		}
-		if($write) {
-			$this->write();
-		}
-		return $this;
-	}
-
-	/**
-	 * Finds the last address used by this member
-	 *@return DataObject (OrderAddress / ShippingAddress / BillingAddress)
-	 **/
-	protected function previousAddressFromMember($member = null) {
-		if($member) {
-			$fieldName = $this->ClassName."ID";
-			$orders = DataObject::get(
-				"Order",
-				"\"MemberID\" = '".$member->ID."' AND \"$fieldName\" <> ".$this->ID,
-				"\"Created\" DESC ",
-				$join = null,
-				$limit = "1"
-			);
-			if($orders) {
-				$order = $orders->First();
-				if($order  && $order->ID) {
-					return DataObject::get_one($this->ClassName, "\"OrderID\" = '".$order->ID."'");
-				}
-			}
-		}
-	}
-
-	/**
-	 * find the member associated with the current Order.
-	 *@return DataObject (Member)
-	 **/
-	protected function getMemberFromOrder() {
-		if($this->OrderID) {
-			if($order = $this->Order()) {
-				if($order->MemberID) {
-					return DataObject::get_by_id("Member", $order->MemberID);
-				}
-			}
-		}
-	}
 
 
 	/**
@@ -372,6 +354,10 @@ class OrderAddress extends DataObject {
 		return $fieldNameArray;
 	}
 
+	/**
+	 * returns the field prefix string for shipping addresses
+	 * @return String
+	 **/
 	protected function prefix() {
 		if($this instanceOf BillingAddress) {
 			$prefix = "";
@@ -382,10 +368,108 @@ class OrderAddress extends DataObject {
 		return $prefix;
 	}
 
-	function onBeforeWrite() {
-		parent::onBeforeWrite();
-		if(!$this->OrderID && $order = ShoppingCart::current_order()) {
-			$this->OrderID = $order->ID;
+
+	/**
+	 *
+	 * returns a DataObjectSet of all other Order Addresses related to the current Address
+	 * @param Object (Member)
+	 * @param Object (Order)
+	 * @return null | DataObjectSet
+	 */
+	public function AllOtherMemberAddresses($member = null) {
+		if(!$member) {
+			$member = $this->getMemberFromOrder();
+		}
+		if($member) {
+			$fieldName = $this->ClassName."ID";
+			$orders = DataObject::get(
+				"Order",
+				"\"MemberID\" = '".$member->ID."' AND \"$fieldName\" <> ".intval($this->ID)-0,
+				"\"Order\".\"ID\" DESC ",
+				$join = null,
+				$limit = "1"
+			);
+			if($orders) {
+				$array = $orders->map($fieldName, $fieldName);
+				if($array && count($array)) {
+					return DataObject::get($this->ClassName, "\"OrderAddress\".\"ID\" IN (".implode(", ", $array).")");
+				}
+			}
+		}
+	}
+
+
+	/**
+	 * Copies the last address used by the member.
+	 * @return DataObject (OrderAddress / ShippingAddress / BillingAddfress)
+	 * @param Object (Member) $member
+	 * @param Boolean $write - should the address be written
+	 */
+	public function FillWithLastAddressFromMember($member, $write = false) {
+		$excludedFields = array("ID", "OrderID");
+		$prefix = $this->prefix();
+		if($member && $member->exists()) {
+			$oldAddress = $this->previousAddressFromMember($member);
+			if($oldAddress) {
+				$fieldNameArray = $this->getFieldNameArray($prefix);
+				foreach($fieldNameArray as $field) {
+					if(!$this->$field && isset($oldAddress->$field) && !in_array($field, $excludedFields)) {
+						$this->$field = $oldAddress->$field;
+					}
+				}
+			}
+			//copy data from  member
+			if($this instanceOf BillingAddress) {
+				$this->Email = $member->Email;
+			}
+			$fieldNameArray = array("FirstName" => $prefix."FirstName", "Surname" => $prefix."Surname");
+			foreach($fieldNameArray as $memberField => $fieldName) {
+				//NOTE, we always override the Billing Address (which does not have a prefix)
+				if(!$this->$fieldName || $this instanceOf BillingAddress) {$this->$fieldName = $member->$memberField;}
+			}
+		}
+		if($write) {
+			$this->write();
+		}
+		return $this;
+	}
+
+	/**
+	 * Finds the last address used by this member
+	 * @param Object (Member)
+	 * @return Null | DataObject (OrderAddress / ShippingAddress / BillingAddress)
+	 **/
+	protected function previousAddressFromMember($member = null) {
+		if(!$member) {
+			$member = $this->getMemberFromOrder();
+		}
+		if($member) {
+			$fieldName = $this->ClassName."ID";
+			$orders = DataObject::get(
+				"Order",
+				"\"MemberID\" = '".$member->ID."' AND \"$fieldName\" <> ".intval($this->ID)-0,
+				"\"Order\".\"ID\" DESC ",
+				$join = null,
+				$limit = "1"
+			);
+			if($orders) {
+				$order = $orders->First();
+				if($order  && $order->exists()) {
+					return DataObject::get_by_id($this->ClassName, $order->$fieldName);
+				}
+			}
+		}
+	}
+
+	/**
+	 * find the member associated with the current Order.
+	 * @return DataObject (Member)
+	 **/
+	protected function getMemberFromOrder() {
+		if($order = $this->Order() && $order->exists()) {
+			if($order->MemberID) {
+				return DataObject::get_by_id("Member", $order->MemberID);
+			}
 		}
 	}
 
