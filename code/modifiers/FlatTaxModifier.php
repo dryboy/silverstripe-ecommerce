@@ -33,6 +33,12 @@ class FlatTaxModifier extends OrderModifier {
 	);
 
 
+	public static $singular_name = "Flat Tax";
+		function i18n_singular_name() { return _t("FlatTaxModifier.FLATTAXMODIFIER", "Flat Tax");}
+
+	public static $plural_name = "Flat Taxes";
+		function i18n_plural_name() { return _t("FlatTaxModifier.FLATTAXMODIFIER", "Flat Taxes");}
+
 // ######################################## *** cms variables + functions (e.g. getCMSFields, $searchableFields)
 
 // ######################################## *** other (non) static variables (e.g. protected static $special_name_for_something, protected $order)

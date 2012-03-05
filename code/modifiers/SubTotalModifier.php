@@ -14,6 +14,11 @@ class SubTotalModifier extends OrderModifier {
 
 // ######################################## *** model defining static variables (e.g. $db, $has_one)
 
+	public static $singular_name = "Sub total modifier";
+		function i18n_singular_name() { return _t("SubTotalModifier.SUBTOTALMODIFIER", "Sub total modifier");}
+
+	public static $plural_name = "Sub total modifiers";
+		function i18n_plural_name() { return _t("SubTotalModifier.SUBTOTALMODIFIER", "Sub total modifiers");}
 
 // ######################################## *** cms variables + functions (e.g. getCMSFields, $searchableFields)
 // ######################################## *** other (non) static variables (e.g. protected static $special_name_for_something, protected $order)

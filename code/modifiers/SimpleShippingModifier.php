@@ -25,6 +25,13 @@ class SimpleShippingModifier extends OrderModifier {
 		'ShippingChargeType' => "Enum('Default,ForCountry')"
 	);
 
+
+	public static $singular_name = "Simple Shipping Charge";
+		function i18n_singular_name() { return _t("SimpleShippingModifier.SIMPLESHIPPINGMODIFIER", "Simple Shipping Charge");}
+
+	public static $plural_name = "Simple Shipping Charges";
+		function i18n_plural_name() { return _t("SimpleShippingModifier.SIMPLESHIPPINGMODIFIER", "Simple Shipping Charges");}
+
 // ######################################## *** cms variables + functions (e.g. getCMSFields, $searchableFields)
 
 
