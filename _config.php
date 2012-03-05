@@ -6,6 +6,9 @@
  *
  *
  **/
+
+
+
 //start horrible hack
 if(class_exists("ProductVariation")) {
 	Buyable::add_class("ProductVariation");
@@ -39,6 +42,8 @@ Buyable::add_class("Product");
 
 // * * * DEFINITELY MUST SET
 //Order::set_modifiers(array("MyModifierOne", "MyModifierTwo"));
+//EcommerceConfig::set_folder_and_file_location("ecommerce/_config/ecommerce.yaml");
+
 
 // * * * HIGHLY RECOMMENDED SETTINGS NON-ECOMMERCE
 //Payment::set_site_currency('NZD');
@@ -48,6 +53,7 @@ Buyable::add_class("Product");
 // * * * SHOPPING CART, ORDER, AND CHECKOUT
 //Order::set_maximum_ignorable_sales_payments_difference(0.001);//sometimes there are small discrepancies in total (for various reasons)- here you can set the max allowed differences
 //Order::set_order_id_start_number(1234567);//sets a start number for order ID, so that they do not start at one.
+//CheckoutPage_Controller::set_checkout_steps(array("step1", "step2"));//set the checkout steps - they are pre-set so you dont need to set them unless you are heavily customising
 
 
 // * * * FIELDS
