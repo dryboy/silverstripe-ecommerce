@@ -52,7 +52,8 @@ class ShopAccountForm extends Form {
 
 
 	/**
-	 * Save the changes to the form, and go back to previous page.
+	 * Save the changes to the form, and go back to the account page.
+	 * @return Boolean + redirection
 	 */
 	function submit($data, $form, $request) {
 		return $this->processForm($data, $form, $request, "");
@@ -60,14 +61,14 @@ class ShopAccountForm extends Form {
 
 	/**
 	 * Save the changes to the form, and redirect to the checkout page
-	 *@return ?????????????
+	 * @return Boolean + redirection
 	 */
 	function proceed($data, $form, $request) {
 		return $this->processForm($data, $form, $request, CheckoutPage::find_link());
 	}
 
 	/**
-	 *@return Boolean
+	 *@return Boolean + redirection
 	 **/
 	protected function processForm($data, $form, $request, $link = "") {
 		$member = Member::currentUser();
@@ -77,7 +78,6 @@ class ShopAccountForm extends Form {
 		}
 		$form->saveInto($member);
 		$member->write();
-
 		if($link) {
 			Director::redirect($link);
 		}
@@ -100,15 +100,20 @@ class ShopAccountForm_Validator extends RequiredFields{
 	 **/
 	function php($data){
 		$valid = parent::php($data);
-		$field = Member::get_unique_identifier_field();
+		$uniqueFieldName = Member::get_unique_identifier_field();
 		$memberID = Member::currentUserID();
-		if(isset($data[$field]) && $memberID && $data[$field]){
-			$email = Convert::raw2sql($data[$field]);
+		if(isset($data[$uniqueFieldName]) && $memberID && $data[$uniqueFieldName]){
+			$uniqueFieldValue = Convert::raw2sql($data[$uniqueFieldName]);
 			//can't be taken
-			if(DataObject::get_one('Member',"\"$field\" = '$email' AND ID <> ".$memberID)){
+			if(DataObject::get_one('Member',"\"$uniqueFieldName\" = '$uniqueFieldValue' AND ID <> ".$memberID)){
+				$message = sprintf(
+					_t("Account.ALREADYTAKEN",  '%1$s is already taken by another member. Please log in or use another %2$s'),
+					$uniqueFieldValue,
+					$uniqueFieldName
+				);
 				$this->validationError(
-					$field,
-					"\"$email\" "._t('Account.ALREADYTAKEN', " is already taken by another member. Please log in or use another \"$email\""),
+					$uniqueFieldName,
+					$message,
 					"required"
 				);
 				$valid = false;
