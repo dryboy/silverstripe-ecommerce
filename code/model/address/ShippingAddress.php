@@ -19,17 +19,17 @@ class ShippingAddress extends OrderAddress {
 	 */
 	public static $api_access = array(
 		'view' => array(
-				'ShippingPrefix',
-				'ShippingFirstName',
-				'ShippingSurname',
-				'ShippingAddress',
-				'ShippingAddress2',
-				'ShippingCity',
-				'ShippingPostalCode',
-				'ShippingCountry',
-				'ShippingPhone',
-				'ShippingMobilePhone'
-			)
+			'ShippingPrefix',
+			'ShippingFirstName',
+			'ShippingSurname',
+			'ShippingAddress',
+			'ShippingAddress2',
+			'ShippingCity',
+			'ShippingPostalCode',
+			'ShippingCountry',
+			'ShippingPhone',
+			'ShippingMobilePhone'
+		)
 	);
 
 	public static $db = array(
@@ -47,16 +47,24 @@ class ShippingAddress extends OrderAddress {
 
 
 	/**
-	 * HAS_ONE =array(ORDER => ORDER);
-	 * we place this relationship here
-	 * (rather than in the parent class: OrderAddress)
-	 * because that makes for a cleaner relationship
-	 * (otherwise we ended up with a "has two" relationship in Order)
+	 * standard SS static definition
 	 **/
 	public static $has_one = array(
-		"Order" => "Order",
 		"ShippingRegion" => "EcommerceRegion"
 	);
+
+	/**
+	 * standard SS static definition
+	 **/
+	public static $belongs_to = array(
+		"Order" => "Order"
+	);
+
+	/**
+	 * standard SS static definition
+	 */
+	public static $default_sort = "\"ShippingAddress\".\"ID\" DESC";
+
 
 	static $indexes = array(
 		// "SearchFields" => "fulltext (Address, Address2, City, PostalCode, Phone)"
@@ -67,16 +75,14 @@ class ShippingAddress extends OrderAddress {
 		)
 	);
 
-	public static $default_sort = "\"OrderID\" DESC";
-
 	public static $casting = array(
 		"ShippingFullCountryName" => "Varchar(200)"
 	);
 
 	public static $searchable_fields = array(
-		'OrderID' => array(
-			'field' => 'NumericField',
-			'title' => 'Order Number'
+		"OrderID" => array(
+			"field" => "NumericField",
+			"title" => "Order Number"
 		),
 		"ShippingSurname" => "PartialMatchFilter",
 		"ShippingAddress" => "PartialMatchFilter",
@@ -111,7 +117,7 @@ class ShippingAddress extends OrderAddress {
 
 	/**
 	 * returns the full name for the shipping country code saved.
-	 *@return String
+	 * @return String
 	 **/
 	function ShippingFullCountryName() {return $this->getShippingFullCountryName();}
 	function getShippingFullCountryName() {
@@ -125,7 +131,6 @@ class ShippingAddress extends OrderAddress {
 	public function getFields() {
 		$fields = parent::getEcommerceFields();
 		if(OrderAddress::get_use_separate_shipping_address()) {
-			$fields = parent::getEcommerceFields();
 			$shippingFields = new CompositeField(
 				new HeaderField(_t('OrderAddress.SENDGOODSTODIFFERENTADDRESS','Send goods to different address'), 3),
 				new LiteralField('ShippingNote', '<p class="message warning">'._t('OrderAddress.SHIPPINGNOTE','Your goods will be sent to the address below.').'</p>'),
@@ -139,30 +144,16 @@ class ShippingAddress extends OrderAddress {
 				$this->getCountryField("ShippingCountry")
 			);
 			$shippingFields->SetID('ShippingFields');
+			$this->makeSelectedFieldsReadOnly($shippingFields);
 			$fields->push($shippingFields);
-		}
-		else {
-			$fields = new FieldSet();
 		}
 		$this->extend('augmentEcommerceShippingAddressFields', $fields);
 		return $fields;
 	}
 
-	/**
-	 * Return which member fields should be required on {@link OrderForm}
-	 * and {@link ShopAccountForm}.
-	 *
-	 * @return array
-	 */
-	function getEcommerceRequiredFields() {
-		$requiredFieldsArray = array();
-		$this->extend('augmentEcommerceShippingAddressRequiredFields', $requiredFieldsArray);
-		return $requiredFieldsArray;
-	}
 
 	/**
-	 * Return which member fields should be required on {@link OrderForm}
-	 * and {@link ShopAccountForm}.
+	 * Return which shipping fields should be required on {@link OrderFormAddress}
 	 *
 	 * @return array
 	 */
@@ -172,26 +163,19 @@ class ShippingAddress extends OrderAddress {
 			'ShippingCity',
 			'ShippingCountry'
 		);
+		$this->extend('augmentEcommerceShippingAddressRequiredFields', $requiredFieldsArray);
 		return $requiredFieldsArray;
 	}
 
+	/**
+	 * standard SS method
+	 * sets the country to the best known country {@link EcommerceCountry}
+	 **/
 	function populateDefaults() {
 		parent::populateDefaults();
 		$this->ShippingCountry = EcommerceCountry::get_country();
 	}
 
-	/**
-	 * standard SS method
-	 * double-check if Shipping Address is linked correctly
-	 */
-	function onBeforeWrite() {
-		parent::onBeforeWrite();
-		if(!$this->OrderID && $this->ID) {
-			$order = DataObject::get_one("Order", "\"ShippingAddressID\" = ".intval($this->ID));
-			if($order) {
-				$this->OrderID = $order->ID;
-			}
-		}
-	}
+
 
 }
