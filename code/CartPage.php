@@ -199,25 +199,27 @@ class CartPage_Controller extends Page_Controller{
 		//WE HAVE THIS FOR SUBMITTING FORMS!
 		if(isset($_REQUEST['OrderID'])) {
 			$orderID = intval($_REQUEST['OrderID']);
-			$this->currentOrder = DataObject::get_by_id("Order", $orderID);
+			if($orderID) {
+				$this->currentOrder = DataObject::get_by_id("Order", $orderID);
+			}
 		}
-		elseif($this->request->param('ID') && in_array($this->request->param('Action'), array("showorder", "loadorder", "copyorder", "saveorder", "deleteorder"))){
-			$orderID = intval($this->request->param('ID'));
-			$this->currentOrder = DataObject::get_by_id("Order", $orderID);
-		}
+		elseif($this->request && $this->request->param('ID') && $this->request->param('Action')) {
+			//we can not do intval here!
+			$id = $this->request->param('ID');
+			$action = $this->request->param('Action');
+			$otherID = intval($this->request->param("OtherID"));
+			if(intval($id) && in_array($action, array("showorder", "loadorder", "copyorder", "saveorder", "deleteorder"))){
+				$this->currentOrder = DataObject::get_by_id("Order", intval($id));
+			}
 		//the code below is for submitted orders, but we still put it here so
 		//we can do all the retrieval options in once.
-		elseif($this->request && $this->request->param("Action") == "retrieveorder") {
-			$sessionID = Convert::raw2sql($this->request->param("ID"));
-			$id = intval(Convert::raw2sql($this->request->param("OtherID")));
-			$retrievedOrder = DataObject::get_one("Order", "\"Order\".\"SessionID\" = '".$sessionID."' AND \"Order\".\"ID\" = $id");
-			$this->currentOrder = $retrievedOrder;
+			elseif(($action == "retrieveorder") && $id && $otherID) {
+				$sessionID = Convert::raw2sql($id);
+				$retrievedOrder = DataObject::get_one("Order", "\"Order\".\"SessionID\" = '".$sessionID."' AND \"Order\".\"ID\" = $otherID");
+				$this->currentOrder = $retrievedOrder;
+			}
 		}
-		if($this->currentOrder) {
-
-		}
-		else {
-			//if there is no order
+		if(!$this->currentOrder) {
 			$this->currentOrder = ShoppingCart::current_order();
 		}
 		//redirect if we are viewing the order with the wrong page!
