@@ -161,6 +161,15 @@ class EcommerceSiteTreeExtension_Controller extends Extension {
 
 
 	/**
+	 *@return String (URLSegment)
+	 **/
+	public function SideBarCartID() {
+		$order = ShoppingCart::current_order();
+		return $order->SideBarCartID();
+	}
+
+
+	/**
 	 * tells us if the current page is part of e-commerce.
 	 * @return Boolean
 	 */
