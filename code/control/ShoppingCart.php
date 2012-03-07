@@ -110,6 +110,10 @@ class ShoppingCart extends Object{
 	 *@return false | DataObject (OrderItem)
 	 */
 	public function addBuyable($buyable, $quantity = 1, $parameters = array()){
+		if(!$buyable) {
+			$this->addMessage(_t("ShoppingCart.ITEMCOULDNOTBEFUOND", "Item could not be found."),'bad');
+			return false;
+		}
 		if(!$buyable->canPurchase()) {
 			$this->addMessage(_t("ShoppingCart.ITEMCOULDNOTBEADDED", "This item is not for sale."),'bad');
 			return false;
@@ -832,14 +836,15 @@ class ShoppingCart_Controller extends Controller{
 	 */
 	protected function buyable(){
 		$request = $this->getRequest();
-		$className = $request->param('OtherID');
-		$buyableID = $request->param('ID');
+		$className = Convert::raw2sql($request->param('OtherID'));
+		$buyableID = intval($request->param('ID'));
 		if($className && $buyableID){
 			if(Buyable::is_buyable($className)) {
-				$obj = DataObject::get_by_id($className,intval($buyableID)); //TODO: possible unsafe class name being passed...do proper subclass check
-				if($obj->ClassName == $className) {
-
-					return $obj;
+				$obj = DataObject::get_by_id($className,intval($buyableID));
+				if($obj) {
+					if($obj->ClassName == $className) {
+						return $obj;
+					}
 				}
 			}
 			else {
