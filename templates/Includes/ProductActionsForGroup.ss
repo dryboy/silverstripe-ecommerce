@@ -1,7 +1,8 @@
 <div class="productActionsHolder">
 <% if HasVariations %>
 	<% if IsInCart %><span class="inCart">in cart</span><% end_if %>
-	<a href="$Link/selectoptions/" class="selectOptions">select options</a>
+	<a href="$Link/selectoptions/" class="selectOptions" rel="VariationsTable{$ID}">select options</a>
+	<div class="variationsTableHolder" style="display: none;" id="VariationsTable{$ID}">% include VariationsTable %></div>
 <% else %>
 	<% if canPurchase %>
 	<% if Price != 0 %>

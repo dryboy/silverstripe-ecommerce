@@ -111,7 +111,7 @@ class ShoppingCart extends Object{
 	 */
 	public function addBuyable($buyable, $quantity = 1, $parameters = array()){
 		if(!$buyable) {
-			$this->addMessage(_t("ShoppingCart.ITEMCOULDNOTBEFUOND", "Item could not be found."),'bad');
+			$this->addMessage(_t("ShoppingCart.ITEMCOULDNOTBEFOUND", "This item could not be found."),'bad');
 			return false;
 		}
 		if(!$buyable->canPurchase()) {
