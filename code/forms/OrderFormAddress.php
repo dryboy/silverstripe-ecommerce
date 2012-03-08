@@ -42,9 +42,14 @@ class OrderFormAddress extends Form {
 		$this->orderMember = $order->CreateOrReturnExistingMember();
 		//strange security situation...
 		if($this->orderMember->exists()) {
-			if($this->orderMember->ID != Member::currentUserID()) {
-				$loggedInMember = Member::currentUser();
-				$loggedInMember->logOut();
+			$currentUserID = Member::currentUserID();
+			if($currentUserID) {
+				if($this->orderMember->ID != $currentUserID) {
+					$loggedInMember = Member::currentUser();
+					if($loggedInMember) {
+						$loggedInMember->logOut();
+					}
+				}
 			}
 		}
 
@@ -221,8 +226,12 @@ class OrderFormAddress extends Form {
 		//PASSWORD HACK ... TO DO: test that you can actually update a password as the method below
 		//does NOT change the FORM only DATA, but we save to the new details using $form->saveInto($member)
 		//and NOT $data->saveInto($member)
+		$password = "";
 		if(isset($data['Password']) && is_array($data['Password'])) {
 			$data['Password'] = $data['Password']['_Password'];
+			if(strlen($data['Password']) > 3) {
+				$password = $data['Password'];
+			}
 		}
 
 		//----------- START BY SAVING INTO ORDER
@@ -235,6 +244,9 @@ class OrderFormAddress extends Form {
 		if(is_object($member)) {
 			if($this->memberShouldBeSaved($data)) {
 				$form->saveInto($member);
+				if($password) {
+					$member->changePassword($password);
+				}
 				$member->write();
 			}
 			if($this->memberShouldBeLoggedIn($data)) {
