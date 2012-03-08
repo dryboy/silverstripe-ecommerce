@@ -469,14 +469,13 @@ jQuery.fn.extend({
 				"click",
 				function(){
 					if(EcomCart.unconfirmedDelete || confirm(EcomCart.confirmDeleteText)) {
-					var url = jQuery(this).attr("href");
-					EcomCart.getChanges(url, null);
-					//hide the clicked element
-					jQuery(this).parent().addClass(EcomCart.hideClass).removeClass(EcomCart.showClass);
-					//show the previous OR next element (lazy option)
-					jQuery(this).parent().siblings("."+EcomCart.hideClass).addClass(EcomCart.showClass).removeClass(EcomCart.hideClass);
-					return false;
-
+						var url = jQuery(this).attr("href");
+						EcomCart.getChanges(url, null);
+						//hide the clicked element
+						jQuery(this).parent().addClass(EcomCart.hideClass).removeClass(EcomCart.showClass);
+						//show the previous OR next element (lazy option)
+						jQuery(this).parent().siblings("."+EcomCart.hideClass).addClass(EcomCart.showClass).removeClass(EcomCart.hideClass);
+						return false;
 					}
 					return false;
 				}
