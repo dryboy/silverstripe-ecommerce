@@ -15,9 +15,11 @@
 
 EcomProducts = {
 
-	selectVariationSelector: 					'a.select',
-	maskSelector: 										'#SelectVariationMask',
-	selectVariationHolderSelector: 		'.selectVariation',
+	selectVariationSelector: 					'a.selectVariation',
+	maskID:														'SelectVariationMask',
+	maskSelector:											'#SelectVariationMask',
+	popupWindowID:										'SelectVarationWindow',
+	popupWindowSelector: 							'#SelectVarationWindow',
 
 	init: function(){
 		//select all the a tag with name equal to modal
@@ -25,10 +27,32 @@ EcomProducts = {
 			//Cancel the link behavior
 			e.preventDefault();
 			//Get the A tag
-			var id = jQuery(this).attr('href');
+			var url = jQuery(this).attr('href');
 			if(jQuery(EcomProducts.maskSelector).length == 0) {
-				jQuery("body").append('<div id="'+EcomProducts.maskSelector+'"></div>');
+				jQuery("body").prepend('<div id="'+EcomProducts.maskID+'"></div>');
 			}
+			if(jQuery(EcomProducts.popupWindowID).length == 0) {
+				jQuery("body").prepend('<div id="'+EcomProducts.popupWindowID+'" class="loading"></div>');
+			}
+
+			jQuery(document).keyup(EcomProducts.escKeyFunction);
+
+			jQuery.get(
+				url,
+				function(data, success) {
+					jQuery(EcomProducts.popupWindowSelector).html(data).removeClass("loading");
+					//if close button is clicked
+					jQuery(EcomProducts.popupWindowSelector+' a').click(function (e) {
+							//do NOT Cancel the link behavior
+							e.preventDefault();
+							url = jQuery(this).attr("href");
+							EcomCart.getChanges(url, null);
+							EcomProducts.removeAll();
+							return true;
+					});
+
+				}
+			);
 			//Get the screen height and width
 			var maskHeight = jQuery(document).height();
 			var maskWidth = jQuery(window).width();
@@ -46,28 +70,32 @@ EcomProducts = {
 					var winH = jQuery(window).height();
 					var winW = jQuery(window).width();
 					//Set the popup window to center
-					jQuery(id).css('top',  winH/2-jQuery(id).height()/2);
-					jQuery(id).css('left', winW/2-jQuery(id).width()/2);
+					jQuery(EcomProducts.popupWindowSelector).css('top',  winH/2-jQuery(EcomProducts.popupWindowSelector).height()/2);
+					jQuery(EcomProducts.popupWindowSelector).css('left', winW/2-jQuery(EcomProducts.popupWindowSelector).width()/2);
 					//transition effect
-					jQuery(id).fadeIn("slow");
+					jQuery(EcomProducts.popupWindowSelector).fadeIn("slow");
+					//if mask is clicked
+					jQuery(EcomProducts.maskSelector).click(function () {
+						EcomProducts.removeAll();
+					});
 				}
 			);
 		});
 
-		//if close button is clicked
-		jQuery(EcomProducts.selectVariationHolderSelector+' a').click(function (e) {
-				//do NOT Cancel the link behavior
-				//e.preventDefault();
-				jQuery(EcomProducts.maskSelector+', ' + EcomProducts.selectVariationHolderSelector).hide();
-				return true;
-		});
+	},
 
-		//if mask is clicked
-		jQuery(EcomProducts.maskSelector).click(function () {
-			jQuery(this).hide();
-			jQuery(EcomProducts.selectVariationHolderSelector).hide();
-		});
+	escKeyFunction: function(e) {
+		if (e.keyCode == 27) {
+			EcomProducts.removeAll();
+		}
+	},
+
+	removeAll: function(){
+		jQuery(document).unbind("keyup", EcomProducts.escKeyFunction);
+		jQuery(EcomProducts.maskSelector).remove();
+		jQuery(EcomProducts.popupWindowSelector).remove();
 	}
+
 
 }
 
