@@ -74,6 +74,7 @@ class EcommerceDatabaseAdmin extends Controller{
 	//##############################
 
 	protected $ecommerceSetup = array(
+		"deleteallorders",
 		"setorderidstartingnumber",
 		"createecommercemembergroups",
 		"ecommercedefaultrecords",
@@ -86,6 +87,12 @@ class EcommerceDatabaseAdmin extends Controller{
 	 */
 	function EcommerceSetup() {
 		return $this->createMenuDOSFromArray($this->ecommerceSetup, $type = "EcommerceSetup");
+	}
+
+	function deleteallorders($request){
+		$buildTask = new DeleteAllOrders($request);
+		$buildTask->run($request);
+		$this->displayCompletionMessage($buildTask);
 	}
 
 	function setorderidstartingnumber($request){
