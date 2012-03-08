@@ -233,13 +233,25 @@ class Product extends Page {
 		}
 	}
 
+	/**
+	 * Tells us the link to select variations
+	 * If ajaxified, this controller method (selectvariation)
+	 * Will return a html snippet for selecting the variation.
+	 * This is useful in the Product Group where you can both
+	 * non-variation and variation products to have the same
+	 * "add to cart" button.  Using this link you can provide a
+	 * pop-up select system for selecting a variation.
+	 * @return String
+	 */
+	function AddVariationsLink() {
+		return $this->Link("selectvariation");
+	}
+
 }
 
 
 class Product_Controller extends Page_Controller {
 
-	//to do: why do we need this?
-	static $allowed_actions = array();
 
 	/**
 	 *
@@ -248,14 +260,6 @@ class Product_Controller extends Page_Controller {
 	function init() {
 		parent::init();
 		Requirements::themedCSS('Products');
-	}
-
-	/**
-	 * tells us if the current page is part of e-commerce.
-	 * @return Boolean
-	 */
-	function IsEcommercePage () {
-		return true;
 	}
 
 	function index(){
@@ -288,6 +292,8 @@ class Product_Controller extends Page_Controller {
 			return _t("Product.PRODUCTNOTFORSALE", "Product not for sale");
 		}
 	}
+
+
 
 	/**
 	 * executes the AddProductForm
@@ -325,6 +331,17 @@ class Product_Controller extends Page_Controller {
 			return new EcomQuantityField($this);
 		}
 	}
+
+
+	/**
+	 * tells us if the current page is part of e-commerce.
+	 * @return Boolean
+	 */
+	function IsEcommercePage () {
+		return true;
+	}
+
+
 
 }
 

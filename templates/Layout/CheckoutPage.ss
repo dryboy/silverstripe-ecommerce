@@ -81,7 +81,10 @@
 
 		<% if StepsContentHeading(3) %><h2 class="orderStepHeading">$StepsContentHeading(3)</h2><% end_if %>
 		<% if StepsContentAbove(3) %><div class="above headerFooterDescription">$StepsContentAbove(3)</div><% end_if %>
-		<% control Order %><% include Order_Content %><% end_control %>
+		<% control Order %>
+			<% include Order_Addresses %>
+			<% include Order_Content %>
+		<% end_control %>
 		<div id="OrderFormHolder">$OrderForm</div>
 		<% if StepsContentBelow(3) %><div class="below headerFooterDescription">$StepsContentBelow(3)</div><% end_if %>
 
