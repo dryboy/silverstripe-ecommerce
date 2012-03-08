@@ -210,19 +210,6 @@ class OrderForm_Validator extends RequiredFields{
 		return $valid;
 	}
 
-	function javascript(){
-		$js = parent::javascript();
-		$js .= "
-		if(jQuery(\"#ReadTermsAndConditions input\").length == 1){
-			if(!jQuery(\"#ReadTermsAndConditions input\").is(\":checked\")) {
-				jQuery(\"#ReadTermsAndConditions input\").focus();
-				alert('You must agree with the terms and conditions to proceed.');
-				return false;
-			}
-		}
-		";
-		return $js;
-	}
 
 }
 
