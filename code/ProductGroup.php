@@ -705,6 +705,8 @@ class ProductGroup_Controller extends Page_Controller {
 		parent::init();
 		Requirements::themedCSS('Products');
 		Requirements::themedCSS('ProductGroup');
+		Requirements::themedCSS('ProductGroupPopUp');
+		Requirements::javascript('ecommerce/javascript/EcomProducts.js');
 	}
 
 	/**
