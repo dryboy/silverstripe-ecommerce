@@ -360,6 +360,7 @@ class ShoppingCart extends Object{
 		}
 	}
 
+
 	/**
 	 * sets country in order so that modifiers can be recalculated, etc...
 	 * @param String - $countryCode
@@ -606,6 +607,7 @@ class ShoppingCart_Controller extends Controller{
 		'showcart',
 		'loadorder',
 		'copyorder',
+		'removeaddress',
 		'debug' => 'ADMIN'
 	);
 
@@ -826,9 +828,23 @@ class ShoppingCart_Controller extends Controller{
 	 * return cart for ajax call
 	 *@return HTML
 	 */
-	function showcart($request) {
+	public function showcart($request) {
 		return $this->renderWith("AjaxSimpleCart");
 	}
+
+	function removeaddress($request) {
+		$request = $this->getRequest();
+		$id = intval($request->param('ID'));
+		$className = Convert::raw2sql($request->param('OtherID'));
+		$address = DataObject::get_by_id($className, $id);
+		if($address->canView()) {
+			$address->Obsolete = true;
+			$address->write();
+			return _t("ShoppingCart.ADDRESSREMOVED", "Address removed.");
+		}
+		return _t("ShoppingCart.ADDRESSNOTREMOVED", "Address could not be removed.");
+	}
+
 
 	/**
 	 * Gets a buyable object based on URL actions
