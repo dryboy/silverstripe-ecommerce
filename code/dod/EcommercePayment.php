@@ -72,18 +72,23 @@ class EcommercePayment extends DataObjectDecorator {
 		$payment->write();
 		// Process payment, get the result back
 		$result = $payment->processPayment($data, $form);
-		// isProcessing(): Long payment process redirected to another website (PayPal, Worldpay)
-		if($result->isProcessing()) {
-			return $result->getValue();
+		if(!($result instanceof Payment_Result)) {
+			return false;
 		}
 		else {
-			if(isset($data["returntolink"])) {
-				Director::redirect($data["returntolink"]);
+			// isProcessing(): Long payment process redirected to another website (PayPal, Worldpay)
+			if($result->isProcessing()) {
+				return $result->getValue();
 			}
 			else {
-				Director::redirect($order->Link());
+				if(isset($data["returntolink"])) {
+					Director::redirect($data["returntolink"]);
+				}
+				else {
+					Director::redirect($order->Link());
+				}
+				return true;
 			}
-			return true;
 		}
 	}
 
@@ -179,7 +184,40 @@ class EcommercePayment extends DataObjectDecorator {
 	 *@return String
 	 **/
 	function Status() {
-	   	return _t('Payment.'.strtoupper($this->owner->Status),$this->owner->Status);
+		return _t('Payment.'.strtoupper($this->owner->Status),$this->owner->Status);
 	}
+
+
+	/**
+	 * checks if a credit card is a real credit card number
+	 * @reference: http://en.wikipedia.org/wiki/Luhn_algorithm
+	 * @return Boolean
+	 */
+	public function validCreditCard($number) {
+		for ($sum = 0, $i = strlen($number) - 1; $i >= 0; $i--) {
+			$digit = (int) $number[$i];
+			$sum += (($i % 2) === 0) ? array_sum(str_split($digit * 2)) : $digit;
+		}
+		return (($sum % 10) === 0);
+	}
+
+	/**
+	 * @todo: finish!
+	 * valid expiry date
+	 * @return Boolean
+	 */
+	public function validExpiryDate($number) {
+		return true;
+	}
+
+	/**
+	 * @todo: finish!
+	 * valid CVC number
+	 * @return Boolean
+	 */
+	public function validCVC($number) {
+		return true;
+	}
+
 
 }

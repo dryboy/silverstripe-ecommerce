@@ -139,13 +139,17 @@ class OrderForm extends Form {
 		$this->clearSessionData(); //clears the stored session form data that might have been needed if validation failed
 		//----------------- PAYMENT ------------------------------
 
-		//------------- NOW THE ORDER GETS SUBMITTED FOR REAL -----------------
-		$order->tryToFinaliseOrder();
-		//------------------------------
-
 		//-------------- ACTION PAYMENT -------------
 		$nextStep = EcommercePayment::process_payment_form_and_return_next_step($order, $form, $data, $order->Member());
-		ShoppingCart::singleton()->clear();
+
+
+		//------------- NOW THE ORDER GETS SUBMITTED FOR REAL -----------------
+		if($nextStep) {
+			$order->tryToFinaliseOrder();
+			ShoppingCart::singleton()->clear();
+		}
+		//------------------------------
+
 		return $nextStep;
 	}
 
