@@ -257,8 +257,8 @@ class ProductGroup extends Page {
 	 *
 	 */
 	protected $showProductLevels = array(
-	 -1 => "All products on site",
-		0 => "None",
+	 -2 => "None",
+	 -1 => "All products",
 		1 => "Direct Child Products",
 		2 => "Direct Child Products + Grand Child Products",
 		3 => "Direct Child Products + Grand Child Products + Great Grand Child Products",
@@ -427,13 +427,13 @@ class ProductGroup extends Page {
 	 */
 	protected function getGroupFilter(){
 		$groupFilter = "";
-		if($this->LevelOfProductsToShow < 0) {
-			//all products
-			$groupFilter = " (1 = 1) ";
-		}
-		elseif($this->LevelOfProductsToShow == 0) {
+		if($this->LevelOfProductsToShow == -2) {
 			//no produts
 			$groupFilter = " (1 = 2) " ;
+		}
+		elseif($this->LevelOfProductsToShow == -1) {
+			//all products
+			$groupFilter = " (1 = 1) ";
 		}
 		elseif($this->LevelOfProductsToShow > 0) {
 			$groupIDs = array();
