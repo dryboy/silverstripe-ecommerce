@@ -2,13 +2,13 @@
 
 	<h1 class="pagetitle">$Title</h1>
 
-	<% if HasCheckoutSteps %><% if Steps %>
+<% if Steps %>
 	<ul class="steps youHave{$PercentageDone}PercentageDone">
 	<% control Steps %>
 		<li class="$LinkingMode">$Title</li>
 	<% end_control %>
 	</ul>
-	<% end_if %><% end_if %>
+<% end_if %>
 
 	<% include CartActionsAndMessages %>
 
