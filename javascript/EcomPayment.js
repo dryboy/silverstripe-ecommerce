@@ -26,6 +26,9 @@ var EcomPayment = {
 			methodFields.hide();
 			jQuery('#MethodFields_' + jQuery(this).attr('value')).show();
 		});
+
+		jQuery('#PaymentMethod input[type=radio]').first().click();
+
 	}
 
 
