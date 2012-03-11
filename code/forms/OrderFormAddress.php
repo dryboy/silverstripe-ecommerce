@@ -61,7 +61,7 @@ class OrderFormAddress extends Form {
 
 		//billing address field
 		$billingAddress = $order->CreateOrReturnExistingAddress("BillingAddress");
-		$billingAddressFields = $billingAddress->getFields();
+		$billingAddressFields = $billingAddress->getFields($this->orderMember);
 		$requiredFields = array_merge($requiredFields, $billingAddress->getRequiredFields());
 		$addressFields->merge($billingAddressFields);
 
@@ -72,7 +72,7 @@ class OrderFormAddress extends Form {
 			$addressFields->merge($useShippingAddressField);
 			//now we can add the shipping fields
 			$shippingAddress = $order->CreateOrReturnExistingAddress("ShippingAddress");
-			$shippingAddressFields = $shippingAddress->getFields();
+			$shippingAddressFields = $shippingAddress->getFields($this->orderMember);
 			//we have left this out for now as it was giving a lot of grief...
 			//$requiredFields = array_merge($requiredFields, $shippingAddress->getRequiredFields());
 			//finalise left fields
@@ -93,17 +93,17 @@ class OrderFormAddress extends Form {
 				//general header
 				$rightFields->push(
 					//TODO: check EXACT link!!!
-					new LiteralField('MemberInfo', '<p class="message good">'._t('OrderForm.MEMBERINFO','If you are already have an account then please')." <a href=\"Security/login?BackURL=" . $controller->Link() . "/\">"._t('OrderForm.LOGIN','log in').'</a>.</p>')
+					new LiteralField('MemberInfo', '<p class="message good">'._t('OrderForm.MEMBERINFO','If you are already have an account then please')." <a href=\"Security/login?BackURL=" . $controller->Link() . "\">"._t('OrderForm.LOGIN','log in').'</a>.</p>')
 				);
 				$passwordField = new ConfirmedPasswordField('Password', _t('OrderForm.PASSWORD','Password'));
 				//login invite right on the top
 				if(EcommerceRole::get_automatic_membership()) {
-					$rightFields->push(new HeaderField(_t('OrderForm.MEMBERSHIPDETAILSOPTIONAL','Create an account (optional)'), 3));
+					$rightFields->push(new HeaderField('CreateAnAccount',_t('OrderForm.CREATEANACCONTOPTIONAL','Create an account (optional)'), 3));
 					//allow people to purchase without creating a password
 					$passwordField->setCanBeEmpty(true);
 				}
 				else {
-					$rightFields->push(new HeaderField(_t('OrderForm.MEMBERSHIPDETAILS','Setup your account'), 3));
+					$rightFields->push(new HeaderField('SetupYourAccount', _t('OrderForm.SETUPYOURACCOUNT','Setup your account'), 3));
 					//dont allow people to purchase without creating a password
 					$passwordField->setCanBeEmpty(false);
 				}
