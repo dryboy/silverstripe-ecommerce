@@ -234,7 +234,7 @@ class OrderForm_Payment extends Form {
 		$paymentFields = Payment::combined_form_fields($totalAsCurrencyObject->Nice());
 		foreach($paymentFields as $paymentField) {
 			if($paymentField->class == "HeaderField") {
-				$paymentField->setTitle("MakePayment", _t("OrderForm.MAKEPAYMENT", "Make Payment"));
+				$paymentField->setTitle(_t("OrderForm.MAKEPAYMENT", "Make Payment"));
 			}
 			$fields->push($paymentField);
 		}
