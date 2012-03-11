@@ -49,7 +49,7 @@ class OrderForm extends Form {
 
 		$finalFields = new CompositeField();
 		$finalFields->setID('FinalFields');
-		$finalFields->push(new HeaderField(_t('OrderForm.COMPLETEORDER','Complete Order'), 3));
+		$finalFields->push(new HeaderField('CompleteOrder', _t('OrderForm.COMPLETEORDER','Complete Order'), 3));
 		// If a terms and conditions page exists, we need to create a field to confirm the user has read it
 		if($termsAndConditionsPage = CheckoutPage::find_terms_and_conditions_page()) {
 			$finalFields->push(new CheckboxField('ReadTermsAndConditions', _t('OrderForm.AGREEWITHTERMS1','I have read and agree with the ').' <a href="'.$termsAndConditionsPage->Link().'">'.Convert::raw2xml($termsAndConditionsPage->Title).'</a>'._t('OrderForm.AGREEWITHTERMS2','.')));
@@ -234,7 +234,7 @@ class OrderForm_Payment extends Form {
 		$paymentFields = Payment::combined_form_fields($totalAsCurrencyObject->Nice());
 		foreach($paymentFields as $paymentField) {
 			if($paymentField->class == "HeaderField") {
-				$paymentField->setTitle(_t("OrderForm.MAKEPAYMENT", "Make Payment"));
+				$paymentField->setTitle("MakePayment", _t("OrderForm.MAKEPAYMENT", "Make Payment"));
 			}
 			$fields->push($paymentField);
 		}
