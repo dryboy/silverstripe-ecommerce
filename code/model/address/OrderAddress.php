@@ -15,9 +15,6 @@
 class OrderAddress extends DataObject {
 
 
-
-
-
 	/**
 	 * standard SS static definition
 	 */
@@ -36,12 +33,14 @@ class OrderAddress extends DataObject {
 	 * standard SS static definition
 	 */
 	public static $casting = array(
-		"FullName" => "Text"
+		"FullName" => "Text",
+		"FullString" => "Text",
+		"JSONData" => "Text"
 	);
 
 
 	/**
-	 * Do the goods need to he shipped and if so,
+	 * Do the goods need to get shipped and if so,
 	 * do we allow these goods to be shipped to a
 	 * different address than the billing address?
 	 *
@@ -314,28 +313,40 @@ class OrderAddress extends DataObject {
 	}
 
 	/**
+	 * Casted variable
 	 * returns the full name of the person, e.g. "John Smith"
 	 *
 	 * @return String
 	 */
 	public function getFullName() {
-		$fieldNameField = $this->prefix()."FirstName";
+		$fieldNameField = $this->fieldPrefix()."FirstName";
 		$fieldFirst = $this->$fieldNameField;
-		$lastNameField =  $this->prefix()."Surname";
+		$lastNameField =  $this->fieldPrefix()."Surname";
 		$fieldLast = $this->$lastNameField;
 		return $fieldFirst.' '.$fieldLast;
 	}
 		public function FullName(){ return $this->getFullName();}
 
+	/**
+	 * Casted variable
+	 * returns the full strng of the record
+	 *
+	 * @return String
+	 */
+	public function getFullString() {
+		return $this->renderWith("Order_Address".str_replace("Address", "", $this->ClassName)."FullString");
+	}
+		public function FullString(){ return $this->getFullString();}
 
 
 	/**
 	 *@param String - $prefix = either "" or "Shipping"
 	 *@return array of fields for an Order DataObject
 	 **/
-	protected function getFieldNameArray($prefix = '') {
+	protected function getFieldNameArray($fieldPrefix = '') {
 		$fieldNameArray = array(
 			"Email",
+			"Prefix",
 			"FirstName",
 			"Surname",
 			"Address",
@@ -344,11 +355,12 @@ class OrderAddress extends DataObject {
 			"PostalCode",
 			"RegionID",
 			"Country",
-			"Phone"
+			"Phone",
+			"MobilePhone",
 		);
-		if($prefix) {
+		if($fieldPrefix) {
 			foreach($fieldNameArray as $key => $value) {
-				$fieldNameArray[$key] = $prefix.$value;
+				$fieldNameArray[$key] = $fieldPrefix.$value;
 			}
 		}
 		return $fieldNameArray;
@@ -358,45 +370,16 @@ class OrderAddress extends DataObject {
 	 * returns the field prefix string for shipping addresses
 	 * @return String
 	 **/
-	protected function prefix() {
+	protected function fieldPrefix() {
 		if($this instanceOf BillingAddress) {
-			$prefix = "";
+			$fieldPrefix = "";
 		}
 		elseif($this instanceOf ShippingAddress) {
-			$prefix = "Shipping";
+			$fieldPrefix = "Shipping";
 		}
-		return $prefix;
+		return $fieldPrefix;
 	}
 
-
-	/**
-	 *
-	 * returns a DataObjectSet of all other Order Addresses related to the current Address
-	 * @param Object (Member)
-	 * @param Object (Order)
-	 * @return null | DataObjectSet
-	 */
-	public function AllOtherMemberAddresses($member = null) {
-		if(!$member) {
-			$member = $this->getMemberFromOrder();
-		}
-		if($member) {
-			$fieldName = $this->ClassName."ID";
-			$orders = DataObject::get(
-				"Order",
-				"\"MemberID\" = '".$member->ID."' AND \"$fieldName\" <> ".intval($this->ID)-0,
-				"\"Order\".\"ID\" DESC ",
-				$join = null,
-				$limit = "1"
-			);
-			if($orders) {
-				$array = $orders->map($fieldName, $fieldName);
-				if($array && count($array)) {
-					return DataObject::get($this->ClassName, "\"OrderAddress\".\"ID\" IN (".implode(", ", $array).")");
-				}
-			}
-		}
-	}
 
 
 	/**
@@ -407,11 +390,11 @@ class OrderAddress extends DataObject {
 	 */
 	public function FillWithLastAddressFromMember($member, $write = false) {
 		$excludedFields = array("ID", "OrderID");
-		$prefix = $this->prefix();
+		$fieldPrefix = $this->fieldPrefix();
 		if($member && $member->exists()) {
-			$oldAddress = $this->previousAddressFromMember($member);
+			$oldAddress = $this->lastAddressFromMember($member);
 			if($oldAddress) {
-				$fieldNameArray = $this->getFieldNameArray($prefix);
+				$fieldNameArray = $this->getFieldNameArray($fieldPrefix);
 				foreach($fieldNameArray as $field) {
 					if(!$this->$field && isset($oldAddress->$field) && !in_array($field, $excludedFields)) {
 						$this->$field = $oldAddress->$field;
@@ -422,9 +405,9 @@ class OrderAddress extends DataObject {
 			if($this instanceOf BillingAddress) {
 				$this->Email = $member->Email;
 			}
-			$fieldNameArray = array("FirstName" => $prefix."FirstName", "Surname" => $prefix."Surname");
+			$fieldNameArray = array("FirstName" => $fieldPrefix."FirstName", "Surname" => $fieldPrefix."Surname");
 			foreach($fieldNameArray as $memberField => $fieldName) {
-				//NOTE, we always override the Billing Address (which does not have a prefix)
+				//NOTE, we always override the Billing Address (which does not have a fieldPrefix)
 				if(!$this->$fieldName || $this instanceOf BillingAddress) {$this->$fieldName = $member->$memberField;}
 			}
 		}
@@ -434,30 +417,103 @@ class OrderAddress extends DataObject {
 		return $this;
 	}
 
-	/**
+/**
 	 * Finds the last address used by this member
 	 * @param Object (Member)
-	 * @return Null | DataObject (OrderAddress / ShippingAddress / BillingAddress)
+	 * @return Null | DataObject (ShippingAddress / BillingAddress)
 	 **/
-	protected function previousAddressFromMember($member = null) {
+	protected function lastAddressFromMember($member = null) {
+		$addresses = $this->previousAddressesFromMember($member, true);
+		if($addresses) {
+			return $addresses->First();
+		}
+	}
+
+	/**
+	 * Finds the last order used by this member
+	 * @param Object (Member)
+	 * @return Null | DataObject (Order)
+	 **/
+	protected function lastOrderFromMember($member = null) {
+		$orders = $this->previousOrdersFromMember($member, true);
+		if($orders) {
+			return $orders->First();
+		}
+	}
+
+
+	/**
+	 * Finds previous addresses from the member of the current address
+	 * @param Object (Member)
+	 * @return Null | DataObjectSet (ShippingAddress / BillingAddress)
+	 **/
+	protected function previousAddressesFromMember($member = null, $onlyLastRecord = false) {
+		$orders = $this->previousOrdersFromMember($member, $onlyLastRecord);
+		$addresses = null;
+		if($orders) {
+			$fieldName = $this->ClassName."ID";
+			$array = $orders->map($fieldName, $fieldName);
+			if(is_array($array) && count($array)) {
+				$limit = null;
+				if($onlyLastRecord) {
+					$limit = 1;
+				}
+				$addresses = DataObject::get(
+					$this->ClassName,
+					"\"".$this->ClassName."\".\"ID\" IN (".implode(",", $array).") AND \"Obsolete\" = 0",
+					"\"Order\".\"ID\" DESC",
+					"INNER JOIN \"Order\" ON \"Order\".\"$fieldName\" = \"".$this->ClassName."\".\"ID\" ",
+					$limit
+				);
+				$addressCompare = array();
+				if($addresses) {
+					$excludedFields = array("ID", "OrderID");
+					foreach($addresses as $address) {
+						$fields = $this->stat("db");
+						if($fields) {
+							$myString = "";
+							foreach($fields as $field => $useless) {
+								if(!in_array($field, $excludedFields)) {
+									$myString .= strtolower(trim($address->$field));
+								}
+							}
+						}
+						if(in_array($myString, $addressCompare)) {
+							$addresses->remove($address);
+						}
+						else {
+							$addressCompare[$address->ID] = $myString;
+						}
+					}
+				}
+			}
+		}
+		return $addresses;
+	}
+
+	/**
+	 * Finds previous orders from the member of the current address
+	 * @param Object (Member)
+	 * @return Null | DataObjectSet (Order)
+	 **/
+	protected function previousOrdersFromMember($member = null, $onlyLastRecord = false) {
 		if(!$member) {
 			$member = $this->getMemberFromOrder();
 		}
 		if($member) {
+			$limit = null;
+			if($onlyLastRecord) {
+				$limit = 1;
+			}
 			$fieldName = $this->ClassName."ID";
 			$orders = DataObject::get(
 				"Order",
-				"\"MemberID\" = '".$member->ID."' AND \"$fieldName\" <> ".intval($this->ID)-0,
+				"\"MemberID\" = ".$member->ID." AND \"$fieldName\" <> ".$this->ID,
 				"\"Order\".\"ID\" DESC ",
 				$join = null,
-				$limit = "1"
+				$limit
 			);
-			if($orders) {
-				$order = $orders->First();
-				if($order  && $order->exists()) {
-					return DataObject::get_by_id($this->ClassName, $order->$fieldName);
-				}
-			}
+			return $orders;
 		}
 	}
 
@@ -466,11 +522,45 @@ class OrderAddress extends DataObject {
 	 * @return DataObject (Member)
 	 **/
 	protected function getMemberFromOrder() {
-		if($order = $this->Order() && $order->exists()) {
-			if($order->MemberID) {
-				return DataObject::get_by_id("Member", $order->MemberID);
+		if($this->exists()) {
+			$fieldName = $this->ClassName."ID";
+			if($order = DataObject::get_one("Order", "\"Order\".\"$fieldName\" = ".$this->ID)) {
+				if($order->MemberID) {
+					return DataObject::get_by_id("Member", $order->MemberID);
+				}
 			}
 		}
+	}
+
+	function onAfterWrite(){
+		parent::onAfterWrite();
+		if(!$this->OrderID && $this->exists()) {
+			$order = DataObject::get_one("Order", "\"". $this->ClassName."ID\" = ".$this->ID);
+			if($order) {
+				$this->OrderID = $order->ID;
+				$this->write();
+			}
+		}
+	}
+
+	function RemoveLink(){
+		return ShoppingCart_Controller::get_url_segment()."/removeaddress/".$this->ID."/".$this->ClassName."/";
+	}
+
+
+	function getJSONData(){return $this->JSONData();}
+	function JSONData(){
+		$jsArray = array();
+		if(!isset($fields)) {
+			$fields = $this->stat("db");
+			$fields["RegionID"] = "RegionID";
+		}
+		if($fields) {
+			foreach($fields as $name => $field) {
+				$jsArray[$name] = $this->$name;
+			}
+		}
+		return Convert::array2json($jsArray);
 	}
 
 }

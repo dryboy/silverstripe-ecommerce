@@ -202,7 +202,7 @@ class EcommerceRole extends DataObjectDecorator {
 	function getEcommerceFields($additionalFields = false) {
 		if($additionalFields) {
 			$fields = new FieldSet(
-				new HeaderField(_t('EcommerceRole.PERSONALINFORMATION','Personal Information'), 3),
+				new HeaderField('PersonalInformation', _t('EcommerceRole.PERSONALINFORMATION','Personal Information'), 3),
 				new TextField('FirstName', _t('EcommerceRole.FIRSTNAME','First Name')),
 				new TextField('Surname', _t('EcommerceRole.SURNAME','Surname')),
 				new EmailField('Email', _t('EcommerceRole.EMAIL','Email'))

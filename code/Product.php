@@ -123,7 +123,7 @@ class Product extends Page {
 			$fields->addFieldsToTab(
 				'Root.Content.AlsoShowHere',
 				array(
-					new HeaderField('ProductGroupsHeader', _t('Product.ALSOAPPEARS', 'Also shows in ...')),
+					new HeaderField('ProductGroupsHeader', _t('Product.ALSOSHOWSIN', 'Also shows in ...')),
 					$this->getProductGroupsTable()
 				)
 			);

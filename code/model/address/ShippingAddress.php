@@ -42,7 +42,9 @@ class ShippingAddress extends OrderAddress {
 		'ShippingPostalCode' => 'Varchar(30)',
 		'ShippingCountry' => 'Varchar(4)',
 		'ShippingPhone' => 'Varchar(100)',
-		'ShippingMobilePhone' => 'Varchar(100)'
+		'ShippingMobilePhone' => 'Varchar(100)',
+		'Obsolete' => 'Boolean',
+		'OrderID' => 'Int'
 	);
 
 
@@ -72,7 +74,9 @@ class ShippingAddress extends OrderAddress {
 			'name' => 'SearchFields',
 			'type' => 'fulltext',
 			'value' => 'ShippingAddress, ShippingAddress2, ShippingCity, ShippingPostalCode, ShippingPhone'
-		)
+		),
+		"Obsolete" => true,
+		"OrderID" => true
 	);
 
 	public static $casting = array(
@@ -92,8 +96,8 @@ class ShippingAddress extends OrderAddress {
 
 	public static $summary_fields = array(
 		"Order.Title",
-		"ShippingSurname",
-		"ShippingCity"
+		"Surname",
+		"City"
 	);
 
 	public static $singular_name = "Shipping Address";
@@ -128,24 +132,52 @@ class ShippingAddress extends OrderAddress {
 	 * Puts together the fields for the Order Form (and other front-end purposes).
 	 * @return Fieldset
 	 **/
-	public function getFields() {
+	public function getFields($member = null) {
 		$fields = parent::getEcommerceFields();
 		if(OrderAddress::get_use_separate_shipping_address()) {
-			$shippingFields = new CompositeField(
-				new HeaderField(_t('OrderAddress.SENDGOODSTODIFFERENTADDRESS','Send goods to different address'), 3),
+			$shippingFieldsHeader = new CompositeField(
+				new HeaderField('SendGoodsToADifferentAddress', _t('OrderAddress.SENDGOODSTODIFFERENTADDRESS','Send goods to different address'), 3),
 				new LiteralField('ShippingNote', '<p class="message warning">'._t('OrderAddress.SHIPPINGNOTE','Your goods will be sent to the address below.').'</p>'),
-				new LiteralField('Help', '<p>'._t('OrderAddress.SHIPPINGHELP','You can use this for gift giving. No billing information will be disclosed to this address.').'</p>'),
-				new TextField('ShippingName', _t('OrderAddress.NAME','Name')),
-				new TextField('ShippingAddress', _t('OrderAddress.ADDRESS','Address')),
-				new TextField('ShippingAddress2', _t('OrderAddress.ADDRESS2','')),
-				new TextField('ShippingCity', _t('OrderAddress.CITY','City')),
-				$this->getPostalCodeField("ShippingPostalCode"),
-				$this->getRegionField("ShippingRegionID"),
-				$this->getCountryField("ShippingCountry")
+				new LiteralField('ShippingHelp', '<p>'._t('OrderAddress.SHIPPINGHELP','You can use this for gift giving. No billing information will be disclosed to this address.').'</p>')
 			);
-			$shippingFields->SetID('ShippingFields');
+
+			if($member->exists()) {
+				$addresses = $this->previousAddressesFromMember($member);
+				if($addresses) {
+					$shippingFieldsHeader->push(new SelectOrderAddressField('SelectShippingAddressField', _t('OrderAddress.SELECTBILLINGADDRESS','Select Shipping Address'), $addresses));
+				}
+				$shippingFields = new CompositeField(
+					new TextField('ShippingFirstName', _t('OrderAddress.FIRSTNAME','First Name')),
+					new TextField('ShippingSurname', _t('OrderAddress.SURNAME','Surname'))
+				);
+			}
+			else {
+				$shippingFields = new CompositeField(
+					new TextField('ShippingFirstName', _t('OrderAddress.FIRSTNAME','First Name')),
+					new TextField('ShippingSurname', _t('OrderAddress.SURNAME','Surname'))
+				);
+			}
+			$shippingFields->push(new TextField('ShippingPrefix', _t('OrderAddress.PREFIX','Prefix')));
+			$shippingFields->push(new TextField('ShippingAddress', _t('OrderAddress.ADDRESS','Address')));
+			$shippingFields->push(new TextField('ShippingAddress2', _t('OrderAddress.ADDRESS2','&nbsp;')));
+			$shippingFields->push(new TextField('ShippingCity', _t('OrderAddress.CITY','City')));
+			$shippingFields->push($this->getPostalCodeField("ShippingPostalCode"));
+			$shippingFields->push($this->getRegionField("ShippingRegionID"));
+			$shippingFields->push($this->getCountryField("ShippingCountry"));
+			$shippingFields->push(new TextField('ShippingPhone', _t('OrderAddress.PHONE','Phone')));
+			$shippingFields->push(new TextField('ShippingMobilePhone', _t('OrderAddress.MOBILEPHONE','Mobile Phone')));
 			$this->makeSelectedFieldsReadOnly($shippingFields);
+			$shippingFieldsHeader->SetID("ShippingFieldsHeader");
+			$fields->push($shippingFieldsHeader);
+			$shippingFields->SetID('ShippingFields');
 			$fields->push($shippingFields);
+
+			$this->extend('augmentEcommerceShippingAddressFields', $fields);
+
+
+
+
+
 		}
 		$this->extend('augmentEcommerceShippingAddressFields', $fields);
 		return $fields;

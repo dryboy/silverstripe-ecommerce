@@ -532,14 +532,13 @@ class OrderStep_Created extends OrderStep {
 				$problems[] = "There is no billing address associated with this order.";
 			}
 			elseif($billingAddress = $order->BillingAddress()) {
-				if(!$billingAddress->FirstName) {
-					$problems[] = "There is no -- first name -- recorded the billing address.";
-				}
-				if(!$billingAddress->Surname) {
-					$problems[] = "There is no -- Surname -- recorded the billing address.";
-				}
-				if(!$billingAddress->Country) {
-					$problems[] = "There is no -- Country -- recorded the billing address.";
+				$requiredBillingFields = $billingAddress->getRequiredFields();
+				if($requiredBillingFields && is_array($requiredBillingFields) && count($requiredBillingFields)) {
+					foreach($requiredBillingFields as $requiredBillingField) {
+						if(!$billingAddress->$requiredBillingField) {
+							$problems[] = "There is no -- $requiredBillingField -- recorded in the billing address.";
+						}
+					}
 				}
 			}
 			if(count($problems)) {
@@ -582,7 +581,7 @@ class OrderStep_Submitted extends OrderStep {
 
 	public function getCMSFields() {
 		$fields = parent::getCMSFields();
-		$fields->addFieldToTab("Root.Main", new HeaderField("HOWTOSAVESUBMITTEDORDER", _t("OrderStep.HOWTOSAVESUBMITTEDORDER", "How would you like to make a backup of your order at the moment it is submitted?"), 3), "SaveOrderAsHTML");
+		$fields->addFieldToTab("Root.Main", new HeaderField("HowToSaveSubmittedOrder", _t("OrderStep.HOWTOSAVESUBMITTEDORDER", "How would you like to make a backup of your order at the moment it is submitted?"), 3), "SaveOrderAsHTML");
 		return $fields;
 	}
 
@@ -674,7 +673,7 @@ class OrderStep_SentInvoice extends OrderStep {
 
 	public function getCMSFields() {
 		$fields = parent::getCMSFields();
-		$fields->addFieldToTab("Root.Main", new HeaderField("ACTUALLYSENDINVOICE", _t("OrderStep.ACTUALLYSENDINVOICE", "Actually send the invoice? "), 3), "SendInvoiceToCustomer");
+		$fields->addFieldToTab("Root.Main", new HeaderField("ActuallySendTheInvoice", _t("OrderStep.ACTUALLYSENDTHEINVOICE", "Actually send the invoice? "), 3), "SendInvoiceToCustomer");
 		return $fields;
 	}
 
@@ -877,7 +876,7 @@ class OrderStep_SentReceipt extends OrderStep {
 
 	public function getCMSFields() {
 		$fields = parent::getCMSFields();
-		$fields->addFieldToTab("Root.Main", new HeaderField("ACTUALLYSENDRECEIPT", _t("OrderStep.ACTUALLYSENDRECEIPT", "Actually send the receipt?"), 3), "SendReceiptToCustomer");
+		$fields->addFieldToTab("Root.Main", new HeaderField("ActuallySendReceipt", _t("OrderStep.ACTUALLYSENDRECEIPT", "Actually send the receipt?"), 3), "SendReceiptToCustomer");
 		return $fields;
 	}
 
@@ -949,7 +948,7 @@ class OrderStep_Sent extends OrderStep {
 
 	public function getCMSFields() {
 		$fields = parent::getCMSFields();
-		$fields->addFieldToTab("Root.Main", new HeaderField("ACTUALLYSENDDETAILS", _t("OrderStep.ACTUALLYSENDDETAILS", "Send details to the customer?"), 3), "SendDetailsToCustomer");
+		$fields->addFieldToTab("Root.Main", new HeaderField("ActuallySendDetails", _t("OrderStep.ACTUALLYSENDDETAILS", "Send details to the customer?"), 3), "SendDetailsToCustomer");
 		return $fields;
 	}
 

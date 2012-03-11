@@ -44,7 +44,9 @@ class BillingAddress extends OrderAddress {
 		'Country' => 'Varchar(4)',
 		'Phone' => 'Varchar(50)',
 		'MobilePhone' => 'Varchar(50)',
-		'Email' => 'Varchar(250)'
+		'Email' => 'Varchar(250)',
+		'Obsolete' => 'Boolean',
+		'OrderID' => 'Int'
 	);
 
 	/**
@@ -76,7 +78,9 @@ class BillingAddress extends OrderAddress {
 			'name' => 'SearchFields',
 			'type' => 'fulltext',
 			'value' => 'FirstName, Surname, Address, Address2, City, PostalCode, Email'
-		)
+		),
+		"Obsolete" => true,
+		"OrderID" => true
 	);
 
 	public static $casting = array(
@@ -133,21 +137,36 @@ class BillingAddress extends OrderAddress {
 	/**
 	 *@return Fieldset
 	 **/
-	public function getFields() {
+	public function getFields($member = null) {
 		$fields = parent::getEcommerceFields();
-		$billingFields = new CompositeField(
-			new HeaderField(_t('OrderAddress.BILLINGDETAILS','Billing Details'), 3),
-			new EmailField('Email', _t('OrderAddress.EMAIL','Email')),
-			new TextField('FirstName', _t('OrderAddress.FIRSTNAME','First Name')),
-			new TextField('Surname', _t('OrderAddress.SURNAME','Surname')),
-			new TextField('Address', _t('OrderAddress.ADDRESS','Address')),
-			new TextField('Address2', _t('OrderAddress.ADDRESS2','&nbsp;')),
-			new TextField('City', _t('OrderAddress.CITY','City')),
-			$this->getPostalCodeField("PostalCode"),
-			$this->getRegionField("RegionID"),
-			$this->getCountryField("Country"),
-			new TextField('Phone', _t('OrderAddress.PHONE','Phone'))
-		);
+		$fields->push(new HeaderField('BillingDetails', _t('OrderAddress.BILLINGDETAILS','Billing Details'), 3));
+		if($member->exists()) {
+			$addresses = $this->previousAddressesFromMember($member);
+			if($addresses) {
+				$fields->push(new SelectOrderAddressField('SelectBillingAddressField', _t('OrderAddress.SELECTBILLINGADDRESS','Select Billing Address'), $addresses));
+			}
+			$billingFields = new CompositeField(
+				new EmailField('Email', _t('OrderAddress.EMAIL','Email')),
+				new TextField('FirstName', _t('OrderAddress.FIRSTNAME','First Name')),
+				new TextField('Surname', _t('OrderAddress.SURNAME','Surname'))
+			);
+		}
+		else {
+			$billingFields = new CompositeField(
+				new EmailField('Email', _t('OrderAddress.EMAIL','Email')),
+				new TextField('FirstName', _t('OrderAddress.FIRSTNAME','First Name')),
+				new TextField('Surname', _t('OrderAddress.SURNAME','Surname'))
+			);
+		}
+		$billingFields->push(new TextField('Prefix', _t('OrderAddress.PREFIX','Prefix')));
+		$billingFields->push(new TextField('Address', _t('OrderAddress.ADDRESS','Address')));
+		$billingFields->push(new TextField('Address2', _t('OrderAddress.ADDRESS2','&nbsp;')));
+		$billingFields->push(new TextField('City', _t('OrderAddress.CITY','City')));
+		$billingFields->push($this->getPostalCodeField("PostalCode"));
+		$billingFields->push($this->getRegionField("RegionID"));
+		$billingFields->push($this->getCountryField("Country"));
+		$billingFields->push(new TextField('Phone', _t('OrderAddress.PHONE','Phone')));
+		$billingFields->push(new TextField('MobilePhone', _t('OrderAddress.MOBILEPHONE','Mobile Phone')));
 		$billingFields->SetID('BillingFields');
 		$this->makeSelectedFieldsReadOnly($billingFields);
 		$fields->push($billingFields);
@@ -166,7 +185,8 @@ class BillingAddress extends OrderAddress {
 			'FirstName',
 			'Surname',
 			'Address',
-			'City'
+			'City',
+			'PostalCode',
 		);
 		$this->extend('augmentEcommerceBillingAddressRequiredFields', $requiredFieldsArray);
 		return $requiredFieldsArray;
