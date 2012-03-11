@@ -114,8 +114,12 @@ class SimpleShippingModifier extends OrderModifier {
 
 // ######################################## *** calculate database fields: protected function Live[field name] ...  USES CALCULATED VALUES
 
+	/**
+	 * Returns the most likely country for the sale.
+	 * @return String
+	 */
 	protected function LiveCountry() {
-		EcommerceCountry::get_country();
+		return EcommerceCountry::get_country();
 	}
 
 	/**
