@@ -454,7 +454,7 @@ class Order extends DataObject {
 			}
 			else {
 				$msg = _t("Order.NOSUBMITTEDYET", 'No details are shown here as this order has not been submitted yet. Once you change the status of the order more options will be available.');
-				$fields->addFieldToTab('Root.Main', new LiteralField('MainDetails', '<p>'.$msg.'</p>p>'));
+				$fields->addFieldToTab('Root.Main', new LiteralField('MainDetails', '<p>'.$msg.'</p>'));
 				$orderItemsTable = new HasManyComplexTableField(
 					$this, //$controller
 					"Attributes", //$name =
