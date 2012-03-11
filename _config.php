@@ -17,14 +17,12 @@ if(class_exists("ProductVariation")) {
 
 Director::addRules(50, array(
 	ShoppingCart_Controller::get_url_segment(). '/$Action/$ID/$OtherID' => 'ShoppingCart_Controller',
-	EcommercePaymentController::get_url_segment(). '/$Action/$ID/$OtherID' => 'EcommercePaymentController',
-	'ecommerce-load-default-records/$Action' => 'EcommerceDefaultRecords',
-	'ecommerce-migrate/$Action' => 'EcommerceMigration'
+	EcommercePaymentController::get_url_segment(). '/$Action/$ID/$OtherID' => 'EcommercePaymentController'
 ));
 
-Object::add_extension('Member', 'EcommerceRole');
-Object::add_extension('Payment', 'EcommercePayment');
-Object::add_extension('SiteConfig', 'SiteConfigEcommerceExtras');
+Object::add_extension("Member", "EcommerceRole");
+Object::add_extension("Payment", "EcommercePayment");
+Object::add_extension("SiteConfig", "SiteConfigEcommerceExtras");
 Object::add_extension("SiteTree", "EcommerceSiteTreeExtension");
 Object::add_extension("Page_Controller", "EcommerceSiteTreeExtension_Controller");
 Object::add_extension("DevelopmentAdmin", "EcommerceDevelopmentAdminDecorator");
