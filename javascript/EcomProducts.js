@@ -20,6 +20,7 @@ EcomProducts = {
 	maskSelector:											'#SelectVariationMask',
 	popupWindowID:										'SelectVarationWindow',
 	popupWindowSelector: 							'#SelectVarationWindow',
+	popupWindowCloseLinkSelector: 		'.selectVarationWindowCloseLink a',
 
 	init: function(){
 		//select all the a tag with name equal to modal
@@ -42,13 +43,18 @@ EcomProducts = {
 				function(data, success) {
 					jQuery(EcomProducts.popupWindowSelector).html(data).removeClass("loading");
 					//if close button is clicked
+					jQuery(EcomProducts.popupWindowCloseLinkSelector).click(function (e) {
+						e.preventDefault();
+						EcomProducts.removeAll();
+						return false;
+					}
+					//if product variation is added
 					jQuery(EcomProducts.popupWindowSelector+' a').click(function (e) {
-							//do NOT Cancel the link behavior
 							e.preventDefault();
 							url = jQuery(this).attr("href");
 							EcomCart.getChanges(url, null);
 							EcomProducts.removeAll();
-							return true;
+							return false;
 					});
 
 				}
