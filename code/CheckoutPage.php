@@ -431,8 +431,8 @@ class CheckoutPage_StepDescription extends DataObject{
 
 	static $db = array(
 		"Heading" => "Varchar",
-		"Above" => "HTMLText",
-		"Below" => "HTMLText"
+		"Above" => "Text",
+		"Below" => "Text"
 	);
 
 	public static $searchable_fields = array(
@@ -449,7 +449,7 @@ class CheckoutPage_StepDescription extends DataObject{
 	public static $summary_fields = array(
 		"ID" => "Step Number",
 		"Code" => "Code",
-		"Heading" => "Name"
+		"Heading" => "Heading"
 	);
 
 	public static $casting = array(
@@ -475,7 +475,9 @@ class CheckoutPage_StepDescription extends DataObject{
 
 	function getCMSFields(){
 		$fields = parent::getCMSFields();
-		$fields->addFieldToTab("Root.Main", new ReadonlyField("Code", "Code"));
+		$fields->replaceField("Description", new TextareaField("Description", "Description", 3));
+		$fields->addFieldToTab("Root.Main", new ReadonlyField("Above", "Text Above"));
+		$fields->addFieldToTab("Root.Main", new ReadonlyField("Below", "Text Below"));
 		return $fields;
 	}
 
