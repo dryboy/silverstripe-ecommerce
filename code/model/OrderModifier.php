@@ -543,11 +543,12 @@ class OrderModifier extends OrderAttribute {
 		parent::requireDefaultRecords();
 		$arrayOfModifiers = Order::get_modifiers();
 		if(is_array($arrayOfModifiers) && count($arrayOfModifiers)) {
-			$obj = DataObject::get_one("OrderModifier_Descriptor", "\"ModifierClassName\" = '".$this->ClassName."'");
 			if(in_array($this->ClassName, $arrayOfModifiers)) {
+				$obj = DataObject::get_one("OrderModifier_Descriptor", "\"ModifierClassName\" = '".$this->ClassName."'");
 				if(!$obj) {
 					$obj = new OrderModifier_Descriptor();
 					$obj->ModifierClassName = $this->ClassName;
+					$obj->Heading = $this->i18n_singular_name();
 					$obj->write();
 					DB::alteration_message("Creating description for ".$this->ClassName, "created");
 				}
@@ -615,7 +616,7 @@ class OrderModifier_Descriptor extends DataObject {
 	static $db = array(
 		"ModifierClassName" => "Varchar(100)",
 		"Heading" => "Varchar",
-		"Description" => "HTMLText"
+		"Description" => "Text"
 	);
 
 	static $has_one = array(
@@ -666,6 +667,7 @@ class OrderModifier_Descriptor extends DataObject {
 		$fields = parent::getCMSFields();
 		$fields->replaceField("ModifierClassName", new ReadonlyField("RealName", "Name"));
 		$fields->replaceField("LinkID", new TreeDropdownField("LinkID", "More info link (optional)", "SiteTree"));
+		$fields->replaceField("Description", new TextareaField("Description", "Description", 3));
 		return $fields;
 	}
 
