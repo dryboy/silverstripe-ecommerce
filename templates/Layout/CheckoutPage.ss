@@ -2,13 +2,13 @@
 
 	<h1 class="pagetitle">$Title</h1>
 
-<% if Steps %>
+<% if Steps %><% if CanCheckout %>
 	<ul class="steps youHave{$PercentageDone}PercentageDone">
 	<% control Steps %>
 		<li class="$LinkingMode">$Title</li>
 	<% end_control %>
 	</ul>
-<% end_if %>
+<% end_if %><% end_if %>
 
 	<% include CartActionsAndMessages %>
 
@@ -21,10 +21,10 @@
 	<div id="OrderItemsOuter" class="checkoutStep">
 
 		<% if StepsContentHeading(1) %><h2 class="orderStepHeading">$StepsContentHeading(1)</h2><% end_if %>
-		<% if StepsContentAbove(1) %><div class="above headerFooterDescription">$StepsContentAbove(1)</div><% end_if %>
+		<% if StepsContentAbove(1) %><p class="above headerFooterDescription">$StepsContentAbove(1)</p><% end_if %>
 		<% control Order %><% include Order_Content_Editable %><% end_control %>
 		<% if ModifierForms %><% control ModifierForms %><div class="modifierFormInner">$Me</div><% end_control %><% end_if %>
-		<% if StepsContentBelow(1) %><div class="below headerFooterDescription">$StepsContentBelow(1)</div><% end_if %>
+		<% if StepsContentBelow(1) %><p class="below headerFooterDescription">$StepsContentBelow(1)</p><% end_if %>
 
 		<% if HasCheckoutSteps %>
 		<div class="checkoutStepPrevNextHolder next">
@@ -47,9 +47,9 @@
 		<% end_if %>
 
 		<% if StepsContentHeading(2) %><h2 class="orderStepHeading">$StepsContentHeading(2)</h2><% end_if %>
-		<% if StepsContentAbove(2) %><div class="above headerFooterDescription">$StepsContentAbove(2)</div><% end_if %>
+		<% if StepsContentAbove(2) %><p class="above headerFooterDescription">$StepsContentAbove(2)</p><% end_if %>
 		<div id="OrderFormAddressHolder">$OrderFormAddress</div>
-		<% if StepsContentBelow(2) %><div class="below headerFooterDescription">$StepsContentBelow(2)</div><% end_if %>
+		<% if StepsContentBelow(2) %><p class="below headerFooterDescription">$StepsContentBelow(2)</p><% end_if %>
 
 	<!-- there is no next link here, because the member will have to submit the form -->
 	</div>
@@ -80,13 +80,13 @@
 
 
 		<% if StepsContentHeading(3) %><h2 class="orderStepHeading">$StepsContentHeading(3)</h2><% end_if %>
-		<% if StepsContentAbove(3) %><div class="above headerFooterDescription">$StepsContentAbove(3)</div><% end_if %>
+		<% if StepsContentAbove(3) %><p class="above headerFooterDescription">$StepsContentAbove(3)</p><% end_if %>
 		<% control Order %>
 			<% include Order_Addresses %>
 			<% include Order_Content %>
 		<% end_control %>
 		<div id="OrderFormHolder">$OrderForm</div>
-		<% if StepsContentBelow(3) %><div class="below headerFooterDescription">$StepsContentBelow(3)</div><% end_if %>
+		<% if StepsContentBelow(3) %><p class="below headerFooterDescription">$StepsContentBelow(3)</p><% end_if %>
 
 	</div>
 
