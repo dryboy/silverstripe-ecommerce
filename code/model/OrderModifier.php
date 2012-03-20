@@ -553,7 +553,7 @@ class OrderModifier extends OrderAttribute {
 					DB::alteration_message("Creating description for ".$this->ClassName, "created");
 				}
 			}
-			elseif($obj) {
+			elseif($obj = DataObject::get_one("OrderModifier_Descriptor", "\"ModifierClassName\" = '".$this->ClassName."'")) {
 				$obj->delete();
 				$obj->destroy();
 				DB::alteration_message("Deleting description for ".$this->ClassName, "deleted");
