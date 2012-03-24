@@ -85,7 +85,7 @@ class CheckoutPage extends CartPage {
 			$steps = CheckoutPage_Controller::get_checkout_steps();
 			if(in_array($currentStep, $steps)) {
 				$key = array_search($currentStep, $steps);
-				if($key) {
+				if($key!==FALSE) {
 					if($doPreviousInstead) {
 						$key--;
 					}
