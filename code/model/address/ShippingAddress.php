@@ -171,13 +171,7 @@ class ShippingAddress extends OrderAddress {
 			$fields->push($shippingFieldsHeader);
 			$shippingFields->SetID('ShippingFields');
 			$fields->push($shippingFields);
-
 			$this->extend('augmentEcommerceShippingAddressFields', $fields);
-
-
-
-
-
 		}
 		$this->extend('augmentEcommerceShippingAddressFields', $fields);
 		return $fields;
