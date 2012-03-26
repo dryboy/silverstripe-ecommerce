@@ -43,20 +43,23 @@ EcomProducts = {
 				function(data, success) {
 					jQuery(EcomProducts.popupWindowSelector).html(data).removeClass("loading");
 					//if close button is clicked
-					jQuery(EcomProducts.popupWindowCloseLinkSelector).click(function (e) {
-						e.preventDefault();
-						EcomProducts.removeAll();
-						return false;
-					}
+					jQuery(EcomProducts.popupWindowCloseLinkSelector).click(
+						function (e) {
+							e.preventDefault();
+							EcomProducts.removeAll();
+							return false;
+						}
+					);
 					//if product variation is added
-					jQuery(EcomProducts.popupWindowSelector+' a').click(function (e) {
+					jQuery(EcomProducts.popupWindowSelector+' a').click(
+						function (e) {
 							e.preventDefault();
 							url = jQuery(this).attr("href");
 							EcomCart.getChanges(url, null);
 							EcomProducts.removeAll();
 							return false;
-					});
-
+						}
+					);
 				}
 			);
 			//Get the screen height and width
