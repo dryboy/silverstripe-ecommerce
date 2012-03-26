@@ -151,6 +151,16 @@ class CartPage extends Page{
 
 class CartPage_Controller extends Page_Controller{
 
+	static $allowed_actions = array(
+		'retrieveorder',
+		'loadorder',
+		'copyorder',
+		'startneworder',
+		'showorder',
+		'sendreceipt',
+		'CancelForm',
+		'PaymentForm',
+	);
 
 	/**
 	 * This DataObjectSet holds DataObjects with a Link and Title each....
@@ -208,7 +218,7 @@ class CartPage_Controller extends Page_Controller{
 			$id = $this->request->param('ID');
 			$action = $this->request->param('Action');
 			$otherID = intval($this->request->param("OtherID"));
-			if(intval($id) && in_array($action, array("showorder", "loadorder", "copyorder", "saveorder", "deleteorder"))){
+			if(intval($id) && in_array($action, $this->stat("allowed_actions"))){
 				$this->currentOrder = DataObject::get_by_id("Order", intval($id));
 			}
 		//the code below is for submitted orders, but we still put it here so
@@ -284,7 +294,8 @@ class CartPage_Controller extends Page_Controller{
 				Session::clear(self::get_session_code());
 			}
 		}
-		return $this->message;
+		$field = DBField::create("HTMLText", $this->message);
+		return $field;
 	}
 
 	/**
