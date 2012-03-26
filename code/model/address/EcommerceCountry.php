@@ -175,9 +175,10 @@ class EcommerceCountry extends DataObject {
 	/**
 	 * returns an array of Codes => Names of all countries that can be used.
 	 * Use "list_of_allowed_entries_for_dropdown" to get the list.
+	 * Needs to be public, because it is used by EcommerceRegion
 	 *@return Array
 	 **/
-	protected static function get_default_array() {
+	public static function get_default_array() {
 		$defaultArray = array();
 		$countries = null;
 		if($code = self::get_fixed_country_code()) {
