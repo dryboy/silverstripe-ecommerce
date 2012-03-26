@@ -17,7 +17,7 @@
 class OrderForm extends Form {
 
 	function __construct($controller, $name) {
-
+		Validator::set_javascript_validation_handler("prototype");
 		//requirements
 		Requirements::javascript('ecommerce/javascript/EcomOrderForm.js');
 
@@ -69,11 +69,15 @@ class OrderForm extends Form {
 
 
 		$actions = new FieldSet(new FormAction('processOrder', _t('OrderForm.PROCESSORDER','Place order and make payment')));
-		$requiredFields = new OrderForm_Validator($requiredFields);
-		$this->extend('updateFields',$fields);
-		$this->extend('updateActions',$actions);
-		$this->extend('updateValidator',$requiredFields);
-		parent::__construct($controller, $name, $fields, $actions, $requiredFields);
+		$validator = new OrderForm_Validator($requiredFields);
+		//we stick with standard validation here, because of the complexity and
+		//hard-coded payment validation that is required
+		$validator->setJavascriptValidationHandler("prototype");
+		parent::__construct($controller, $name, $fields, $actions, $validator);
+		//extensions need to be set after __construct
+		if($this->extend('updateFields', $fields) !== null) {$this->setFields($fields);}
+		if($this->extend('updateActions', $actions) !== null) {$this->setActions($actions);}
+		if($this->extend('updateValidator', $validator) !== null) {$this->setValidator($validator);}
 
 
 		//  ________________  7)  Load saved data
@@ -188,11 +192,14 @@ class OrderForm extends Form {
 /**
  * @Description: allows customer to make additional payments for their order
  *
+ * NOTE: it is important that it extends CustomRequiredFields
+ * because of the way the Payment::requiredFields are setup.
+ *
  * @package: ecommerce
  * @sub-package: forms
  * @authors: Nicolaas
  **/
-class OrderForm_Validator extends RequiredFields{
+class OrderForm_Validator extends CustomRequiredFields{
 
 	/**
 	 * Ensures member unique id stays unique and other basic stuff...
@@ -249,11 +256,13 @@ class OrderForm_Payment extends Form {
 		$actions = new FieldSet(
 			new FormAction('dopayment', _t('OrderForm.PAYORDER','Pay outstanding balance'))
 		);
-		$this->extend('updateFields',$fields);
-		$this->extend('updateActions',$actions);
-		$this->extend('updateValidator',$requiredFields);
 		$form = parent::__construct($controller, $name, $fields, $actions, $requiredFields);
+		//extensions need to be set after __construct
+		if($this->extend('updateFields',$fields) !== null) {$this->setFields($fields);}
+		if($this->extend('updateActions',$actions) !== null) {$this->setActions($actions);}
+		if($this->extend('updateValidator',$requiredFields) !== null) {$this->setValidator($requiredFields);}
 		$this->setFormAction($controller->Link($name));
+		$this->extend('updateOrderFormPayment', $this);
 	}
 
 	function dopayment($data, $form) {
@@ -293,10 +302,11 @@ class OrderForm_Cancel extends Form {
 			new FormAction('docancel', _t('OrderForm.CANCELORDER','Cancel this order'))
 		);
 		$requiredFields = array();
-		$this->extend('updateFields',$fields);
-		$this->extend('updateActions',$actions);
-		$this->extend('updateValidator',$requiredFields);
 		parent::__construct($controller, $name, $fields, $actions);
+		//extensions need to be set after __construct
+		if($this->extend('updateFields',$fields) !== null) {$this->setFields($fields);}
+		if($this->extend('updateActions',$actions) !== null) {$this->setActions($actions);}
+		if($this->extend('updateValidator',$requiredFields) !== null) {$this->setValidator($requiredFields);}
 	}
 
 	/**
