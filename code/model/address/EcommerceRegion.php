@@ -31,7 +31,7 @@ class EcommerceRegion extends DataObject {
 	 * @var Array
 	 */
 	static $db = array(
-		"Code" => "Varchar(20)",
+		"Code" => "Varchar(60)",
 		"Name" => "Varchar(200)",
 		"DoNotAllowSales" => "Boolean"
 	);
@@ -86,7 +86,7 @@ class EcommerceRegion extends DataObject {
 	 **/
 	function getCMSFields() {
 		$fields = parent::getCMSFields();
-		$fields->replaceField("Country", new DropdownField("Country", EcommerceCountry::$singular_name, EcommerceCountry::get_default_array()));
+		$fields->replaceField("CountryID", new DropdownField("CountryID", EcommerceCountry::$singular_name, EcommerceCountry::get_default_array()));
 		return $fields;
 	}
 
