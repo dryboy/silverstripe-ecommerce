@@ -489,7 +489,7 @@ class CartPage_Controller extends Page_Controller{
 						if($this->currentOrder && $this->currentOrder->Items() && !$this->currentOrder->IsSubmitted()) {
 							$this->actionLinks->push(new ArrayData(array (
 								"Title" => $this->SaveOrderLinkLabel,
-								"Link" => $this->Link("saveorder").$this->currentOrder->ID."/"
+								"Link" => $this->Link("saveorder").'/'.$this->currentOrder->ID."/"
 							)));
 						}
 					}
@@ -502,7 +502,7 @@ class CartPage_Controller extends Page_Controller{
 					if(!$viewingRealCurrentOrder) {
 						$this->actionLinks->push(new ArrayData(array (
 							"Title" => $this->LoadOrderLinkLabel,
-							"Link" => $this->Link("loadorder").$this->currentOrder->ID."/"
+							"Link" => $this->Link("loadorder").'/'.$this->currentOrder->ID."/"
 						)));
 					}
 				}
@@ -514,7 +514,7 @@ class CartPage_Controller extends Page_Controller{
 					if(!$viewingRealCurrentOrder) {
 						$this->actionLinks->push(new ArrayData(array (
 							"Title" => $this->DeleteOrderLinkLabel,
-							"Link" => $this->Link("deleteorder").$this->currentOrder->ID."/"
+							"Link" => $this->Link("deleteorder").'/'.$this->currentOrder->ID."/"
 						)));
 					}
 				}
