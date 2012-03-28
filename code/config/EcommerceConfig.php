@@ -123,7 +123,7 @@ class EcommerceConfig extends Object {
 			$parser = new Spyc();
 			$newArray = $parser->loadFile($fixtureFolderAndFile);
 		}
-		$this->fixtureDictionary = array_merge($newArray, $this->fixtureDictionary)
+		$this->fixtureDictionary = array_merge($newArray, $this->fixtureDictionary);
 	}
 
 
