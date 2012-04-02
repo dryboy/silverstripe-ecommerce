@@ -149,7 +149,6 @@ class OrderForm extends Form {
 
 		//------------- NOW THE ORDER GETS SUBMITTED FOR REAL -----------------
 		if($nextStep) {
-			$order->tryToFinaliseOrder();
 			ShoppingCart::singleton()->clear();
 		}
 		//------------------------------
