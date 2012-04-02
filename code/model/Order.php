@@ -1034,8 +1034,8 @@ class Order extends DataObject {
 	public function sendStatusChange($subject= '', $message = '', $resend = false) {
 		if(!$message) {
 			$emailableLogs = DataObject::get('OrderStatusLog', "\"OrderID\" = {$this->ID} AND \"EmailCustomer\" = 1 AND \"EmailSent\" = 0 ", "\"Created\" DESC", null, 1);
-			if($logs) {
-				$latestEmailableLog = $lemailableLogs->First();
+			if($emailableLogs) {
+				$latestEmailableLog = $emailableLogs->First();
 				$message = $latestEmailableLog->Note;
 			}
 		}
