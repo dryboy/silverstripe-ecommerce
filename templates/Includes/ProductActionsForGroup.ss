@@ -2,7 +2,7 @@
 <% if HasVariations %>
 	<ul class="productActions">
 		<li>
-			<a href="{$AddVariationsLink}" class="selectVariation" rel="VariationsTable{$ID}">
+			<a href="{$AddVariationsLink}" class="selectVariation action" rel="VariationsTable{$ID}">
 				<% if VariationIsInCart %>
 					<% _t("Product.REMOVELINK","Remove from cart") %>
 				<% else %>
