@@ -107,19 +107,6 @@ class EcommercePayment extends DataObjectDecorator {
 
 
 	function updateCMSFields(&$fields){
-		//DOES NOT WORK RIGHT NOW AS supported_methods is PROTECTED
-		//$options = $this->owner::$supported_methods;
-		/*
-		NEEDS A BIT MORE THOUGHT...
-		$classes = ClassInfo::subclassesFor("Payment");
-		unset($classes["Payment"]);
-		if($classes && !$this->owner->ID) {
-			$fields->addFieldToTab("Root.Main", new DropdownField("ClassName", "Type", $classes), "Status");
-		}
-		else {
-			$fields->addFieldToTab("Root.Main", new ReadonlyField("ClassNameConfirmation", "Type", $this->ClassName), "Status");
-		}
-		*/
 		$fields->replaceField("OrderID", new ReadonlyField("OrderID", "Order ID"));
 		return $fields;
 
