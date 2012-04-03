@@ -73,6 +73,32 @@ class EcommerceRegion extends DataObject {
 		function i18n_plural_name() { return _t("EcommerceRegion.REGIONS", "Regions");}
 
 	/**
+	 * standard SS variable
+	 * @var Array
+	 */
+	public static $searchable_fields = array(
+		"Name" => "PartialMatchFilter",
+		"Code" => "PartialMatchFilter"
+	);
+
+	/**
+	 * standard SS variable
+	 * @var Array
+	 */
+	public static $field_labels = array(
+		"Name" => "Region"
+	);
+
+	/**
+	 * standard SS variable
+	 * @var Array
+	 */
+	public static $summary_fields = array(
+		"Name" => "Name",
+		"Country.Title"
+	);
+
+	/**
 	 * do we use regions at all in this ecommerce application?
 	 * @return Bool
 	 **/
@@ -86,7 +112,7 @@ class EcommerceRegion extends DataObject {
 	 **/
 	function getCMSFields() {
 		$fields = parent::getCMSFields();
-		$fields->replaceField("CountryID", new DropdownField("CountryID", EcommerceCountry::$singular_name, EcommerceCountry::get_default_array()));
+		//$fields->replaceField("CountryID", new DropdownField("CountryID", EcommerceCountry::$singular_name, EcommerceCountry::get_default_array()));
 		return $fields;
 	}
 
@@ -164,7 +190,7 @@ class EcommerceRegion extends DataObject {
 	 * for example, if hot delivery of a catering item is only available in a certain region, then the regions can be limited with the methods below.
 	 * NOTE: these methods / variables below are IMPORTANT, because they allow the dropdown for the region to be limited for just that order
 	 * @var Array of country codes, e.g. ("NZ", "NP", "AU");
-	**/
+	 **/
 	protected static $for_current_order_only_show_regions = array();
 		static function set_for_current_order_only_show_regions($a) {
 			if(count(self::$for_current_order_only_show_regions)) {
