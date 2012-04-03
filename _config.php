@@ -56,7 +56,6 @@ Buyable::add_class("Product");
 
 // * * * FIELDS
 //ExpiryDateField::set_short_months(true); //uses short months (e.g. Jan instead of january) for credit card expiry date.
-//EcomQuantityField::set_hide_plus_and_minus(true);
 
 
 // * * * MEMBER AND ADDRESS
