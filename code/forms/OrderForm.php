@@ -146,7 +146,6 @@ class OrderForm extends Form {
 		//-------------- ACTION PAYMENT -------------
 		$paymentProcessStarted = EcommercePayment::process_payment_form_and_return_next_step($order, $form, $data, $order->Member());
 
-
 		if($paymentProcessStarted) {
 			ShoppingCart::singleton()->submit();
 			return $paymentProcessStarted;
