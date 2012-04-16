@@ -6,5 +6,5 @@
 	<% if PostalCode %>$PostalCode<br /><% end_if %>
 	<% if FullCountryName %>$FullCountryName<br /><% end_if %>
 	<% if Phone %>$Phone<br /><% end_if %>
-	<% if MobilePhone %>MobilePhone<br /><% end_if %>
-	<% if Email %>Email<br /><% end_if %>
+	<% if MobilePhone %>$MobilePhone<br /><% end_if %>
+	<% if Email %>$Email<br /><% end_if %>
