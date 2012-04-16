@@ -193,14 +193,20 @@ class Product extends Page {
 		return $allowpurchase;
 	}
 
-	function DefaultImageLink() {
+	function DefaultImage() {
 		$sc = SiteConfig::current_site_config();
 		if($sc) {
 			if($sc->DefaultProductImageID && $sc->DefaultProductImage() ) {
 				if($sc->DefaultProductImage()->exists()) {
-					return $sc->DefaultProductImage()->Link();
+					return $sc->DefaultProductImage();
 				}
 			}
+		}
+	}
+
+	function DefaultImageLink() {
+		if($image = $this->DefaultImage()){
+			return $image->Link();
 		}
 		return "ecommerce/images/productPlaceHolderThumbnail.gif";
 	}
