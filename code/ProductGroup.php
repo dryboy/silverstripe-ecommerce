@@ -480,8 +480,8 @@ class ProductGroup extends Page {
 			$siteConfig = SiteConfig::current_site_config();
 			if($siteConfig->OnlyShowProductsThatCanBePurchased) {
 				foreach($buyables as $buyable) {
-					if(!$buyables->canPurchase()) {
-						$buyables->remove($buyable);
+					if(!$buyable->canPurchase()) {
+						$buyable->remove($buyable);
 					}
 				}
 			}

@@ -18,7 +18,7 @@
 	<% end_control %>
 		</tbody>
 	</table>
-	<p class="goToCart"><a href="$CheckoutLink"><% _t("Cart.GOTOCHECKOUTLINK","&raquo; Go to the checkout") %></a></p>
+	<p class="goToCart"><a href="$CheckoutLink"><% _t("Cart.GOTOCHECKOUTLINK","Go to the checkout") %></a></p>
 <% else %>
 		<p class="noItems"><% _t("Cart.NOITEMS","There are no items in your cart") %>.</p>
 <% end_if %>

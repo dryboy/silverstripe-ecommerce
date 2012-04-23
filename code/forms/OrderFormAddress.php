@@ -21,6 +21,13 @@ class OrderFormAddress extends Form {
 	 */
 	protected $orderMember = null;
 
+	/**
+	 * Member that has just been created
+	 *
+	 * @var Int
+	 */
+	protected $newlyCreatedMember = 0;
+
 	function __construct($controller, $name) {
 
 		//requirements
@@ -334,6 +341,7 @@ class OrderFormAddress extends Form {
 							if($this->memberShouldBeCreated($data)) {
 								$order = ShoppingCart::current_order();
 								$member = $order->CreateOrReturnExistingMember();
+								$this->newlyCreatedMember = $member->ID;
 							}
 						}
 					}
@@ -355,7 +363,7 @@ class OrderFormAddress extends Form {
 	 * @return Boolean
 	 **/
 	protected function memberShouldBeCreated($data) {
-		if(!Member::currentUserID()) {
+		if(!Member::currentUserID() && !$this->newlyCreatedMember) {
 			if( (EcommerceRole::get_automatic_membership()) || (isset($data["Password"]) && strlen($data["Password"]) > 3) ) {
 				if(!$this->anotherExistingMemberWithSameUniqueFieldValue($data)){
 				 return true;
@@ -376,9 +384,10 @@ class OrderFormAddress extends Form {
 	 * @return Boolean
 	 **/
 	protected function memberShouldBeLoggedIn($data) {
-		if($this->memberShouldBeCreated($data)) {
-			return true;
+		if(!Member::currentUserID()) {
+			return $this->newlyCreatedMember ? true : false;
 		}
+		return false;
 	}
 
 
