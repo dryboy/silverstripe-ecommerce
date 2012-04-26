@@ -69,6 +69,17 @@ class EcommerceSiteTreeExtension extends DataObjectDecorator {
 	}
 	function EcommerceMenuTitle(){return $this->getEcommerceMenuTitle();}
 
+
+	/**
+	 * tells us if the current page is part of e-commerce.
+	 * @return Boolean
+	 */
+	function IsEcommercePage () {
+		return false;
+	}
+
+
+
 }
 
 class EcommerceSiteTreeExtension_Controller extends Extension {
@@ -77,9 +88,12 @@ class EcommerceSiteTreeExtension_Controller extends Extension {
 	 *TO DO: this even seemed to be called then the CMS is opened
 	 **/
 
-	function onAfterInit() {
+	function onBeforeInit() {
 		Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js");
 		Requirements::javascript("ecommerce/javascript/EcomCart.js");
+	}
+
+	function onAfterInit() {
 		$checkoutPages = DataObject::get("CartPage");
 		$jsArray = Array();
 		if($checkoutPages) {
@@ -168,13 +182,5 @@ class EcommerceSiteTreeExtension_Controller extends Extension {
 		return $order->SideBarCartID();
 	}
 
-
-	/**
-	 * tells us if the current page is part of e-commerce.
-	 * @return Boolean
-	 */
-	function IsEcommercePage () {
-		return false;
-	}
 
 }
