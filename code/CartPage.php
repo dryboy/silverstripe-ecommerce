@@ -216,9 +216,9 @@ class CartPage_Controller extends Page_Controller{
 		$orderID = 0;
 		//WE HAVE THIS FOR SUBMITTING FORMS!
 		if(isset($_REQUEST['OrderID'])) {
-			$orderID = intval($_REQUEST['OrderID']);
-			if($orderID) {
-				$this->currentOrder = DataObject::get_by_id("Order", $orderID);
+			$id = intval($_REQUEST['OrderID']);
+			if($id) {
+				$this->currentOrder = DataObject::get_by_id("Order", $id);
 			}
 		}
 		elseif($this->request && $this->request->param('ID') && $this->request->param('Action')) {

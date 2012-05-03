@@ -46,17 +46,6 @@ class OrderFormAddress extends Form {
 		//security
 		$this->orderMember = $order->CreateOrReturnExistingMember();
 		//strange security situation...
-		if($this->orderMember->exists()) {
-			$currentUserID = Member::currentUserID();
-			if($currentUserID) {
-				if($this->orderMember->ID != $currentUserID) {
-					$loggedInMember = Member::currentUser();
-					if($loggedInMember) {
-						$loggedInMember->logOut();
-					}
-				}
-			}
-		}
 
 		//member fields
 		$addressFields = new FieldSet();
