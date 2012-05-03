@@ -426,7 +426,7 @@ class ShoppingCart extends Object{
 			$member = Member::currentMember();
 			$this->order = DataObject::get_by_id('Order',intval(Session::get(self::$session_variable.".ID"))); //find order by id saved to session (allows logging out and retaining cart contents)
 			//order can not be viewed
-			if(!$this->order->canView()) {
+			if($this->order && !$this->order->canView()) {
 				$this->order = null;
 			}
 			//order has already been submitted
