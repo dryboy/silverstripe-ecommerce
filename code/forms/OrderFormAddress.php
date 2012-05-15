@@ -330,6 +330,7 @@ class OrderFormAddress extends Form {
 							if($this->memberShouldBeCreated($data)) {
 								$order = ShoppingCart::current_order();
 								$member = $order->CreateOrReturnExistingMember();
+								$member->write();
 								$this->newlyCreatedMember = $member->ID;
 							}
 						}
@@ -390,7 +391,7 @@ class OrderFormAddress extends Form {
 	protected function memberShouldBeSaved($data) {
 		if(
 				(
-					$this->memberShouldBeCreated($data)
+					$this->memberShouldBeCreated($data) || $this->newlyCreatedMember
 				) || (
 					Member::currentUserID() &&
 					!$this->anotherExistingMemberWithSameUniqueFieldValue($data) &&
@@ -401,7 +402,6 @@ class OrderFormAddress extends Form {
 		}
 		return false;
 	}
-
 
 	/**
 	 * returns TRUE if
