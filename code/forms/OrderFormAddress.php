@@ -87,7 +87,7 @@ class OrderFormAddress extends Form {
 				//general header
 				$rightFields->push(
 					//TODO: check EXACT link!!!
-					new LiteralField('MemberInfo', '<p class="message good">'._t('OrderForm.MEMBERINFO','If you are already have an account then please')." <a href=\"Security/login?BackURL=" . $controller->Link() . "\">"._t('OrderForm.LOGIN','log in').'</a>.</p>')
+					new LiteralField('MemberInfo', '<p>'._t('OrderForm.MEMBERINFO','If you already have an account then please')." <a href=\"Security/login?BackURL=" . $controller->Link() . "\">"._t('OrderForm.LOGIN','log in').'</a>.</p>')
 				);
 				$passwordField = new ConfirmedPasswordField('Password', _t('OrderForm.PASSWORD','Password'));
 				//login invite right on the top
@@ -95,18 +95,22 @@ class OrderFormAddress extends Form {
 					$rightFields->push(new HeaderField('CreateAnAccount',_t('OrderForm.CREATEANACCONTOPTIONAL','Create an account (optional)'), 3));
 					//allow people to purchase without creating a password
 					$passwordField->setCanBeEmpty(true);
+					$rightFields->push(
+						new LiteralField('AccountInfo','<p>'._t('OrderForm.ACCOUNTINFO','Please <a href="#Password" class="choosePassword">choose a password</a>; this will allow you to log in and check your order history in the future.').'</p>')
+					);
 				}
 				else {
 					$rightFields->push(new HeaderField('SetupYourAccount', _t('OrderForm.SETUPYOURACCOUNT','Setup your account'), 3));
 					//dont allow people to purchase without creating a password
 					$passwordField->setCanBeEmpty(false);
+					$rightFields->push(
+						new LiteralField('AccountInfo','<p>'._t('OrderForm.ACCOUNTINFOCOMPULSARY','Please choose a password.').'</p>')
+					);
 				}
 				$requiredFields[] = 'Password[_Password]';
 				$requiredFields[] = 'Password[_ConfirmPassword]';
-				Requirements::customScript('jQuery("#ChoosePassword").click();', "EommerceChoosePassword"); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
-				$rightFields->push(
-					new LiteralField('AccountInfo','<p>'._t('OrderForm.ACCOUNTINFO','Please <a href="#Password" class="choosePassword">choose a password</a>; this will allow you can log in and check your order history in the future.').'</p>')
-				);
+				Requirements::customScript('jQuery("#ChoosePassword").click();', "ECommerceChoosePassword"); // LEAVE HERE - NOT EASY TO INCLUDE VIA TEMPLATE
+				
 				$rightFields->push(new FieldGroup($passwordField));
 			}
 			else {
@@ -159,8 +163,6 @@ class OrderFormAddress extends Form {
 
 		//allow updating via decoration
 		$this->extend('updateOrderFormAddress',$this);
-
-
 	}
 
 
@@ -209,12 +211,14 @@ class OrderFormAddress extends Form {
 		if(!$order) {
 			$form->sessionMessage(_t('OrderForm.ORDERNOTFOUND','Your order could not be found.'), 'bad');
 			Director::redirectBack();
+			Session::save();
 			return false;
 		}
 		if($order && $order->TotalItems() < 1) {
 			// WE DO NOT NEED THE THING BELOW BECAUSE IT IS ALREADY IN THE TEMPLATE AND IT CAN LEAD TO SHOWING ORDER WITH ITEMS AND MESSAGE
 			$form->sessionMessage(_t('OrderForm.NOITEMSINCART','Please add some items to your cart.'), 'bad');
 			Director::redirectBack();
+			Session::save();
 			return false;
 		}
 
@@ -242,7 +246,14 @@ class OrderFormAddress extends Form {
 				if($password) {
 					$member->changePassword($password);
 				}
-				$member->write();
+				try {
+					$member->write();
+				} catch(ValidationException $e) {
+					$form->sessionMessage($e->getResult()->message(), 'bad');
+					Session::save();
+					Director::redirectBack();
+					return false;
+				}
 			}
 			if($this->memberShouldBeLoggedIn($data)) {
 				$member->logIn();
@@ -321,16 +332,25 @@ class OrderFormAddress extends Form {
 			//simplest case... the member is already logged in and the entered email is OK (not someone else's email)
 			if($this->uniqueMemberFieldCanBeUsed($data)) {
 				$member = Member::currentUser();
-				if(!$member) {
+				if(!$member || !$member->exists()) {
 					//second option: an existing member email is used, return member (but this member will not be logged in!)
 					if(!$member) {
 						$member = $this->anotherExistingMemberWithSameUniqueFieldValue($data);
-					//in case we still dont have a member AND we should create a member for every customer, then we do this below...
-						if(!$member) {
+						
+						if($member){
+							// Make sure that the password is correct
+							$pwFieldName = 'Password';
+							if(!array_key_exists($pwFieldName, $data)) { return null; }
+							$passwordValidResult = $member->checkPassword($data[$pwFieldName]);
+							
+							if(!$passwordValidResult->valid()) { 
+								throw new ValidationException($passwordValidResult); 
+							}
+						} else {
+							//in case we still dont have a member AND we should create a member for every customer, then we do this below...
 							if($this->memberShouldBeCreated($data)) {
 								$order = ShoppingCart::current_order();
-								$member = $order->CreateOrReturnExistingMember();
-								$member->write();
+								$member = $order->CreateOrReturnExistingMember($forceCreation = true);
 								$this->newlyCreatedMember = $member->ID;
 							}
 						}
@@ -403,6 +423,7 @@ class OrderFormAddress extends Form {
 		return false;
 	}
 
+
 	/**
 	 * returns TRUE if
 	 * - there is no existing member with the unique field
@@ -410,7 +431,8 @@ class OrderFormAddress extends Form {
 	 * returns FALSE if
 	 * - the unique field already exists in another member
 	 * - AND the member being "tested" is already logged in...
-	 * in that case the logged in member tries to take on another identity.	 * If you are not logged BUT the the unique field is used by an existing member then we can still
+	 * in that case the logged in member tries to take on another identity.	 
+	 * If you are not logged BUT the the unique field is used by an existing member then we can still
 	 * use the field - we just CAN NOT log in the member.
 	 * This method needs to be public because it is used by the OrderForm_Validator (see below).
 	 * @param Array - form data - should include $data[uniqueField....] - e.g. $data["Email"]
@@ -474,7 +496,7 @@ class OrderFormAddress_Validator extends ShopAccountForm_Validator{
 		}
 		if(!$valid) {
 			$this->form->sessionMessage(_t("OrderForm.ERRORINFORM", "We could not proceed with your order, please check your errors below."), "bad");
-			$this->form->messageForForm("OrderForm", _t("OrderForm.ERRORINFORM", "We could not proceed with your order, please check your errors below."), "bad");
+			Session::save(); // For some reason this is needed, or the message never shows
 		}
 		return $valid;
 	}

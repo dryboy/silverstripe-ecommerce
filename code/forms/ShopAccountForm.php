@@ -102,7 +102,7 @@ class ShopAccountForm_Validator extends RequiredFields{
 		$valid = parent::php($data);
 		$uniqueFieldName = Member::get_unique_identifier_field();
 		$memberID = Member::currentUserID();
-		if(isset($data[$uniqueFieldName]) && $memberID && $data[$uniqueFieldName]){
+		if(isset($data[$uniqueFieldName]) && $data[$uniqueFieldName]){
 			$uniqueFieldValue = Convert::raw2sql($data[$uniqueFieldName]);
 			//can't be taken
 			if(DataObject::get_one('Member',"\"$uniqueFieldName\" = '$uniqueFieldValue' AND ID <> ".$memberID)){
@@ -140,6 +140,7 @@ class ShopAccountForm_Validator extends RequiredFields{
 		}
 		if(!$valid) {
 			$this->form->sessionMessage(_t('Account.ERRORINFORM', 'We could not save your details, please check your errors below.'), "bad");
+			Session::save(); // For some reason this is needed, or the message never shows
 		}
 		return $valid;
 	}
