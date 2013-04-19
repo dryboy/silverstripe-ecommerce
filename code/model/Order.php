@@ -679,12 +679,16 @@ class Order extends DataObject {
 	}
 
 
-	public function Cancel($member) {
+	public function Cancel($member, $reason = "") {
 		$this->CancelledByID = $member->ID;
 		$this->write();
 		$obj = new OrderStatusLog_Cancel();
 		$obj->AuthorID = $member->ID;
 		$obj->OrderID = $this->ID;
+		$obj->Note = $reason;
+		if($member->IsShopAdmin()) {
+			$obj->InternalUseOnly = true;
+		}
 		$obj->write();
 	}
 
@@ -869,9 +873,10 @@ class Order extends DataObject {
 	 * OR the member is logged in / logs in.
 	 *
 	 * Also note that if a new member is created, it is not automatically written
+	 * @param Boolean $forceCreation - if set to true then the member will always be saved in the database.
 	 * @return: DataObject (Member)
 	 **/
-	public function CreateOrReturnExistingMember() {
+	public function CreateOrReturnExistingMember($forceCreation = false) {
 		if($this->MemberID) {
 			$member = $this->Member();
 		}
@@ -881,6 +886,10 @@ class Order extends DataObject {
 		}
 		if(!$member) {
 			$member = new Member();
+			if($forceCreation)
+			{
+				$member->write();
+			}
 		}
 		return $member;
 	}
@@ -981,7 +990,7 @@ class Order extends DataObject {
 	function sendInvoice($message = "", $resend = false, $adminOnly = false) {
 		$subject = str_replace("{OrderNumber}", $this->ID,Order_Email::get_subject());
 		$replacementArray = array("Message" => $message);
-		return $this->sendEmail('Order_ReceiptEmail', $subject, $replacementArray, $resend, $adminOnly);
+		return $this->sendEmail('Order_InvoiceEmail', $subject, $replacementArray, $resend, $adminOnly);
 	}
 
 	/**
@@ -995,7 +1004,7 @@ class Order extends DataObject {
 	public function sendReceipt($message = "", $resend = false, $adminOnly = false) {
 		$subject = str_replace("{OrderNumber}", $this->ID,Order_Email::get_subject());
 		$replacementArray = array(
-			'Message' => $message
+			'Message' => $message,
 		);
 		return $this->sendEmail('Order_ReceiptEmail', $subject, $replacementArray, $resend, $adminOnly);
 	}
@@ -1056,6 +1065,7 @@ class Order extends DataObject {
 	protected function sendEmail($emailClass, $subject, $replacementArray = array(), $resend = false, $adminOnly = false) {
 		$replacementArray["Order"] = $this;
 		$replacementArray["EmailLogo"] = SiteConfig::current_site_config()->EmailLogo();
+		$replacementArray["ShopPhysicalAddress"] = SiteConfig::current_site_config()->ShopPhysicalAddress;
  		$from = Order_Email::get_from_email();
  		//why are we using this email and NOT the member.EMAIL?
  		//for historical reasons????
@@ -1074,7 +1084,14 @@ class Order extends DataObject {
 			$email->setTo($to);
 			$email->setSubject($subject);
 			$email->populateTemplate($replacementArray);
-			return $email->send(null, $this, $resend);
+			
+			// This might be called from within the CMS, so we need to restore the theme, just in case
+			// templates within the theme exist
+			$oldTheme = SSViewer::current_theme();
+			SSViewer::set_theme(SSViewer::current_custom_theme());
+			$result = $email->send(null, $this, $resend);
+			SSViewer::current_theme($oldTheme);
+			return $result;
 		}
 		return false;
 	}
@@ -1430,7 +1447,7 @@ class Order extends DataObject {
 	 *@return Boolean
 	 **/
 	function canCancel($member = null) {
-		//if it is already cancelled it can be cancelled again
+		//if it is already cancelled it can't be cancelled again
 		if($this->CancelledByID) {
 			return false;
 		}
@@ -2043,12 +2060,16 @@ class Order extends DataObject {
 	protected static $template_id_prefix = "";
 		public static function set_template_id_prefix($s) {self::$template_id_prefix = $s;}
 		public static function get_template_id_prefix() {return self::$template_id_prefix;}
+		
+	static function getSideBarCartID() {
+		return self::$template_id_prefix.'Side_Bar_Cart';
+	}
 
 	/**
 	 * id that is used in templates and in the JSON return @see CartResponse
 	 * @return String
 	 **/
-	function SideBarCartID() {return self::$template_id_prefix.'Side_Bar_Cart';}
+	 function SideBarCartID() {return self::getSideBarCartID();}
 	/**
 	 * id that is used in templates and in the JSON return @see CartResponse
 	 * @return String
