@@ -378,7 +378,7 @@ class Order extends DataObject {
 			if($createdOrderStatus) {
 				$createdOrderStatusID = $createdOrderStatus->ID;
 			}
-			$arrayOfStatusOptions = clone $statusOptions->map("ID", "Title");
+			$arrayOfStatusOptions = clone $statusOptions->map("ID", "Title")->toArray();
 			$arrayOfStatusOptionsFinal = array();
 			if(count($arrayOfStatusOptions)) {
 				foreach($arrayOfStatusOptions as $key => $value) {
@@ -467,7 +467,10 @@ class Order extends DataObject {
 				"Main"
 			);
 			if($submitted) {
+				$oldTheme = SSViewer::current_theme();
+				SSViewer::set_theme(SSViewer::current_custom_theme());
 				$htmlSummary = $this->renderWith("Order");
+				SSViewer::current_theme($oldTheme);
 				$fields->addFieldToTab('Root.Main', new LiteralField('MainDetails', '<iframe src="'.$this->PrintLink().'" width="100%" height="500"></iframe>'));
 				$fields->insertAfter(
 					new Tab(
