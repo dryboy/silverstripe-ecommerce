@@ -155,6 +155,7 @@ Abstract class Order_Email extends Email {
 		//start parsing
 		parent::parseVariables($isPlain);
 		if(!$isPlain) {
+			$this->body = str_replace('& ', '&amp; ', $this->body);
 			$this->body = self::emogrify_html($this->body);
 		}
 	}
