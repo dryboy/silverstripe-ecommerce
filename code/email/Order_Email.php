@@ -73,6 +73,7 @@ Abstract class Order_Email extends Email {
 	 * @return Boolean - TRUE for success and FALSE for failure.
 	 */
 	public function send($messageID = null, $order, $resend = false, $returnBodyOnly = false) {
+		Requirements::clear();
 		if((!$this->hasBeenSent($order)) || $resend || $returnBodyOnly) {
 			if(!$this->subject) {
 				$this->subject = self::get_subject();
