@@ -66,6 +66,7 @@ class OrderForm extends Form {
 			$finalFields->push(new CheckboxField('ReadTermsAndConditions', _t('OrderForm.AGREEWITHTERMS1','I have read and agree with the ').' <a href="'.$termsAndConditionsPage->Link().'">'.Convert::raw2xml($termsAndConditionsPage->Title).'</a>'._t('OrderForm.AGREEWITHTERMS2','.'), $alreadyTicked));
 		}
 		$finalFields->push(new TextareaField('CustomerOrderNote', _t('OrderForm.CUSTOMERNOTE','Note / Question'), 7, 30));
+		$finalFields->push(new ReadonlyField('Currency', _t('OrderForm.CURRENCY','Currency'), $order->Currency));
 
 
 		//  ________________  5) Put all the fields in one FieldSet
